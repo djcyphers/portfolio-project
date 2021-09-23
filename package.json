@@ -9,6 +9,14 @@
     "sitemap": "vue-cli-service sitemap"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/free-regular-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/vue-fontawesome": "^3.0.0-4",
+    "@popperjs/core": "^2.10.1",
+    "animate.css": "^4.1.1",
+    "bootstrap": "^5.0.0-beta3",
     "core-js": "^3.6.5",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0"
@@ -24,8 +32,13 @@
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^7.0.0",
+    "jquery": "^3.6.0",
     "prettier": "^2.2.1",
-    "vue-cli-plugin-sitemap": "^2.3.0"
+    "sass": "^1.42.0",
+    "sass-loader": "^10.2.0",
+    "style-resources-loader": "^1.4.1",
+    "vue-cli-plugin-sitemap": "^2.3.0",
+    "vue-cli-plugin-style-resources-loader": "^0.1.5"
   },
   "eslintConfig": {
     "root": true,
@@ -40,7 +53,9 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "strict": "off"
+    }
   },
   "browserslist": [
     "> 1%",

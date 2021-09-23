@@ -1,0 +1,18 @@
+/*
+    USE THIS FILE IN CASE A RANDOM PACKAGE MANAGER WANTS TO OVERWRITE APP.SCSS.
+*/
+
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+// SCSS for Main Page
+@import 'home';
+
+// FancyBox
+//@import '~@fancyapps/fancybox/dist/jquery.fancybox.min.css';
+
+// Font-awesome
+//@import '~font-awesome/scss/font-awesome.scss';
+
+// Scrollbars
+//@import '~overlayscrollbars/css/OverlayScrollbars.css';
