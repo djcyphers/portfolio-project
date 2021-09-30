@@ -25,7 +25,8 @@
       <li id="box2" class="box">
         <a name="box2"></a>
         <div class="content2 scroller">
-          <!-- @component('layouts.components.about-info') @endcomponent -->
+          <!-- About Component -->
+          <About></About>
         </div>
       </li>
       <!-- end box2 -->
@@ -48,6 +49,7 @@
         </div>
       </li>
       <!-- end box4 -->
+      <Admin />
     </ul>
     <!-- end mask -->
   </div>
@@ -58,9 +60,11 @@
 import Welcome from "../components/Welcome.vue";
 import Header from "../components/Header.vue";
 import Background from "../components/Background.vue";
+import About from "../components/About.vue";
+import Admin from "../components/login/Admin.vue";
 
 export default {
   name: "Home",
-  components: { Welcome, Header, Background },
+  components: { Welcome, Header, Background, About, Admin },
 };
 </script>

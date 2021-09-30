@@ -56,6 +56,9 @@ p {
 .mainpage-links {
     font-size: 2.1rem;
     word-spacing:10px;
+    a {
+      text-decoration: none;
+    }
 }
 
 /*** Background Images ***/
@@ -164,6 +167,7 @@ p {
 
 .content1-wrapper {
     background: rgba(0, 0, 12, 0.6);
+    width: 80%;
 }
 
 .content1 {
@@ -236,6 +240,7 @@ img.zoom {
     transform: translate(-50%, -50%);
 
     border-radius: 16px;
+    border:rgb(0, 0, 0) !important;
     overflow: hidden;
     box-shadow: 0 5px 18px rgba(0, 0, 0, 0.6);
     cursor: pointer;
@@ -302,15 +307,11 @@ transition: all .9s;
 
 .socialshare-icons {
     scale: 0.9;
-    position: absolute;
+    position: relative;
     top: 50%;
-    left: 37.5%;
-    -webkit-transform: translate(-50%, -50%);
-    -moz-transform: translate(-50%, -50%);
-    -o-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
     z-index: 3;
     display: flex;
+    padding-left: 0em;
 }
 
 ul.socialshare-icons li {
@@ -616,17 +617,12 @@ and (min-width : 416px) {
     margin-top: -8%;
 }
 
-.underconstruction-text {
-      font-size: 0.8em !important;
-}
+  .subtitle-portfolio-text {
+        font-size: 0.8em !important;
+  }
 
-.mainpage-links {
-      font-size: 0.8em !important;
-}
-
-  /**** Social Icons Responsive Fix Needs JS Solution ****/
-  .socialshare-icons {
-    left: 41.5% !important;
+  .mainpage-links {
+        font-size: 0.8em !important;
   }
 }
 
@@ -774,11 +770,6 @@ and (min-height : 360px) {
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw; }
   .links { font-size: 2.5vw; word-spacing:30px; }
-
-  /**** Social Icons Responsive Fix Needs JS Solution ****/
-  .socialshare-icons {
-    left: 39% !important;
-  }
 }
 
 /* Iphone 6/7/8 and Android (Portrait)----------- */
@@ -805,10 +796,6 @@ and (min-width : 360px) {
   #menu a:hover { background: #333; color:#FFF; border:#FFF 3px solid; text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
   #menu a.selected { background:#444; color:#FFF; border:#67b2ff 3px solid; text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
 
-  /**** Social Icons Responsive Fix Needs JS Solution ****/
-  .socialshare-icons {
-    left: 40.5% !important;
-    }
 }
 
 /* ===================================================================
@@ -1027,6 +1014,15 @@ h1 { font-family: Verdana, Geneva, sans-serif; font-size: 23px; font-style: norm
   }
 
 /* ===================================================================
+ * # Chrome scrollbar (customized)
+ *
+ * ------------------------------------------------------------------- */
+  ::-webkit-scrollbar {
+    display: none;
+    width: 80%;
+    height: 80%;
+}
+/* ===================================================================
  * # moz scrollbar (customized)
  *
  * ------------------------------------------------------------------- */
@@ -1136,3 +1132,32 @@ h1 { font-family: Verdana, Geneva, sans-serif; font-size: 23px; font-style: norm
 
  }
 
+ /* ===================================================================
+ * # Admin Panel (customized)
+ *
+ * ------------------------------------------------------------------- */
+
+.admin-panel {
+  position:fixed;
+  right: -1px;
+  top: 22vh;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+
+}
+
+.avatar-login {
+  position:fixed;
+  right: 5px;
+  bottom: 2vh;
+
+    :hover {
+      transform: scale(1.1);
+      border-radius: 50%;
+      box-shadow:
+      inset 0 0 40px #fff,      /* inner white */
+      0 0 80px #fff,            /* outer white */
+      -5px 0 80px #f0f,        /* outer left magenta */
+      5px 0 80px #0ff;         /* outer right cyan */
+      cursor:pointer;
+    }
+}

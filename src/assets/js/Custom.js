@@ -1,9 +1,10 @@
 import $ from "jquery";
+import "./Custom.js";
 
 // JS and jQuery Scripts
-$(document).ready(function () {
+$(function () {
   // Setup for blog
-  $("a").has("img").addClass("entry__thumb-link");
+  // $("a").has("img").addClass("entry__thumb-link")
 
   //Setup event handler to detect orientation change and then re-correct site position in referance to the menu selection
   window.addEventListener("orientationchange", function () {
@@ -83,95 +84,84 @@ $(document).ready(function () {
   }
 });
 
-// // Onclick send to url for soundcloud + mixcloud
-// function scUrl() {
-//   var url = "http://soundcloud.com/djcyphers";
-//   window.open(url);
-// }
+// // Gallery from Laravel
+// $(document).on("load", function () {
+//   //Setup hover event
+//   $(".zoom").on("mouseenter", function () {
+//     $(this).addClass("transition");
+//   });
+//   $(".zoom").on("mouseleave", function () {
+//     $(this).removeClass("transition");
+//   });
 
-// function mcUrl() {
-//   var url = "http://mixcloud.com/djcyphers";
-//   window.open(url);
-// }
+//   //Begin album setup
+//   $(".album-container").on("click", function () {
+//     var albumId = $(this).data("container");
+//     if (albumId > 0) {
+//       // Hide all albums
+//       $(".album-container").each(function () {
+//         $(this).addClass("collapse");
+//       });
+//     } else {
+//       return false;
+//     }
+//     // Replace with lightbox class element to contain images -> gallery id
+//     $("<div/>", {
+//       class: "container fb-container container-fluid row col-lg-12",
+//     }).appendTo("#gallery");
 
-// Gallery from Laravel
-$(document).loaded(function () {
-  //Setup hover event
-  $(".zoom").on("mouseenter", function () {
-    $(this).addClass("transition");
-  });
-  $(".zoom").on("mouseleave", function () {
-    $(this).removeClass("transition");
-  });
+//     // Create close button for album images section
+//     var bsButton =
+//       '<div class="outerclose" aria-label="Close"><div class="innerclose"><label>Back</label></div></div>';
+//     $(".container-wrapper").prepend(bsButton);
 
-  //Begin album setup
-  $(".album-container").on("click", function () {
-    var albumId = $(this).data("container");
-    if (albumId > 0) {
-      // Hide all albums
-      $(".album-container").each(function () {
-        $(this).addClass("collapse");
-      });
-    } else {
-      return false;
-    }
-    // Replace with lightbox class element to contain images -> gallery id
-    $("<div/>", {
-      class: "container fb-container container-fluid row col-lg-12",
-    }).appendTo("#gallery");
+//     // Hide all images -> fancyb-container
+//     $(".outerclose").on("click", function (event) {
+//       event.preventDefault();
+//       $(".fb-container").addClass("collapse animated zoomOut");
+//       $(this).addClass("collapse animated zoomOut");
+//       $(".album-container").removeClass("collapse").addClass("animated zoomIn");
+//     });
 
-    // Create close button for album images section
-    var bsButton =
-      '<div class="outerclose" aria-label="Close"><div class="innerclose"><label>Back</label></div></div>';
-    $(".container-wrapper").prepend(bsButton);
+//     // Get path to images from divs and append to lightbox container as img
+//     $(".album-image").each(function () {
+//       var currentElement = $(this);
+//       var imgName = currentElement.data("image");
+//       var albumList = currentElement.data("album");
+//       var description = currentElement.data("description");
+//       var path = "/storage/albums/" + albumList + "/" + imgName;
 
-    // Hide all images -> fancyb-container
-    $(".outerclose").on("click", function (event) {
-      event.preventDefault();
-      $(".fb-container").addClass("collapse animated zoomOut");
-      $(this).addClass("collapse animated zoomOut");
-      $(".album-container").removeClass("collapse").addClass("animated zoomIn");
-    });
-
-    // Get path to images from divs and append to lightbox container as img
-    $(".album-image").each(function () {
-      var currentElement = $(this);
-      var imgName = currentElement.data("image");
-      var albumList = currentElement.data("album");
-      var description = currentElement.data("description");
-      var path = "/storage/albums/" + albumList + "/" + imgName;
-
-      //Create bootstrap wrapper for images and start them hidden and effec to fadein
-      if (albumList === albumId) {
-        $("<a/>", {
-          href: path,
-          class:
-            "fancybox image-wrapper card text-white border-0 bg-transparent mb-3 col-md-6 col-lg-4 collapse",
-          "data-fancybox": "images",
-          "data-caption": description,
-        }).appendTo(".fb-container");
-      }
-    });
-    // get all href divs and foreach one add img from href
-    $(".fancybox").each(function () {
-      var $this = $(this);
-      var imageUrl = $this.attr("href");
-      $(this).append(
-        "<img class='image img-fluid rounded mx-auto d-block' src='" +
-          imageUrl +
-          "' width='100%'/>"
-      );
-    });
-    $(".image").on("load", function () {
-      $(this).parent().addClass("animated zoomIn");
-      $(this).parent().removeClass("collapse");
-    });
-  });
-});
+//       //Create bootstrap wrapper for images and start them hidden and effec to fadein
+//       if (albumList === albumId) {
+//         $("<a/>", {
+//           href: path,
+//           class:
+//             "fancybox image-wrapper card text-white border-0 bg-transparent mb-3 col-md-6 col-lg-4 collapse",
+//           "data-fancybox": "images",
+//           "data-caption": description,
+//         }).appendTo(".fb-container");
+//       }
+//     });
+//     // get all href divs and foreach one add img from href
+//     $(".fancybox").each(function () {
+//       var $this = $(this);
+//       var imageUrl = $this.attr("href");
+//       $(this).append(
+//         "<img class='image img-fluid rounded mx-auto d-block' src='" +
+//           imageUrl +
+//           "' width='100%'/>"
+//       );
+//     });
+//     $(".image").on("load", function () {
+//       $(this).parent().addClass("animated zoomIn");
+//       $(this).parent().removeClass("collapse");
+//     });
+//   });
+// });
 
 // Parallax code
-$(document).ready(function () {
-  $("a.link").click(function () {
+$(function () {
+  $("a.link").on("click", function () {
     setPosition($(this).attr("href"));
     $("a.link").removeClass("selected");
     $(this).addClass("selected");
@@ -181,24 +171,24 @@ $(document).ready(function () {
 
 function setPosition(check) {
   var dWidth = $(window).width() / 3;
-  if (check === "#box1") {
+  if (check === "#home") {
     $("#wrapper").animate({ scrollLeft: 0 });
     $("#parallax-bg").animate({ right: "0px" }, 450);
     //$('#main-bg').addClass("main-slide");
-  } else if (check === "#box2") {
+  } else if (check === "#about") {
     $("#wrapper").animate({ scrollLeft: dWidth * 3 });
     $("#parallax-bg").animate({ right: "200px" }, 450);
-  } else if (check === "#box3") {
+  } else if (check === "#portfolio") {
     $("#wrapper").animate({ scrollLeft: dWidth * 6 });
     $("#parallax-bg").animate({ right: "400px" }, 450);
-  } else {
+  } else if (check === "#social") {
     $("#wrapper").animate({ scrollLeft: dWidth * 9 });
     $("#parallax-bg").animate({ right: "600px" }, 450);
   }
 }
 
 // Blog Button
-$(document).ready(function () {
+$(function () {
   $(".line-1").hide().first().show();
   setTimeout(function () {
     nextPhrase();
