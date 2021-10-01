@@ -11,7 +11,7 @@ export default {
   name: "App",
   mounted() {
     this.$nextTick(function () {
-      // Stupid hacky fix for piece of crap Chromium *barf*
+      // Stupid hacky fix for Chromium
       document.getElementById("app").style = "overflow-anchor: none";
     });
   },
