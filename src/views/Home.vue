@@ -57,11 +57,11 @@
 </template>
 
 <script>
-import Welcome from "../components/Welcome.vue";
-import Header from "../components/Header.vue";
-import Background from "../components/Background.vue";
-import About from "../components/About.vue";
-import Admin from "../components/login/Admin.vue";
+import Welcome from "../components/Welcome";
+import Header from "../components/Header";
+import Background from "../components/Background";
+import About from "../components/About";
+import Admin from "../components/admin/Admin";
 
 export default {
   name: "Home",

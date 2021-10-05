@@ -1,3 +1,6 @@
+/*
+  Server Configuration v1.0 with MongoDB, ExpressJS
+*/
 require("dotenv").config();
 const express = require("express");
 const PORT = process.env.PORT || 4000;
@@ -6,14 +9,12 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const config = require("./config/db");
 const app = express();
-const path = require("path");
-require("dotenv").config({ path: path.resolve(__dirname, "./.env") });
 
 //configure database and mongoose
 mongoose
   .connect(config.database, {
     useNewUrlParser: true,
-    user: process.env.DB_USER,
+    user: config.user,
     pass: config.secret,
   })
   .then(() => {
@@ -31,10 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // To parse the incoming requests with JSON payloads
 //configure body-parser ends here
 app.use(morgan("dev")); // configire morgan
-// define first route
-// app.get("/", (req, res) => {
-//   console.log("Hello MEVN Soldier");
-// });
+
 const userRoutes = require("./api/user/route/user"); // bring in our user routes
 app.use("/user", userRoutes);
 app.listen(PORT, () => {

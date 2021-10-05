@@ -7,8 +7,14 @@
 </style>
 
 <script>
+import { provide } from "vue";
+import store from "./store";
+
 export default {
   name: "App",
+  setup() {
+    provide("store", store);
+  },
   mounted() {
     this.$nextTick(function () {
       // Stupid hacky fix for Chromium

@@ -1,5 +1,6 @@
 const User = require("../model/User");
 
+// Register a new user
 exports.registerNewUser = async (req, res) => {
   try {
     let isUser = await User.find({ email: req.body.email });
@@ -21,6 +22,8 @@ exports.registerNewUser = async (req, res) => {
     res.status(400).json({ err: err });
   }
 };
+
+// User login
 exports.loginUser = async (req, res) => {
   try {
     const email = req.body.email;
@@ -37,6 +40,8 @@ exports.loginUser = async (req, res) => {
     res.status(400).json({ err: err });
   }
 };
+
+// User details
 exports.getUserDetails = async (req, res) => {
   await res.json(req.userData);
 };
