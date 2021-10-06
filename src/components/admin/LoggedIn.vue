@@ -1,9 +1,10 @@
 <template>
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item">
-      <a href="#" class="nav-link active" aria-current="page">
+      <!-- Give element active class onclick -->
+      <a href="#" class="nav-link text-white" aria-current="page">
         <svg class="bi me-2" width="16" height="16">
-          <use xlink:href="#dashboard" />
+         <font-awesome-icon :icon="['fas', 'clipboard-list']" />
         </svg>
         Dashboard
       </a>
@@ -11,7 +12,7 @@
     <li>
       <a href="#" class="nav-link text-white">
         <svg class="bi me-2" width="16" height="16">
-          <use xlink:href="#blog" />
+          <font-awesome-icon :icon="['fa', 'atlas']" />
         </svg>
         Blog
       </a>
@@ -19,7 +20,7 @@
     <li>
       <a href="#" class="nav-link text-white">
         <svg class="bi me-2" width="16" height="16">
-          <use xlink:href="#gallery" />
+          <font-awesome-icon :icon="['fas', 'images']" />
         </svg>
         Gallery
       </a>
@@ -27,7 +28,7 @@
     <li>
       <a href="#" class="nav-link text-white">
         <svg class="bi me-2" width="16" height="16">
-          <use xlink:href="#livestream" />
+          <font-awesome-icon :icon="['fas', 'satellite']" />
         </svg>
         Livestream
       </a>

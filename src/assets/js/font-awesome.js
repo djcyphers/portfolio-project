@@ -13,6 +13,9 @@ import { faFacebookSquare } from "@fortawesome/free-brands-svg-icons";
 import { faInstagramSquare } from "@fortawesome/free-brands-svg-icons";
 import { faTwitterSquare } from "@fortawesome/free-brands-svg-icons";
 import { faBehanceSquare } from "@fortawesome/free-brands-svg-icons";
+import { faImages } from "@fortawesome/free-solid-svg-icons";
+import { faClipboardList } from "@fortawesome/free-solid-svg-icons";
+import { faSatellite } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faAtlas);
 library.add(faGithubSquare);
@@ -25,5 +28,8 @@ library.add(faUser);
 library.add(faHeart);
 library.add(faHome);
 library.add(faMusic);
+library.add(faImages);
+library.add(faClipboardList);
+library.add(faSatellite);
 
 export default FontAwesomeIcon;
