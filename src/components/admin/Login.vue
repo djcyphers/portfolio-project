@@ -23,7 +23,11 @@
       required
     />
     <!-- Sign in button -->
-    <button class="btn btn-primary btn-block w-75 my-3" type="submit">
+    <button
+      class="btn btn-primary btn-block w-75 my-3"
+      @click="logUserStatus"
+      type="submit"
+    >
       Sign in
     </button>
 
@@ -49,13 +53,25 @@ export default {
         return store.methods.register;
       },
     });
+    const logUserStatus = computed({
+      get() {
+        return store.methods.logIn;
+      },
+      set() {
+        if (this.data.success === true) {
+          return store.methods.logIn;
+        }
+      },
+    });
     return {
       store,
       registerUser,
+      logUserStatus,
     };
   },
   data() {
     return {
+      success: false,
       login: {
         email: "",
         password: "",
@@ -69,11 +85,13 @@ export default {
         let token = response.data.token;
         localStorage.setItem("jwt", token);
         if (token) {
-          swal("Success", "Login Successful", "Error");
+          swal("Success", "Login Successful", "success");
+          this.data.success = true;
           this.$router.push("/");
         }
       } catch (err) {
         swal("Error", "Something Went Wrong", "error");
+        this.data.success = false;
         console.log(err.response);
       }
     },

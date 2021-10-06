@@ -33,7 +33,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-//this function generates an auth token for the user
+// this function generates an auth token for the user
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = jwt.sign(

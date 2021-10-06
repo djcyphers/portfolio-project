@@ -1,5 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
+require("dotenv").config(); // Pass address data
+
 module.exports = {
   configureWebpack: {
     plugins: [
@@ -19,5 +21,12 @@ module.exports = {
   },
   chainWebpack: (config) => {
     config.module.rules.delete("eslint");
+  },
+  devServer: {
+    proxy: {
+      "^/user": {
+        target: "http://localhost:4000",
+      },
+    },
   },
 };

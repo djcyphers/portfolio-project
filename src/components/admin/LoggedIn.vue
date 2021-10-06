@@ -64,13 +64,45 @@
       <li><a class="dropdown-item" href="#">Profile</a></li>
       <li><a class="dropdown-item" href="#">Settings</a></li>
       <li><hr class="dropdown-divider" /></li>
-      <li><a class="dropdown-item" href="#">Sign out</a></li>
+      <li>
+        <a
+          class="dropdown-item"
+          href="#"
+          @click="
+            logoutUser();
+            removeAuth();
+          "
+          >Sign Out</a
+        >
+      </li>
     </ul>
   </div>
 </template>
 
 <script>
+import { inject, computed } from "vue";
+import swal from "sweetalert";
 export default {
   name: "LoggedIn",
+  setup() {
+    const store = inject("store");
+    const logoutUser = computed({
+      get() {
+        return store.methods.logOut;
+      },
+      set() {
+        return store.methods.logOut;
+      },
+    });
+    return {
+      logoutUser,
+    };
+  },
+  methods: {
+    removeAuth() {
+      localStorage.removeItem("jwt");
+      swal("Success", "You are now logged out!", "success");
+    },
+  },
 };
 </script>

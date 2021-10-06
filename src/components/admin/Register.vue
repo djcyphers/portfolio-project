@@ -72,7 +72,7 @@ export default {
   methods: {
     async registerUser() {
       try {
-        let response = await this.$http.post("/user/register", this.register);
+        let response = await this.axios.post("/user/register", this.register);
         console.log(response);
         let token = response.data.token;
         if (token) {
@@ -80,7 +80,7 @@ export default {
           this.$router.push("/");
           swal("Success", "Registration Was successful", "success");
         } else {
-          swal("Error", "Something Went Wrong", "Error");
+          swal("Error", "Something Went Wrong", "error");
         }
       } catch (err) {
         let error = err.response;
