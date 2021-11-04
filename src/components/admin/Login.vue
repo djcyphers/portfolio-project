@@ -1,4 +1,5 @@
 <template>
+  <span class="fs-4 text-center">Account Login</span>
   <form
     class="text-center"
     style="margin-top: 10px; height: auto"
@@ -29,6 +30,7 @@
     </button>
     <!-- Register button -->
     <template v-if="loginState.loginReset === true">
+      <div class="fs-6 text-center">Reset your password</div>
       <button
         class="btn btn-primary btn-block w-75 my-3"
         type="button"
@@ -87,6 +89,14 @@ export default {
         return store.methods.activateUser;
       },
     });
+    const resetPassword = computed({
+      get() {
+        return store.methods.resetPassword;
+      },
+      set() {
+        return store.methods.resetPassword;
+      },
+    });
     async function loginUser() {
       await axios
         .post("user/login", login.value)
@@ -100,25 +110,31 @@ export default {
         .catch(function (error) {
           if (error.response) {
             // Go to verify screen if user is not activated
-            if (loginState.value.count > 3) {
+            if (loginState.value.count > 1) {
               loginState.value.loginReset = true;
               loginState.value.count = 0;
-            } else {
+            } else if (loginState.value.count <= 1) {
               loginState.value.count++;
               loginState.value.loginReset = false;
             }
-            swal("Error", error.response.data.message, "error");
-            verifyUser.value();
-            // console.log(error.response.data);
+            if (error.response.data.id === "invalid") {
+              swal("Error", error.response.data.message, "error");
+              // console.log(error.response.data);
+            }
+            if (error.response.data.id === "verify") {
+              swal("Error", error.response.data.message, "error");
+              verifyUser.value();
+            }
           }
         });
     }
     // Async function for forget password method
     async function forgotPassword() {
       await axios
-        .patch("user/forgotPassword", login.value.email)
+        .patch("user/forgot", { email: login.value.email })
         .then((res) => {
           if (res.data.success) {
+            resetPassword.value();
             swal("Success", res.data.message, "success");
           }
         })
@@ -138,6 +154,7 @@ export default {
       accessToken,
       loginState,
       forgotPassword,
+      resetPassword,
     };
   },
 };

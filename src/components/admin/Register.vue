@@ -1,4 +1,5 @@
 <template>
+  <span class="fs-4 text-center">Account Registration</span>
   <form
     class="text-center"
     style="margin-top: 10px; height: auto"

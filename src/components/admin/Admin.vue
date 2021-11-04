@@ -35,6 +35,7 @@
     <Register v-else-if="store.state.register === true" />
     <Profile v-else-if="store.state.profile === true" />
     <VerifyEmail v-else-if="store.state.activateUser === true" />
+    <ResetPassword v-else-if="store.state.resetPassword === true" />
     <Login v-else />
   </div>
   <div
@@ -54,6 +55,7 @@ import Login from "./Login";
 import Register from "./Register";
 import Profile from "./Profile";
 import VerifyEmail from "./VerifyEmail";
+import ResetPassword from "./ResetPassword";
 //import axios from "axios";
 
 export default {
@@ -64,6 +66,7 @@ export default {
     Register,
     Profile,
     VerifyEmail,
+    ResetPassword,
   },
   setup() {
     const store = inject("store");

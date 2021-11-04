@@ -202,6 +202,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({
         error: true,
         message: "You must verify your email to activate your account",
+        id: "verify",
       });
     }
 
@@ -211,7 +212,8 @@ exports.login = async (req, res) => {
     if (!isValid) {
       return res.status(400).json({
         error: true,
-        message: "Invalid credentials",
+        message: "Invalid Credentials",
+        id: "invalid",
       });
     }
 
@@ -257,8 +259,7 @@ exports.forgotPassword = async (req, res) => {
     if (!user) {
       return res.send({
         success: true,
-        message:
-          "If that email address is in our database, we will send you an email to reset your password",
+        message: "If no cap then expect an email with a reset code.",
       });
     }
 
@@ -280,8 +281,7 @@ exports.forgotPassword = async (req, res) => {
 
     return res.send({
       success: true,
-      message:
-        "If that email address is in our database, we will send you an email to reset your password",
+      message: "If no cap then expect an email with a reset code",
     });
   } catch (error) {
     console.error("forgot-password-error", error);
@@ -315,7 +315,7 @@ exports.resetPassword = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         error: true,
-        message: "Passwords didn't match",
+        message: "Password Mismatch",
       });
     }
     const hash = await User.hashPassword(req.body.newPassword);
@@ -327,7 +327,7 @@ exports.resetPassword = async (req, res) => {
 
     return res.send({
       success: true,
-      message: "Password has been changed",
+      message: "Password Reset Successful",
     });
   } catch (error) {
     console.error("reset-password-error", error);

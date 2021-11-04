@@ -7,6 +7,7 @@ const state = reactive({
   dashboard: false,
   activateUser: false,
   accessToken: null,
+  resetPassword: false,
 });
 
 const methods = {
@@ -51,6 +52,13 @@ const methods = {
   },
   removeToken() {
     state.accessToken = null;
+  },
+  // Reset password methods
+  resetPassword() {
+    state.resetPassword = true;
+  },
+  resetPasswordExit() {
+    state.resetPassword = false;
   },
 };
 

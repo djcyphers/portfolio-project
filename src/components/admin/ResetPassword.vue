@@ -1,4 +1,5 @@
 <template>
+  <span class="fs-4 text-center">Reset Password</span>
   <form
     class="text-center"
     style="margin-top: 10px; height: auto"
@@ -9,7 +10,8 @@
       id="code"
       class="form-control mb-3"
       placeholder="Verify Code"
-      v-model="register.code"
+      autocomplete="off"
+      v-model="register.token"
       required
     />
 
@@ -32,12 +34,11 @@
         v-model="register.confirmPassword"
       />
     </p>
-    <p>
-      <!-- Reset password -->
-      <button class="btn btn-primary btn-block w-75 my-1" type="submit">
-        Reset Password
-      </button>
-    </p>
+    <!-- Reset password -->
+    <div class="fs-6 text-center">Enter new password and email code</div>
+    <button class="btn btn-primary btn-block w-75 my-1" type="submit">
+      Reset Password
+    </button>
   </form>
 </template>
 
@@ -50,16 +51,16 @@ export default {
   setup() {
     const store = inject("store");
     let register = ref({
-      code: "",
+      token: "",
       password: "",
       confirmPassword: "",
     });
     const resetSuccess = computed({
       get() {
-        return store.methods.reset;
+        return store.methods.resetPasswordExit;
       },
       set() {
-        return store.methods.reset;
+        return store.methods.resetPasswordExit;
       },
     });
     async function resetPassword() {
@@ -68,10 +69,18 @@ export default {
         return;
       }
       try {
-        await axios.patch("user/reset", {
-          code: register.value.code,
-          password: register.value.password,
-        });
+        await axios
+          .patch("user/reset", {
+            token: register.value.token,
+            newPassword: register.value.password,
+            confirmPassword: register.value.confirmPassword,
+          })
+          .then((res) => {
+            if (res.data.success) {
+              swal("Success", "Password Reset Successfully", "success");
+              resetSuccess.value();
+            }
+          });
       } catch (error) {
         swal("Error", error.response.data.message, "error");
         return;
