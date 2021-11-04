@@ -1,10 +1,17 @@
 <template>
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item">
-      <!-- Give element active class onclick -->
-      <a href="#" class="nav-link text-white" aria-current="page">
+      <!-- Give element active class onclick aria-current="page" -->
+      <a
+        href="#"
+        class="nav-link text-white"
+        @click="
+          getDashboard();
+          getSocialNav();
+        "
+      >
         <svg class="bi me-2" width="16" height="16">
-         <font-awesome-icon :icon="['fas', 'clipboard-list']" />
+          <font-awesome-icon :icon="['fas', 'clipboard-list']" />
         </svg>
         Dashboard
       </a>
@@ -61,8 +68,17 @@
       class="dropdown-menu dropdown-menu-dark text-small shadow"
       aria-labelledby="dropdownUser1"
     >
-      <li><a class="dropdown-item" href="#">New blog...</a></li>
-      <li><a class="dropdown-item" href="#">Profile</a></li>
+      <li>
+        <a
+          class="dropdown-item"
+          href="#"
+          @click="
+            selectProfile();
+            logoutUser();
+          "
+          >Profile</a
+        >
+      </li>
       <li><a class="dropdown-item" href="#">Settings</a></li>
       <li><hr class="dropdown-divider" /></li>
       <li>
@@ -70,8 +86,9 @@
           class="dropdown-item"
           href="#"
           @click="
-            logoutUser();
             removeAuth();
+            hideDashboard();
+            logoutUser();
           "
           >Sign Out</a
         >
@@ -83,6 +100,7 @@
 <script>
 import { inject, computed } from "vue";
 import swal from "sweetalert";
+import axios from "axios";
 export default {
   name: "LoggedIn",
   setup() {
@@ -95,15 +113,70 @@ export default {
         return store.methods.logOut;
       },
     });
+    const getDashboard = computed({
+      get() {
+        return store.methods.getDashboard;
+      },
+      set() {
+        return store.methods.getDashboard;
+      },
+    });
+    const hideDashboard = computed({
+      get() {
+        return store.methods.hideDashboard;
+      },
+      set() {
+        return store.methods.hideDashboard;
+      },
+    });
+    const selectProfile = computed({
+      get() {
+        return store.methods.getProfile;
+      },
+      set() {
+        return store.methods.getProfile;
+      },
+    });
+    const removeToken = computed({
+      get() {
+        return store.methods.removeToken;
+      },
+      set() {
+        return store.methods.removeToken;
+      },
+    });
+    // Clear access token from MongoDB via Axios call
+    async function removeAuth() {
+      axios
+        .get("/user/logout", {
+          headers: {
+            Authorization: `Bearer ${store.state.accessToken}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            removeToken.value;
+            swal("Success", response.data.message, "success");
+          }
+        })
+        .catch((error) => {
+          swal("Error", error.message, "error");
+          console.log(error);
+        });
+    }
+    function getSocialNav() {
+      document.querySelector("[data-menu='box4']").click();
+    }
     return {
       logoutUser,
+      selectProfile,
+      removeAuth,
+      getDashboard,
+      store,
+      getSocialNav,
+      hideDashboard,
+      removeToken,
     };
-  },
-  methods: {
-    removeAuth() {
-      localStorage.removeItem("jwt");
-      swal("Success", "You are now logged out!", "success");
-    },
   },
 };
 </script>

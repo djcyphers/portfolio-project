@@ -23,9 +23,11 @@ module.exports = {
     config.module.rules.delete("eslint");
   },
   devServer: {
+    port: 8080,
     proxy: {
-      "^/user": {
+      "/user": {
         target: "http://localhost:4000",
+        changeOrigin: true,
       },
     },
   },

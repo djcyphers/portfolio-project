@@ -9,7 +9,7 @@
       id="name"
       class="form-control mb-3"
       placeholder="Name"
-      v-model="register.name"
+      v-model="register.userName"
       required
     />
     <input
@@ -27,8 +27,30 @@
       id="password"
       class="form-control mb-3"
       placeholder="Password"
+      autocomplete="on"
       v-model="register.password"
     />
+    <p>
+      <input
+        type="password"
+        id="confirm-password"
+        class="form-control mb-3"
+        placeholder="Confirm"
+        autocomplete="on"
+        v-model="register.confirmPassword"
+      />
+    </p>
+    <p>
+      <input
+        type="text"
+        id="referral"
+        class="form-control mb-3"
+        placeholder="Refferal"
+        autocomplete="off"
+        v-model="register.refferer"
+      />
+    </p>
+
     <p>
       Already have an account? <a href="#" @click="resetLogin">click here</a>
 
@@ -41,11 +63,19 @@
 </template>
 
 <script>
-import { inject, computed } from "vue";
+import { ref, inject, computed } from "vue";
+import axios from "axios";
 import swal from "sweetalert";
 export default {
   setup() {
     const store = inject("store");
+    let register = ref({
+      userName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      referrer: "",
+    });
     const resetLogin = computed({
       get() {
         return store.methods.cancelRegister;
@@ -54,43 +84,59 @@ export default {
         return store.methods.cancelRegister;
       },
     });
-
+    const activateUser = computed({
+      get() {
+        return store.methods.activateUser;
+      },
+      set() {
+        return store.methods.activateUser;
+      },
+    });
+    async function registerUser() {
+      try {
+        let response = await axios.post("user/register", register.value);
+        if (response.data.success) {
+          // Trigger the activation email view
+          activateUser.value();
+          resetLogin.value();
+          swal("Success", "Registration Successful", "success");
+        } else if (response.data.error) {
+          swal("Error", response.data.message, "error");
+        }
+      } catch (error) {
+        // Catch error status 409 and response error message
+        swal("Error", error, "error");
+        // console.log(
+        //   "Logged: " +
+        //     store.state.logged +
+        //     " || " +
+        //     "Register: " +
+        //     store.state.register +
+        //     " || " +
+        //     "Profile: " +
+        //     store.state.profile +
+        //     " || " +
+        //     "Activate: " +
+        //     store.state.activateUser +
+        //     " || " +
+        //     "Reset: " +
+        //     store.state.dashboard +
+        //     " || " +
+        //     "Error: " +
+        //     error.response +
+        //     " || " +
+        //     "Post Value: " +
+        //     register.value.email
+        // );
+      }
+    }
     return {
       store,
+      registerUser,
       resetLogin,
+      activateUser,
+      register,
     };
-  },
-  data() {
-    return {
-      register: {
-        name: "",
-        email: "",
-        password: "",
-      },
-    };
-  },
-  methods: {
-    async registerUser() {
-      try {
-        let response = await this.axios.post("/user/register", this.register);
-        console.log(response);
-        let token = response.data.token;
-        if (token) {
-          localStorage.setItem("jwt", token);
-          this.$router.push("/");
-          swal("Success", "Registration Was successful", "success");
-        } else {
-          swal("Error", "Something Went Wrong", "error");
-        }
-      } catch (err) {
-        let error = err.response;
-        if (error.status == 409) {
-          swal("Error", error.data.message, "error");
-        } else {
-          swal("Error", error.data.err.message, "error");
-        }
-      }
-    },
   },
 };
 </script>

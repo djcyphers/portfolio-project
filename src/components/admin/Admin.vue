@@ -10,7 +10,7 @@
       animate__animated
     "
     id="admin-panel"
-    style="width: 180px"
+    style="width: 180px; z-index: 5"
   >
     <a
       href="#"
@@ -31,15 +31,11 @@
     </a>
     <hr />
     <!-- Check if logged in else provide login element instead -->
-    <div class="loggedin" v-if="store.state.logged === true">
-      <LoggedIn></LoggedIn>
-    </div>
-    <div class="register-user" v-else-if="store.state.register === true">
-      <Register></Register>
-    </div>
-    <div class="loggedout" v-else>
-      <Login></Login>
-    </div>
+    <LoggedIn v-if="store.state.logged === true" />
+    <Register v-else-if="store.state.register === true" />
+    <Profile v-else-if="store.state.profile === true" />
+    <VerifyEmail v-else-if="store.state.activateUser === true" />
+    <Login v-else />
   </div>
   <div
     class="avatar-login animate__animated"
@@ -56,6 +52,8 @@ import { inject, computed } from "vue";
 import LoggedIn from "./LoggedIn";
 import Login from "./Login";
 import Register from "./Register";
+import Profile from "./Profile";
+import VerifyEmail from "./VerifyEmail";
 //import axios from "axios";
 
 export default {
@@ -64,6 +62,8 @@ export default {
     LoggedIn,
     Login,
     Register,
+    Profile,
+    VerifyEmail,
   },
   setup() {
     const store = inject("store");
@@ -75,18 +75,7 @@ export default {
         return store.methods.cancelRegister;
       },
     });
-    return {
-      store,
-      resetLogin,
-    };
-  },
-  data() {
-    return {
-      avatar,
-    };
-  },
-  methods: {
-    openPanel: () => {
+    function openPanel() {
       const adminPanel = document.getElementById("admin-panel");
       const avatarLogin = document.getElementById("avatar-login");
       adminPanel.classList.remove("d-none");
@@ -94,15 +83,22 @@ export default {
       avatarLogin.classList.remove("animate__backInRight");
       adminPanel.classList.add("animate__backInRight");
       avatarLogin.classList.add("animate__backOutRight");
-    },
-    closePanel: () => {
+    }
+    function closePanel() {
       const adminPanel = document.getElementById("admin-panel");
       const avatarLogin = document.getElementById("avatar-login");
       adminPanel.classList.remove("animate__backInRight");
       avatarLogin.classList.remove("animate__backOutRight");
       adminPanel.classList.add("animate__backOutRight");
       avatarLogin.classList.add("animate__backInRight");
-    },
+    }
+    return {
+      store,
+      resetLogin,
+      avatar,
+      openPanel,
+      closePanel,
+    };
   },
 };
 </script>

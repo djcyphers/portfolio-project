@@ -41,11 +41,7 @@
       <li id="box4" class="box">
         <a name="box4"></a>
         <div class="content4 scroller">
-          <div class="content row">
-            <div class="col-lg-12">
-              <!-- <iframe src="http://www.ustream.tv/embed/10054617" width="608" height="368" scrolling="no" frameborder="0" style="border: 0px none transparent;"></iframe><br /> -->
-            </div>
-          </div>
+          <Dashboard v-if="store.state.dashboard === true" />
         </div>
       </li>
       <!-- end box4 -->
@@ -62,9 +58,17 @@ import Header from "../components/Header";
 import Background from "../components/Background";
 import About from "../components/About";
 import Admin from "../components/admin/Admin";
+import Dashboard from "../components/dashboard/Dashboard";
+import { inject } from "vue";
 
 export default {
   name: "Home",
-  components: { Welcome, Header, Background, About, Admin },
+  components: { Welcome, Header, Background, About, Admin, Dashboard },
+  setup() {
+    const store = inject("store");
+    return {
+      store,
+    };
+  },
 };
 </script>

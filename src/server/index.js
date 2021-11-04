@@ -28,10 +28,20 @@ mongoose
 //registering cors
 app.use(cors());
 //configure body parser
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // To parse the incoming requests with JSON payloads
+app.use(express.urlencoded({ extended: false }));
 //configure body-parser ends here
 app.use(morgan("dev")); // configire morgan
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Expose-Headers");
+  next();
+});
 
 const userRoutes = require("./api/user/route/user"); // bring in our user routes
 app.use("/user", userRoutes);
