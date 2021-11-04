@@ -8,6 +8,7 @@
         @click="
           getDashboard();
           getSocialNav();
+          toggleNavItem($event);
         "
       >
         <svg class="bi me-2" width="16" height="16">
@@ -17,7 +18,7 @@
       </a>
     </li>
     <li>
-      <a href="#" class="nav-link text-white">
+      <a href="#" class="nav-link text-white" @click="toggleNavItem($event)">
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fa', 'atlas']" />
         </svg>
@@ -25,7 +26,7 @@
       </a>
     </li>
     <li>
-      <a href="#" class="nav-link text-white">
+      <a href="#" class="nav-link text-white" @click="toggleNavItem($event)">
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fas', 'images']" />
         </svg>
@@ -33,7 +34,7 @@
       </a>
     </li>
     <li>
-      <a href="#" class="nav-link text-white">
+      <a href="#" class="nav-link text-white" @click="toggleNavItem($event)">
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fas', 'satellite']" />
         </svg>
@@ -164,8 +165,18 @@ export default {
           console.log(error);
         });
     }
+    // Move view over for better admin panel ux
     function getSocialNav() {
       document.querySelector("[data-menu='box4']").click();
+    }
+    // Toggle active nav link and remove class from other nav links
+    function toggleNavItem(event) {
+      const navItems = document.querySelectorAll(".nav-link");
+      navItems.forEach((item) => {
+        item.classList.remove("active");
+      });
+      // Add active class to clicked nav link
+      event.target.classList.add("active");
     }
     return {
       logoutUser,
@@ -176,6 +187,7 @@ export default {
       getSocialNav,
       hideDashboard,
       removeToken,
+      toggleNavItem,
     };
   },
 };
