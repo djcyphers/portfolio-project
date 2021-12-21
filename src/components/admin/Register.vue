@@ -107,28 +107,6 @@ export default {
       } catch (error) {
         // Catch error status 409 and response error message
         swal("Error", error, "error");
-        // console.log(
-        //   "Logged: " +
-        //     store.state.logged +
-        //     " || " +
-        //     "Register: " +
-        //     store.state.register +
-        //     " || " +
-        //     "Profile: " +
-        //     store.state.profile +
-        //     " || " +
-        //     "Activate: " +
-        //     store.state.activateUser +
-        //     " || " +
-        //     "Reset: " +
-        //     store.state.dashboard +
-        //     " || " +
-        //     "Error: " +
-        //     error.response +
-        //     " || " +
-        //     "Post Value: " +
-        //     register.value.email
-        // );
       }
     }
     return {

@@ -29,10 +29,10 @@ const userSchema = new Schema(
   }
 );
 
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model("User", userSchema);
 module.exports = User;
 
-module.exports.hashPassword = async (password) => {
+User.hashPassword = async (password) => {
   try {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
@@ -41,10 +41,11 @@ module.exports.hashPassword = async (password) => {
   }
 };
 
-module.exports.comparePasswords = async (inputPassword, hashedPassword) => {
+User.comparePassword = async (inputPassword, hashedPassword) => {
   try {
     return await bcrypt.compare(inputPassword, hashedPassword);
   } catch (error) {
+    console.log(error);
     throw new Error("Comparison failed", error);
   }
 };

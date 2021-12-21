@@ -8,6 +8,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const config = require("./config/db");
+const path = require("path");
 const app = express();
 
 //configure database and mongoose
@@ -43,8 +44,15 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use(express.static(path.join(__dirname, "/../../public")));
+
 const userRoutes = require("./api/user/route/user"); // bring in our user routes
 app.use("/user", userRoutes);
+
+// Galler routes
+const galleryRoutes = require("./api/user/route/gallery");
+app.use("/gallery", galleryRoutes);
+
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`);
 });

@@ -33,7 +33,10 @@
 
       <li id="box3" class="box">
         <a name="box3"></a>
-
+        <Gallery
+          v-if="store.state.viewGallery === true"
+          Class="content3 scroller"
+        />
         <!-- <div class="content3 scroller">@include('album.albumview')</div> -->
       </li>
       <!-- end box3 -->
@@ -59,11 +62,12 @@ import Background from "../components/Background";
 import About from "../components/About";
 import Admin from "../components/admin/Admin";
 import Dashboard from "../components/dashboard/Dashboard";
+import Gallery from "../components/gallery/Gallery";
 import { inject } from "vue";
 
 export default {
   name: "Home",
-  components: { Welcome, Header, Background, About, Admin, Dashboard },
+  components: { Welcome, Header, Background, About, Admin, Dashboard, Gallery },
   setup() {
     const store = inject("store");
     return {

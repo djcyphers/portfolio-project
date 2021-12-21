@@ -29,6 +29,10 @@ module.exports = {
         target: "http://localhost:4000",
         changeOrigin: true,
       },
+      "/gallery": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+      },
     },
   },
 };

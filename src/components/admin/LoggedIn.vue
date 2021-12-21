@@ -26,7 +26,14 @@
       </a>
     </li>
     <li>
-      <a href="#" class="nav-link text-white" @click="toggleNavItem($event)">
+      <a
+        href="#"
+        class="nav-link text-white"
+        @click="
+          toggleNavItem($event);
+          viewGallery();
+        "
+      >
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fas', 'images']" />
         </svg>
@@ -146,6 +153,15 @@ export default {
         return store.methods.removeToken;
       },
     });
+    // View Gallery
+    const viewGalleryStore = computed({
+      get() {
+        return store.methods.viewGallery;
+      },
+      set() {
+        return store.methods.viewGallery;
+      },
+    });
     // Clear access token from MongoDB via Axios call
     async function removeAuth() {
       axios
@@ -178,6 +194,11 @@ export default {
       // Add active class to clicked nav link
       event.target.classList.add("active");
     }
+    // View Gallery
+    function viewGallery() {
+      viewGalleryStore.value();
+      document.querySelector("[data-menu='box3']").click();
+    }
     return {
       logoutUser,
       selectProfile,
@@ -188,7 +209,16 @@ export default {
       hideDashboard,
       removeToken,
       toggleNavItem,
+      viewGallery,
     };
   },
 };
 </script>
+
+<style lang="scss" scoped>
+// Small hack before CSS migration
+.dropdown-gallery:hover {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+</style>

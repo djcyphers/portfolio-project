@@ -207,7 +207,7 @@ exports.login = async (req, res) => {
     }
 
     //3. Verify the password is valid
-    const isValid = await User.comparePasswords(password, user.password);
+    const isValid = await User.comparePassword(password, user.password);
 
     if (!isValid) {
       return res.status(400).json({

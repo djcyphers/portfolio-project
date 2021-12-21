@@ -138,7 +138,7 @@ export default {
             swal("Success", res.data.message, "success");
           }
         })
-        .catch(function (error) {
+        .catch((error) => {
           if (error.response) {
             swal("Error", error.response.data.message, "error");
           }
