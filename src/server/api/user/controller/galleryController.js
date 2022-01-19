@@ -22,6 +22,15 @@ const gallerySchema = Joi.object().keys({
   galleryDescription: Joi.string().required(),
   galleryCoverArtUrl: Joi.string(),
 });
+
+// Validate Update Scheme with Joi
+const galleryUpdateSchema = Joi.object().keys({
+  galleryName: Joi.string().required().min(2),
+  galleryOldName: Joi.string(),
+  galleryDescription: Joi.string().required(),
+  galleryCoverArtUrl: Joi.string(),
+});
+
 // Validate item schema
 const itemSchema = Joi.object().keys({
   title: Joi.string().required().min(2),
@@ -148,129 +157,6 @@ exports.createGallery = async (req, res) => {
   }
 };
 
-// Edit Gallery
-exports.editGallery = async (req, res) => {
-  try {
-    const form = new formidable.IncomingForm();
-    // Only need one file for the gallery cover item
-    form.multiples = false;
-    // Parse form
-    form.parse(req, async (err, fields, files) => {
-      try {
-        if (err) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Failed to edit gallery!",
-          });
-        }
-        const { galleryName, galleryDescription } = fields;
-        if (!galleryName || !galleryDescription) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Please fill all the fields!",
-          });
-        }
-        if (!files) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Please upload a cover art!",
-          });
-        }
-        const result = gallerySchema.validate(fields);
-        if (result.error) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: result.error.message,
-          });
-        }
-        // Check if gallery already exists
-        const gallery = await Gallery.findOne({
-          galleryName: fields.galleryName,
-        });
-        if (!gallery) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Gallery does not exist!",
-          });
-        }
-        // Create a gallery folder if not exists
-        const formatName = fields.galleryName
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-        const galleryFolder = `${uploadUrl}/${formatName}`;
-        if (!fs.existsSync(galleryFolder)) {
-          fs.mkdirSync(galleryFolder);
-        }
-        // Check if only one file was uploaded from Formidable
-        if (files.length !== 1) {
-          // Save cover art file to storage
-          const file = files.files;
-          // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
-          const allowedMimeTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/svg+xml",
-            "image/webp",
-            "audio/mp3",
-            "video/mp4",
-          ];
-          if (allowedMimeTypes.includes(file.mimetype)) {
-            // Save image to storage
-            const date = new Date();
-            const originalFileName = file.originalname;
-            const fileExtension = path.extname(originalFileName);
-            const fileName = `${date.getTime()}--${originalFileName}${fileExtension}`;
-            const filepath = `${galleryFolder}/${date}-${fileName}`;
-            const rawData = fs.readFileSync(file.filepath);
-            fs.writeFileSync(filepath, rawData, (err) => {
-              if (err) {
-                return res.json({
-                  error: true,
-                  status: 400,
-                  message: "Failed to save file!",
-                });
-              }
-            });
-            // Add filepath to result value
-            req.body.galleryCoverArtUrl = filepath;
-          }
-        }
-        // Update gallery
-        await Gallery.findOneAndUpdate(
-          { galleryName: fields.galleryName },
-          { $set: fields },
-          { new: true }
-        );
-        // Return success
-        return res.json({
-          error: false,
-          status: 200,
-          message: "Gallery edited successfully!",
-        });
-      } catch (error) {
-        // Catch Formidable errors
-        return res.json({
-          error: true,
-          status: 400,
-          message: "Failed to edit gallery!",
-        });
-      }
-    });
-  } catch (error) {
-    return res.json({
-      error: true,
-      status: 500,
-      message: "Internal server error",
-    });
-  }
-};
-
 // Delete Gallery
 exports.deleteGallery = async (req, res) => {
   try {
@@ -375,8 +261,8 @@ exports.updateGallery = async (req, res) => {
             message: "Failed to edit gallery!",
           });
         }
-        const { galleryName, galleryDescription } = fields;
-        if (!galleryName || !galleryDescription) {
+        const { galleryOldName, galleryName, galleryDescription } = fields;
+        if (!galleryName || !galleryDescription || !galleryOldName) {
           return res.json({
             error: true,
             status: 400,
@@ -390,7 +276,16 @@ exports.updateGallery = async (req, res) => {
             message: "Please upload a cover art!",
           });
         }
-        const result = gallerySchema.validate(fields);
+
+        // Get gallery old filename for later deletion
+        const gallery = await Gallery.findOne({
+          galleryName: galleryOldName,
+        });
+        // Create a variable to use for later to delete file with fs.unlinkSync
+        const galleryOldFile = gallery.galleryCoverArtFileName;
+
+        // Validate data
+        const result = galleryUpdateSchema.validate(fields);
         if (result.error) {
           return res.json({
             error: true,
@@ -417,9 +312,9 @@ exports.updateGallery = async (req, res) => {
             .replace(/\s+/g, "-")
             .toLowerCase();
           const galleryFolder = `${uploadUrl}/${formatName}`;
-          const oldFormatName = fields.galleryOldName;
-          // If we change the gallery name, delete the old folder
-          if (formatName !== fields.galleryOldName) {
+          const oldFormatName = fields.galleryOldName.toLowerCase();
+          // If we change the gallery name,rename the old folder
+          if (formatName !== oldFormatName) {
             const oldGalleryFolder = `${uploadUrl}/${oldFormatName}`;
             if (fs.existsSync(oldGalleryFolder)) {
               // rename folder without deleting contents
@@ -428,42 +323,76 @@ exports.updateGallery = async (req, res) => {
           }
           // Save image to storage
           const date = new Date();
-          const originalFileName = file.originalname;
-          const fileExtension = path.extname(originalFileName);
-          const fileName = `${date.getTime()}--${originalFileName}${fileExtension}`;
-          const filepath = `${galleryFolder}/${date}-${fileName}`;
-          fs.writeFileSync(filepath, JSON.stringify(file));
+          const originalFileName = file.originalFilename;
+          const fileName = `${date.getTime()}-${originalFileName}`;
+          const filepath = `${galleryFolder}/${fileName}`;
+          const rawData = fs.readFileSync(file.filepath);
+          // Save file to storage
+          fs.writeFileSync(filepath, rawData, (err) => {
+            if (err) {
+              return res.json({
+                error: true,
+                status: 400,
+                message: "Failed to save file!",
+              });
+            }
+          });
           // Add filepath to result value
-          req.body.galleryCoverArtUrl = filepath;
+          fields.galleryCoverArtUrl = filepath;
+          fields.galleryCoverArtFileName = fileName;
         }
-        // Check if gallery already exists by name
-        const galleryByName = await Gallery.findOne({
-          galleryName: galleryName,
-        });
-        if (galleryByName) {
+        // Check for old file and delete it
+        if (galleryOldFile) {
+          // This is hacky but whatever it will always work
+          const validUrl = fields.galleryCoverArtUrl;
+          const deleteOldFile = validUrl.substring(
+            0,
+            validUrl.lastIndexOf("/") + 1
+          );
           // Detele the old cover art file
-          const fileDelete = galleryByName.galleryCoverArtUrl;
-          fs.unlinkSync(fileDelete);
-          // push new cover art file to gallery
-          await Gallery.findOneAndUpdate(
-            { galleryName: galleryName },
-            { galleryCoverArtUrl: req.body.galleryCoverArtUrl },
-            { $set: fields },
+          try {
+            fs.unlinkSync(`${deleteOldFile}${galleryOldFile}`);
+          } catch (error) {
+            console.log(error);
+            return res.json({
+              error: true,
+              status: 500,
+              message: "File Delete Error!",
+            });
+          }
+          // Get galleryName then update gallery
+          const gallery = await Gallery.findOneAndUpdate(
+            { galleryName: fields.galleryOldName },
+            {
+              $set: {
+                galleryName: fields.galleryName,
+                galleryCoverArtUrl: fields.galleryCoverArtUrl,
+                galleryCoverArtFileName: fields.galleryCoverArtFileName,
+              },
+            },
             { new: true }
           );
-          // Return success
-          return res.json({
-            error: false,
-            status: 200,
-            message: "Gallery edited successfully!",
-          });
+          if (!gallery) {
+            return res.json({
+              error: true,
+              status: 404,
+              message: "Gallery Not Found",
+            });
+          } else {
+            gallery.save();
+            return res.json({
+              error: false,
+              status: 200,
+              message: "Gallery Updated",
+            });
+          }
         }
       } catch (error) {
         // Catch Formidable errors
         return res.json({
           error: true,
           status: 400,
-          message: "Failed to edit gallery!",
+          message: "Failed to edit gallery! Formidable error.",
         });
       }
     });
@@ -480,8 +409,8 @@ exports.updateGallery = async (req, res) => {
 exports.addItemToGallery = async (req, res) => {
   try {
     const form = new formidable.IncomingForm();
-    // Only need one file for the gallery cover item
-    form.multiples = true;
+    // Only need one file for each gallery item
+    form.multiples = false;
     // Parse form
     form.parse(req, async (err, fields, files) => {
       try {
@@ -525,7 +454,11 @@ exports.addItemToGallery = async (req, res) => {
           .toLowerCase();
         const galleryFolder = `${uploadUrl}/${formatName}`;
         if (!fs.existsSync(galleryFolder)) {
-          fs.mkdirSync(galleryFolder);
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Gallery folder does not exist!",
+          });
         }
         // Check if only one file was uploaded from Formidable
         if (files) {
@@ -568,20 +501,13 @@ exports.addItemToGallery = async (req, res) => {
             file: req.body.file,
           });
           await item.save();
+        } else {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Gallery item already exists!",
+          });
         }
-        await Gallery.findOneAndUpdate(
-          { galleryName: fields.galleryName },
-          {
-            $push: {
-              galleryItem: {
-                title: fields.title,
-                description: fields.description,
-                file: req.body.file,
-              },
-            },
-          },
-          { new: true }
-        );
         // Return success
         return res.json({
           error: false,
@@ -592,7 +518,7 @@ exports.addItemToGallery = async (req, res) => {
         return res.json({
           error: true,
           status: 500,
-          message: "Internal server error",
+          message: "Formidable error.",
         });
       }
     });
@@ -600,7 +526,7 @@ exports.addItemToGallery = async (req, res) => {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error",
+      message: "Internal server error.",
     });
   }
 };

@@ -33,10 +33,7 @@
 
       <li id="box3" class="box">
         <a name="box3"></a>
-        <Gallery
-          v-if="store.state.viewGallery === true"
-          Class="content3 scroller"
-        />
+        <Gallery v-if="store.state.viewGallery" Class="content3 scroller" />
         <!-- <div class="content3 scroller">@include('album.albumview')</div> -->
       </li>
       <!-- end box3 -->
@@ -44,7 +41,7 @@
       <li id="box4" class="box">
         <a name="box4"></a>
         <div class="content4 scroller">
-          <Dashboard v-if="store.state.dashboard === true" />
+          <Dashboard v-if="store.state.dashboard" />
         </div>
       </li>
       <!-- end box4 -->
@@ -63,15 +60,28 @@ import About from "../components/About";
 import Admin from "../components/admin/Admin";
 import Dashboard from "../components/dashboard/Dashboard";
 import Gallery from "../components/gallery/Gallery";
-import { inject } from "vue";
+import { inject, onMounted, computed } from "vue";
 
 export default {
   name: "Home",
   components: { Welcome, Header, Background, About, Admin, Dashboard, Gallery },
   setup() {
     const store = inject("store");
+    // View Gallery
+    const viewGalleries = computed({
+      get() {
+        return store.methods.viewGallery;
+      },
+      set() {
+        return store.methods.viewGallery;
+      },
+    });
+    onMounted(async () => {
+      viewGalleries.value();
+    });
     return {
       store,
+      viewGalleries,
     };
   },
 };

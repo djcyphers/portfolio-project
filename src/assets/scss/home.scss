@@ -1190,3 +1190,26 @@ h1 { font-family: Verdana, Geneva, sans-serif; font-size: 23px; font-style: norm
 .nav-link {
   position: relative;
 }
+
+/* ===================================================================
+ * # Gallery (customized)
+ *
+ * ------------------------------------------------------------------- */
+ .card-text {
+   font-size: 1.4vw !important;
+ }
+
+ .card-title {
+    font-size: 1.8vw !important;
+  }
+
+  .gallery-edit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    padding: 0.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+  }
