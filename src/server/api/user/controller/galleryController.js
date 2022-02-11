@@ -405,6 +405,34 @@ exports.updateGallery = async (req, res) => {
   }
 };
 
+// Get all gallery items from gallery
+exports.getGalleryItems = async (req, res) => {
+  try {
+    const { galleryName } = req.params.name;
+    const gallery = await Gallery.findOne({ galleryName });
+    if (!gallery) {
+      return res.json({
+        error: true,
+        status: 404,
+        message: "Gallery Not Found!",
+      });
+    } else {
+      return res.json({
+        error: false,
+        status: 200,
+        message: "Gallery Items Found!",
+        gallery: gallery.galleryItems,
+      });
+    }
+  } catch (error) {
+    return res.json({
+      error: true,
+      status: 500,
+      message: "Internal server error",
+    });
+  }
+};
+
 // Add item to gallery
 exports.addItemToGallery = async (req, res) => {
   try {
@@ -448,7 +476,7 @@ exports.addItemToGallery = async (req, res) => {
             message: "Gallery does not exist!",
           });
         }
-        // Create a gallery folder if not exists although this should be impossible
+        // Check if the folder exists just in case
         const formatName = fields.galleryName
           .replace(/\s+/g, "-")
           .toLowerCase();
@@ -460,9 +488,16 @@ exports.addItemToGallery = async (req, res) => {
             message: "Gallery folder does not exist!",
           });
         }
+
         // Check if only one file was uploaded from Formidable
-        if (files) {
-          // Save cover art file to storage
+        if (!files) {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Please upload a file!",
+          });
+        } else {
+          // Save gallery item file to storage
           const file = files;
           // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
           const allowedMimeTypes = [
@@ -481,32 +516,48 @@ exports.addItemToGallery = async (req, res) => {
             const fileExtension = path.extname(originalFileName);
             const fileName = `${date.getTime()}--${originalFileName}${fileExtension}`;
             const filepath = `${galleryFolder}/${date}-${fileName}`;
-            fs.writeFileSync(filepath, file.buffer);
+            const rawData = fs.readFileSync(file.filepath);
+            fs.writeFileSync(filepath, rawData, (err) => {
+              if (err) {
+                return res.json({
+                  error: true,
+                  status: 400,
+                  message: "Failed to save file!",
+                });
+              }
+            });
             // Add filepath to result value
-            req.body.file = filepath;
+            fields.galleryItemUrl = filepath;
+            // Add fileName to result value
+            fields.galleryItemFileName = fileName;
           }
         }
-        // Check if gallery item exists
-        const galleryItem = await GalleryItem.findOne({
-          title: fields.title,
-        });
-        // Add item to gallery
-        if (!galleryItem) {
-          const item = new GalleryItem({
-            gallery: {
-              name: fields.galleryName,
-            },
-            title: fields.title,
-            description: fields.description,
-            file: req.body.file,
-          });
-          await item.save();
-        } else {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Gallery item already exists!",
-          });
+        // Check if gallery item exists, if not create it
+        const checkItems = gallery.galleryItems;
+        // Loop through items and check if item already exists
+        for (let i = 0; i < checkItems.length; i++) {
+          if (checkItems[i].galleryItem.title === fields.title) {
+            return res.json({
+              error: true,
+              status: 400,
+              message: "Gallery item already exists!",
+            });
+          } else {
+            // Add item to gallery if no duplicate item exists
+            const item = new GalleryItem({
+              title: fields.title,
+              description: fields.description,
+              galleryItemUrl: fields.galleryItemUrl,
+              galleryItemFileName: fields.galleryItemFileName,
+              gallery: {
+                name: fields.galleryName,
+              },
+            });
+            await item.save();
+            await gallery.galleryItems.push(item);
+            await gallery.save();
+          }
+          // push gallery item to gallery
         }
         // Return success
         return res.json({
@@ -518,7 +569,7 @@ exports.addItemToGallery = async (req, res) => {
         return res.json({
           error: true,
           status: 500,
-          message: "Formidable error.",
+          message: "Formidable error!",
         });
       }
     });
@@ -526,7 +577,7 @@ exports.addItemToGallery = async (req, res) => {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error.",
+      message: "Internal server error!",
     });
   }
 };

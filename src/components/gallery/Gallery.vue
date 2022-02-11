@@ -2,20 +2,39 @@
   <div class="gallery-wrapper">
     <div class="gallery-view container" v-if="isGalleryOpen">
       <div class="row">
-        <!-- Bootstrap responsive card with onclick handler -->
+        <!-- Bootstrap responsive card (create gallery) -->
         <div
-          v-if="isLoggedIn"
+          v-if="isLoggedIn && isNewGalleryButtonVisible"
           class="responsive-box col-md-6 col-lg-3 p-1"
           role="button"
           @click="initNewGallery"
         >
+          <!-- Create New Gallery -->
           <div
             class="card create-gallery bg-dark text-white"
-            style="height: 500px; width: 500px"
+            style="height: 255px"
           >
             <div class="card-body">
               <h4 class="card-title">Create a New Gallery</h4>
               <p class="card-text">Click here to begin!</p>
+            </div>
+          </div>
+        </div>
+        <!-- Bootstrap responsive card (add item to gallery) -->
+        <div
+          v-if="isLoggedIn && addGalleryItemView"
+          class="responsive-box col-md-6 col-lg-3 p-1"
+          role="button"
+          @click="initNewGalleryItem"
+        >
+          <!-- Create New Item -->
+          <div
+            class="card create-gallery bg-dark text-white"
+            style="height: 255px"
+          >
+            <div class="card-body">
+              <h4 class="card-title">Create a New Gallery Item</h4>
+              <p class="card-text">Click Here!</p>
             </div>
           </div>
         </div>
@@ -32,6 +51,7 @@
             "
             v-for="(gallery, index) in galleries"
             :key="index"
+            @click="expandGallery(gallery)"
           >
             <img
               class="card-img img-thumbnail"
@@ -60,6 +80,40 @@
         </template>
       </div>
     </div>
+    <!-- Gallery Item View (for item in gallery) -->
+    <template v-if="isGalleryItemViewOpen">
+      <div class="gallery-item-view container">
+        <div class="row">
+          <div
+            class="col-md-6 col-lg-3 gallery-item card text-black p-1"
+            v-for="(galleryItem, index) in gallery.galleryItems"
+            :key="index"
+          >
+            <img
+              class="card-img img-thumbnail"
+              :src="galleryItem.galleryItemUrl"
+              :alt="galleryItem.title"
+            />
+            <div class="card-img-overlay">
+              <div class="gallery-item card-title">
+                <h3>{{ galleryItem.title }}</h3>
+              </div>
+              <div class="gallery-item-description card-text">
+                <p>{{ galleryItem.description }}</p>
+              </div>
+            </div>
+            <div class="gallery-edit">
+              <button
+                class="btn btn-primary"
+                @click="editGalleryItem(galleryItem.title)"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
     <!-- Create new gallery multiplart form -->
     <div
       class="gallery__new card bg-dark text-white p-4"
@@ -128,6 +182,41 @@
         </button>
       </form>
     </div>
+    <!-- Create new gallery item multiplart form -->
+    <div
+      class="galleryitem__new card bg-dark text-white p-4"
+      style="height: 60%; width: 60%"
+      v-if="addGalleryItemView"
+    >
+      <form
+        enctype="multipart/form-data"
+        @submit.prevent="createNewGalleryItem"
+      >
+        <div class="form-group">
+          <label for="galleryName">Gallery Item Title</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            v-model="newGalleryItem.title"
+          />
+        </div>
+        <div class="form-group">
+          <label for="galleryDescription">Gallery Item Description</label>
+          <input
+            type="text"
+            class="form-control"
+            id="galleryDescription"
+            v-model="newGalleryItem.description"
+          />
+        </div>
+        <div class="form-group">
+          <label for="galleryCoverArtUrl">Upload File</label>
+          <input type="file" id="file" @change="uploadFile($event)" multiple />
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -135,6 +224,11 @@
 import { ref, onMounted, computed, inject } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
+// Bootstrap 5 gLightBox
+import "glightbox/dist/css/glightbox.css";
+import "glightbox/dist/js/glightbox.js";
+import GLightbox from "glightbox";
+
 export default {
   name: "Gallery",
   setup() {
@@ -144,21 +238,25 @@ export default {
     const isGalleryOpen = computed(() => store.state.viewGallery);
     // Reactive local states
     const isGalleryViewOpen = ref(true);
+    const isGalleryItemViewOpen = ref(false);
     const gallery = ref([]);
     const galleries = ref([]);
+    const galleryItems = ref([]);
     const galleryId = ref("");
     const files = ref({ files: [] });
     const createNewGalleryView = ref(false);
+    const isNewGalleryButtonVisible = ref(false);
+    const addGalleryItemView = ref(false);
     const editGalleryInit = ref(false);
     const editGalleryView = ref(false);
-    const editGalleryForm = ref({
-      galleryName: "",
-      galleryDescription: "",
-    });
-    const newGallery = ref({
-      galleryName: "",
-      galleryDescription: "",
-    });
+    const editGalleryForm = ref({ galleryName: "", galleryDescription: "" });
+    const newGallery = ref({ galleryName: "", galleryDescription: "" });
+    const newGalleryItem = ref({ title: "", description: "" });
+    // lightbox
+    const lightbox = ref();
+
+    // Setters and Getters
+    //
     // View Gallery
     const viewGalleries = computed({
       get() {
@@ -168,6 +266,7 @@ export default {
         return store.methods.viewGallery;
       },
     });
+
     // Exit Gallery
     const exitGalleries = computed({
       get() {
@@ -177,6 +276,9 @@ export default {
         return store.methods.exitGallery;
       },
     });
+
+    // Main()
+    //
     // Try and get the cover art image from the assets folder
     function coverArtImg(gallery) {
       let name = gallery.galleryName.toLowerCase();
@@ -186,8 +288,22 @@ export default {
       });
       return require(`../../assets/galleries/` + `${name}/${img.value}`);
     }
+
     // Get all galleries from db
     onMounted(async () => {
+      // Init gallery button to true
+      isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
+      //lightbox settings
+      lightbox.value = GLightbox({
+        selector: ".glightbox",
+        touchNavigation: true,
+        loop: true,
+        closeButton: true,
+        autoplayVideos: true,
+        autoplayVideosUntilClose: true,
+        closeOnSlideClick: true,
+      });
+      // Get all galleries from db
       await axios
         .get("gallery/all")
         .then((response) => {
@@ -204,6 +320,7 @@ export default {
           swal("Error", error, "error");
         });
     });
+
     // Create new gallery
     async function createNewGallery() {
       let fData = new FormData();
@@ -232,6 +349,37 @@ export default {
           swal("Error", error.response.data, "error");
         });
     }
+
+    // Create new gallery item
+    async function createNewGalleryItem() {
+      let fData = new FormData();
+      fData.append("galleryId", galleryId.value);
+      fData.append("title", newGalleryItem.value.title);
+      fData.append("description", newGalleryItem.value.description);
+      fData.append("files", files.value.files[0]);
+      await axios
+        .post("gallery/item/create/" + galleryId.value, fData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            swal("Success", "Gallery item created!", "success");
+            // Return to view galleries
+            returnToViewGalleries();
+            // Add new gallery to galleries
+            galleryItems.value.push(response.data.galleryItem);
+          }
+        })
+        .catch((error) => {
+          console.log("CG ERROR! => " + fData);
+          swal("Error", error.response.data, "error");
+        });
+    }
+
     // Upload file
     async function uploadFile(event) {
       files.value.files = event.target.files;
@@ -245,8 +393,16 @@ export default {
 
     // Initiate new gallery creation
     function initNewGallery() {
-      exitGalleries.value();
+      isGalleryViewOpen.value = false;
+      isNewGalleryButtonVisible.value = false;
       createNewGalleryView.value = true;
+    }
+
+    // Initiate new gallery item creation
+    function initNewGalleryItem() {
+      exitGalleries.value();
+      isGalleryViewOpen.value = false;
+      addGalleryItemView.value = true;
     }
 
     // Return to view galleries
@@ -305,6 +461,27 @@ export default {
           swal("Error", error, "error");
         });
     }
+    // Open gallery to view gallery items
+    async function expandGallery(gallery) {
+      // Make api call to get items
+      console.log(gallery.galleryName);
+      await axios
+        .get("gallery/name/" + gallery.galleryName)
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            isGalleryViewOpen.value = false;
+            isGalleryItemViewOpen.value = true;
+            // Add gallery items to gallery item array
+            galleryItems.value = response.data.gallery.galleryItems;
+            galleryId.value = gallery.galleryName;
+          }
+        })
+        .catch((error) => {
+          swal("Error", error, "error");
+        });
+    }
     return {
       gallery,
       galleries,
@@ -313,7 +490,11 @@ export default {
       exitGalleries,
       createNewGalleryView,
       newGallery,
+      newGalleryItem,
+      addGalleryItemView,
+      createNewGalleryItem,
       initNewGallery,
+      initNewGalleryItem,
       uploadFile,
       editGallery,
       editGalleryForm,
@@ -326,7 +507,11 @@ export default {
       isLoggedIn,
       isGalleryOpen,
       isGalleryViewOpen,
+      isGalleryItemViewOpen,
+      isNewGalleryButtonVisible,
       cancelGalleryUpdate,
+      expandGallery,
+      lightbox,
     };
   },
 };

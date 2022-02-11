@@ -18,5 +18,8 @@ router.get("/all", galleryController.getAllGalleries);
 router.patch("/update/:name", cleanBody, galleryController.updateGallery);
 // Get image location in public folder for gallery cover art
 router.get("/coverart/:name", galleryController.getGalleryCoverImage);
+// Post gallery item to gallery
+// eslint-disable-next-line prettier/prettier
+router.post("/item/create/:name", cleanBody, galleryController.addItemToGallery);
 
 module.exports = router;
