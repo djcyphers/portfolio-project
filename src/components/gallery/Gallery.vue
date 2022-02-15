@@ -7,7 +7,7 @@
           v-if="isLoggedIn && isNewGalleryButtonVisible"
           class="responsive-box col-md-6 col-lg-3 p-1"
           role="button"
-          @click="initNewGallery"
+          @click="createNewGalleryView"
         >
           <!-- Create New Gallery -->
           <div
@@ -22,10 +22,10 @@
         </div>
         <!-- Bootstrap responsive card (add item to gallery) -->
         <div
-          v-if="isLoggedIn && addGalleryItemView"
+          v-if="isLoggedIn && isNewGalleryItemButtonVisible"
           class="responsive-box col-md-6 col-lg-3 p-1"
           role="button"
-          @click="initNewGalleryItem"
+          @click="createNewGalleryItemView"
         >
           <!-- Create New Item -->
           <div
@@ -118,7 +118,7 @@
     <div
       class="gallery__new card bg-dark text-white p-4"
       style="height: 60%; width: 60%"
-      v-if="createNewGalleryView"
+      v-if="isNewGalleryFormOpen"
     >
       <form enctype="multipart/form-data" @submit.prevent="createNewGallery">
         <div class="form-group">
@@ -144,6 +144,9 @@
           <input type="file" id="file" @change="uploadFile($event)" multiple />
         </div>
         <button type="submit" class="btn btn-primary">Create</button>
+        <button class="btn btn-secondary" @click="cancelGalleryCreateForm">
+          Cancel
+        </button>
       </form>
     </div>
     <!-- Edit gallery form -->
@@ -186,7 +189,7 @@
     <div
       class="galleryitem__new card bg-dark text-white p-4"
       style="height: 60%; width: 60%"
-      v-if="addGalleryItemView"
+      v-if="createNewGalleryItemFormView"
     >
       <form
         enctype="multipart/form-data"
@@ -215,6 +218,9 @@
           <input type="file" id="file" @change="uploadFile($event)" multiple />
         </div>
         <button type="submit" class="btn btn-primary">Create</button>
+        <button class="btn btn-secondary" @click="cancelGalleryItemCreateForm">
+          Cancel
+        </button>
       </form>
     </div>
   </div>
@@ -244,9 +250,10 @@ export default {
     const galleryItems = ref([]);
     const galleryId = ref("");
     const files = ref({ files: [] });
-    const createNewGalleryView = ref(false);
+    const isNewGalleryFormOpen = ref(false);
     const isNewGalleryButtonVisible = ref(false);
-    const addGalleryItemView = ref(false);
+    const isNewGalleryItemButtonVisible = ref(false);
+    const createNewGalleryItemFormView = ref(false);
     const editGalleryInit = ref(false);
     const editGalleryView = ref(false);
     const editGalleryForm = ref({ galleryName: "", galleryDescription: "" });
@@ -391,32 +398,64 @@ export default {
       isGalleryViewOpen.value = true;
     }
 
-    // Initiate new gallery creation
-    function initNewGallery() {
-      isGalleryViewOpen.value = false;
-      isNewGalleryButtonVisible.value = false;
-      createNewGalleryView.value = true;
+    // Cancel Gallery Create New
+    function cancelGalleryCreateForm() {
+      isNewGalleryButtonVisible.value = true;
+      isNewGalleryFormOpen.value = false;
+      isGalleryViewOpen.value = true;
     }
 
-    // Initiate new gallery item creation
-    function initNewGalleryItem() {
-      exitGalleries.value();
+    // Cancel Gallery Item Create New
+    function cancelGalleryItemCreateForm() {
+      isNewGalleryItemButtonVisible.value = true;
+      createNewGalleryItemFormView.value = false;
+      isGalleryItemViewOpen.value = true;
+    }
+
+    // Initiate new gallery creation
+    function createNewGalleryView() {
+      // exitGalleries.value();
       isGalleryViewOpen.value = false;
-      addGalleryItemView.value = true;
+      isNewGalleryButtonVisible.value = false;
+      isNewGalleryFormOpen.value = true;
+    }
+
+    // Open gallery item view from clicking on a gallery
+    function openGalleryItemView() {
+      // Close gallery view
+      isGalleryViewOpen.value = false;
+      // Hide create new gallery button
+      isNewGalleryButtonVisible.value = false;
+      // Open gallery item view
+      isGalleryItemViewOpen.value = true;
+      // Show create new gallery item button
+      isNewGalleryItemButtonVisible.value = true;
+    }
+
+    // Create new gallery item open view
+    function createNewGalleryItemView() {
+      // Close gallery view
+      isGalleryViewOpen.value = false;
+      // Hide create new gallery button
+      isNewGalleryButtonVisible.value = false;
+      // Open gallery item view
+      createNewGalleryItemFormView.value = true;
+      // Show create new gallery item button
+      isNewGalleryItemButtonVisible.value = false;
     }
 
     // Return to view galleries
     function returnToViewGalleries() {
       viewGalleries.value();
       isGalleryViewOpen.value = true;
-      createNewGalleryView.value = false;
+      isNewGalleryFormOpen.value = false;
       editGalleryView.value = false;
     }
 
     // Edit gallery
     function editGallery(galleryName) {
       editGalleryView.value = true;
-      createNewGalleryView.value = false;
+      isNewGalleryFormOpen.value = false;
       isGalleryViewOpen.value = false;
       // Save gallery id
       galleryId.value = galleryName;
@@ -464,15 +503,16 @@ export default {
     // Open gallery to view gallery items
     async function expandGallery(gallery) {
       // Make api call to get items
-      console.log(gallery.galleryName);
       await axios
         .get("gallery/name/" + gallery.galleryName)
         .then((response) => {
           if (response.data.error) {
             swal("Error", response.data.message, "error");
+          } else if (response.data.galleryItems.length === 0) {
+            swal("Error", "No gallery items found!", "error");
+            openGalleryItemView();
           } else {
-            isGalleryViewOpen.value = false;
-            isGalleryItemViewOpen.value = true;
+            openGalleryItemView();
             // Add gallery items to gallery item array
             galleryItems.value = response.data.gallery.galleryItems;
             galleryId.value = gallery.galleryName;
@@ -485,16 +525,16 @@ export default {
     return {
       gallery,
       galleries,
-      createNewGallery,
       viewGalleries,
       exitGalleries,
-      createNewGalleryView,
       newGallery,
       newGalleryItem,
-      addGalleryItemView,
+      createNewGallery,
+      createNewGalleryView,
+      createNewGalleryItemFormView,
       createNewGalleryItem,
-      initNewGallery,
-      initNewGalleryItem,
+      createNewGalleryItemView,
+      isNewGalleryFormOpen,
       uploadFile,
       editGallery,
       editGalleryForm,
@@ -509,7 +549,11 @@ export default {
       isGalleryViewOpen,
       isGalleryItemViewOpen,
       isNewGalleryButtonVisible,
+      isNewGalleryItemButtonVisible,
+      openGalleryItemView,
       cancelGalleryUpdate,
+      cancelGalleryCreateForm,
+      cancelGalleryItemCreateForm,
       expandGallery,
       lightbox,
     };
