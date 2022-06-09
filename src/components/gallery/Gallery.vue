@@ -21,23 +21,39 @@
           </div>
         </div>
         <!-- Bootstrap responsive card (add item to gallery) -->
-        <div
-          v-if="isLoggedIn && isNewGalleryItemButtonVisible"
-          class="responsive-box col-md-6 col-lg-3 p-1"
-          role="button"
-          @click="createNewGalleryItemView"
-        >
-          <!-- Create New Item -->
+        <template v-if="isLoggedIn && isNewGalleryItemButtonVisible">
           <div
-            class="card create-gallery bg-dark text-white"
-            style="height: 255px"
+            class="responsive-box col-md-6 col-lg-3 p-1"
+            role="button"
+            @click="createNewGalleryItemView"
           >
-            <div class="card-body">
-              <h4 class="card-title">Create a New Gallery Item</h4>
-              <p class="card-text">Click Here!</p>
+            <!-- Create New Item -->
+            <div
+              class="card create-gallery bg-dark text-white"
+              style="height: 255px"
+            >
+              <div class="card-body">
+                <h3 class="card-title">Create a New Gallery Item</h3>
+              </div>
             </div>
           </div>
-        </div>
+          <!-- Click to go back to gallery -->
+          <div
+            class="responsive-box col-md-6 col-lg-3 p-1"
+            role="button"
+            @click="openGalleryView"
+          >
+            <!-- Create New Item -->
+            <div
+              class="card create-gallery bg-dark text-white"
+              style="height: 255px"
+            >
+              <div class="card-body">
+                <h3 class="card-title">Go Back to Gallery</h3>
+              </div>
+            </div>
+          </div>
+        </template>
         <!-- Main Galleries -->
         <template v-if="isGalleryViewOpen">
           <div
@@ -85,24 +101,24 @@
       <div class="gallery-item-view container">
         <div class="row">
           <div
-            class="col-md-6 col-lg-3 gallery-item card text-black p-1"
+            class="col-md-6 col-lg-3 gallery-item"
             v-for="(galleryItem, index) in gallery.galleryItems"
             :key="index"
           >
+            <a
+              :href="galleryItem.galleryItemUrl"
+              class="glightbox"
+              :data-title="galleryItem.title"
+              :data-description="galleryItem.description"
+            >
+              <img :src="galleryItem.galleryItemUrl" :alt="galleryItem.title" />
+            </a>
             <img
-              class="card-img img-thumbnail"
+              class="gallery-item-image"
               :src="galleryItem.galleryItemUrl"
               :alt="galleryItem.title"
             />
-            <div class="card-img-overlay">
-              <div class="gallery-item card-title">
-                <h3>{{ galleryItem.title }}</h3>
-              </div>
-              <div class="gallery-item-description card-text">
-                <p>{{ galleryItem.description }}</p>
-              </div>
-            </div>
-            <div class="gallery-edit">
+            <div class="gallery-item-edit">
               <button
                 class="btn btn-primary"
                 @click="editGalleryItem(galleryItem.title)"
@@ -258,7 +274,7 @@ export default {
     const editGalleryView = ref(false);
     const editGalleryForm = ref({ galleryName: "", galleryDescription: "" });
     const newGallery = ref({ galleryName: "", galleryDescription: "" });
-    const newGalleryItem = ref({ title: "", description: "" });
+    const newGalleryItem = ref({ galleryName: "", title: "", description: "" });
     // lightbox
     const lightbox = ref();
 
@@ -360,7 +376,7 @@ export default {
     // Create new gallery item
     async function createNewGalleryItem() {
       let fData = new FormData();
-      fData.append("galleryId", galleryId.value);
+      fData.append("galleryName", galleryId.value);
       fData.append("title", newGalleryItem.value.title);
       fData.append("description", newGalleryItem.value.description);
       fData.append("files", files.value.files[0]);
@@ -375,8 +391,8 @@ export default {
             swal("Error", response.data.message, "error");
           } else {
             swal("Success", "Gallery item created!", "success");
-            // Return to view galleries
-            returnToViewGalleries();
+            // Return to view gallery items
+            openGalleryItemView();
             // Add new gallery to galleries
             galleryItems.value.push(response.data.galleryItem);
           }
@@ -420,6 +436,15 @@ export default {
       isNewGalleryFormOpen.value = true;
     }
 
+    // Open gallery view from gallery item view
+    function openGalleryView() {
+      isGalleryItemViewOpen.value = false;
+      isGalleryViewOpen.value = true;
+      isNewGalleryButtonVisible.value = true;
+      isNewGalleryItemButtonVisible.value = false;
+      createNewGalleryItemFormView.value = false;
+    }
+
     // Open gallery item view from clicking on a gallery
     function openGalleryItemView() {
       // Close gallery view
@@ -430,6 +455,8 @@ export default {
       isGalleryItemViewOpen.value = true;
       // Show create new gallery item button
       isNewGalleryItemButtonVisible.value = true;
+      // Cancel gallery item create form
+      cancelGalleryItemCreateForm();
     }
 
     // Create new gallery item open view
@@ -509,6 +536,8 @@ export default {
           if (response.data.error) {
             swal("Error", response.data.message, "error");
           } else if (response.data.galleryItems.length === 0) {
+            // If no gallery items get the name for creating new items (ie: createNewGalleryItem)
+            galleryId.value = gallery.galleryName;
             swal("Error", "No gallery items found!", "error");
             openGalleryItemView();
           } else {
@@ -550,6 +579,7 @@ export default {
       isGalleryItemViewOpen,
       isNewGalleryButtonVisible,
       isNewGalleryItemButtonVisible,
+      openGalleryView,
       openGalleryItemView,
       cancelGalleryUpdate,
       cancelGalleryCreateForm,
