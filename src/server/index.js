@@ -31,8 +31,7 @@ app.use(cors());
 //configure body parser
 app.use(express.json()); // To parse the incoming requests with JSON payloads
 app.use(express.urlencoded({ extended: false }));
-//configure body-parser ends here
-app.use(morgan("dev")); // configire morgan
+app.use(morgan("dev")); // configure morgan
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
