@@ -46,9 +46,9 @@
         type="text"
         id="referral"
         class="form-control mb-3"
-        placeholder="Refferal"
+        placeholder="Referal"
         autocomplete="off"
-        v-model="register.refferer"
+        v-model="register.referrer"
       />
     </p>
 
@@ -101,12 +101,16 @@ export default {
           activateUser.value();
           resetLogin.value();
           swal("Success", "Registration Successful", "success");
-        } else if (response.data.error) {
+        }
+        else {
           swal("Error", response.data.message, "error");
         }
       } catch (error) {
+        if (error.response.status === 400) {
+          swal("Error", error.response.data.message, "error");
+        }
         // Catch error status 409 and response error message
-        swal("Error", error, "error");
+        console.log(error.response);
       }
     }
     return {

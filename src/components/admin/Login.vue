@@ -107,7 +107,8 @@ export default {
             store.state.accessToken = res.data.accessToken;
           }
         })
-        .catch(function (error) {
+        .catch(function(error) {
+          swal("Error", error.response.data.message, "error");
           if (error.response) {
             // Go to verify screen if user is not activated
             if (loginState.value.count > 1) {

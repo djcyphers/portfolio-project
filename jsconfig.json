@@ -2,6 +2,9 @@
     "compilerOptions": {
         "experimentalDecorators": true
     },
+    "vueCompilerOptions":{
+        "experimentalDisableTemplateSupport": true
+    },
     "include": [
       "./src/**/*",
       "index.d.ts"  // declaration file path

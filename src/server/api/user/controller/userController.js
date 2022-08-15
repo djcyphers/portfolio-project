@@ -27,7 +27,6 @@ exports.register = async (req, res) => {
   try {
     const result = userSchema.validate(req.body);
     if (result.error) {
-      console.log(result.error.message);
       return res.json({
         error: true,
         status: 400,
@@ -83,25 +82,34 @@ exports.register = async (req, res) => {
 
     //Check if referred and validate code.
     if (Object.prototype.hasOwnProperty.call(result.value, "referrer")) {
-      let referrer = await User.findOne({
+      const referrer = await User.findOne({
         referralCode: result.value.referrer,
       });
+      // If not referred, generate a referral code, and save it in the database.
+      // Needs updating to check if the referral code is valid rather than generating a new one.
       if (!referrer) {
-        return res.status(400).send({
-          error: true,
-          message: "Invalid referral code.",
+        result.value.referralCode = referralCode();
+        const newUser = new User(result.value);
+        await newUser.save();
+
+        return res.status(200).json({
+          success: true,
+          message: "Invalid referer. Continue to email verification.",
+          referralCode: result.value.referralCode,
+        });
+      }
+      else {
+        result.value.referralCode = referrer.referralCode;
+        const newUser = new User(result.value);
+        await newUser.save();
+
+        return res.status(200).json({
+          success: true,
+          message: "Registration Success",
+          referralCode: result.value.referralCode,
         });
       }
     }
-    result.value.referralCode = referralCode();
-    const newUser = new User(result.value);
-    await newUser.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Registration Success",
-      referralCode: result.value.referralCode,
-    });
   } catch (error) {
     console.error("registration-error", error);
     return res.status(500).json({

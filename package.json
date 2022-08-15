@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start": "concurrently \"npm run serve\" \"cd src/server && nodemon\"",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
@@ -19,6 +20,7 @@
     "aws-sdk": "^2.999.0",
     "axios": "^0.22.0",
     "bootstrap": "^5.0.0-beta3",
+    "concurrently": "^7.3.0",
     "core-js": "^3.6.5",
     "glightbox": "^3.1.0",
     "jshint": "^2.13.4",

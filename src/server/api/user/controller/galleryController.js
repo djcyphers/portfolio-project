@@ -37,6 +37,7 @@ const itemSchema = Joi.object().keys({
   description: Joi.string().required(),
   galleryItemUrl: Joi.string(),
   galleryName: Joi.string().required(),
+  galleryItemFileName: Joi.string(),
 });
 
 // Create new gallery
@@ -89,16 +90,17 @@ exports.createGallery = async (req, res) => {
             message: "Gallery already exists!",
           });
         }
-        // Create a gallery folder if not exists
+        // Create a gallery folder if not exists (it should)
         const formatName = fields.galleryName
           .replace(/\s+/g, "-")
           .toLowerCase();
-        const galleryFolder = `${uploadUrl}/${formatName}`;
+        const galleryFolder = `${uploadUrl}\\${formatName}`;
         if (!fs.existsSync(galleryFolder)) {
           fs.mkdirSync(galleryFolder);
         }
         // Save cover art file to storage
         const file = files.files;
+
         // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
         const allowedMimeTypes = [
           "image/jpeg",
@@ -114,7 +116,7 @@ exports.createGallery = async (req, res) => {
           const date = new Date();
           const originalFileName = file.originalFilename;
           const fileName = `${date.getTime()}-${originalFileName}`;
-          const filepath = `${galleryFolder}/${fileName}`;
+          const filepath = `${galleryFolder}\\${fileName}`;
           const rawData = fs.readFileSync(file.filepath);
           // Save file to storage
           fs.writeFileSync(filepath, rawData, (err) => {
@@ -312,11 +314,11 @@ exports.updateGallery = async (req, res) => {
           const formatName = fields.galleryName
             .replace(/\s+/g, "-")
             .toLowerCase();
-          const galleryFolder = `${uploadUrl}/${formatName}`;
+          const galleryFolder = `${uploadUrl}\${formatName}`;
           const oldFormatName = fields.galleryOldName.toLowerCase();
           // If we change the gallery name,rename the old folder
           if (formatName !== oldFormatName) {
-            const oldGalleryFolder = `${uploadUrl}/${oldFormatName}`;
+            const oldGalleryFolder = `${uploadUrl}\${oldFormatName}`;
             if (fs.existsSync(oldGalleryFolder)) {
               // rename folder without deleting contents
               fs.renameSync(oldGalleryFolder, galleryFolder);
@@ -407,29 +409,22 @@ exports.updateGallery = async (req, res) => {
 };
 
 // Get all gallery items from gallery
-exports.getGalleryItems = async (req, res) => {
+exports.getGalleryItemsByGalleryName = async (req, res) => {
   try {
-    const { galleryName } = req.params.name;
-    const gallery = await Gallery.findOne({ galleryName });
-    if (!gallery) {
+    const galleryItems = await GalleryItem.findOne({ galleryName: req.params.name });
+    if (!galleryItems) {
       return res.json({
         error: true,
         status: 404,
-        message: "Gallery Not Found!",
-      });
-    } else {
-      return res.json({
-        error: false,
-        status: 200,
-        message: "Gallery Items Found!",
-        gallery: gallery.galleryItems,
+        message: "Gallery Item Not Found!",
       });
     }
+    res.send(galleryItems);
   } catch (error) {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error",
+      message: "Internal server error: " + error,
     });
   }
 };
@@ -458,6 +453,14 @@ exports.addItemToGallery = async (req, res) => {
             message: "Please fill all the fields!",
           });
         }
+        // Check if only one file was uploaded from Formidable
+        if (!files) {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Please upload a gallery item!",
+          });
+        }
         const result = itemSchema.validate(fields);
         if (result.error) {
           return res.json({
@@ -466,135 +469,117 @@ exports.addItemToGallery = async (req, res) => {
             message: result.error.message,
           });
         }
-        // Check if the folder exists just in case
-        const formatName = fields.galleryName
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-        const galleryFolder = `${uploadUrl}/${formatName}`;
-        if (!fs.existsSync(galleryFolder)) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Gallery folder does not exist!",
-          });
-        }
-        // Save cover art file to storage
-        const file = files.files;
-        // Check if only one file was uploaded from Formidable
-        if (!file) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Please upload a file!",
-          });
-        } else {
-          // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
-          const allowedMimeTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/svg+xml",
-            "image/webp",
-            "audio/mp3",
-            "video/mp4",
-          ];
-          if (allowedMimeTypes.includes(file.mimetype)) {
-            // Save image to storage
-            const date = new Date();
-            const originalFileName = file.originalname;
-            const fileExtension = path.extname(originalFileName);
-            const fileName = `${date.getTime()}--${originalFileName}${fileExtension}`;
-            const filepath = `${galleryFolder}/${date}-${fileName}`;
-            const rawData = fs.readFileSync(file.filepath);
-            fs.writeFileSync(filepath, rawData, (err) => {
-              if (err) {
-                return res.json({
-                  error: true,
-                  status: 400,
-                  message: "Failed to save file!",
-                });
-              }
-            });
-            // Add filepath to result value
-            fields.galleryItemUrl = filepath;
-            // Add fileName to result value
-            fields.galleryItemFileName = fileName;
-            // Validate schema after all fields are updated
-            const result = itemSchema.validate(fields);
-            if (result.error) {
-              console.log(fields);
-              return res.json({
-                error: true,
-                status: 400,
-                message: result.error.message,
-              });
-            }
-          }
-        }
+
         // Get galleryName then update gallery
         const gallery = await Gallery.findOne({
           galleryName: fields.galleryName,
         });
-        // Check if gallery item exists, if not create it
-        const checkItems = gallery.galleryItems;
-        if (checkItems.length > 0) {
-          const item = checkItems.find((item) => item.title === fields.title);
-          if (item) {
+
+        if (!gallery) {
+          return res.json({
+            error: true,
+            status: 404,
+            message: "Gallery Not Found",
+          });
+
+        } else {
+          // Create a gallery folder if not exists (it should)
+          const formatName = fields.galleryName
+            .replace(/\s+/g, "-")
+            .toLowerCase();
+          let galleryFolder = `${uploadUrl}\\${formatName}`;
+          console.log("Gallery WTF3 " + galleryFolder);
+          if (!fs.existsSync(galleryFolder)) {
+            fs.mkdirSync(galleryFolder);
+          }
+          else {
+            console.log("Gallery WTF FOUND " + galleryFolder);
+          }
+        }
+        // Save cover art file to storage
+        const file = files.files;
+
+        // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
+        const allowedMimeTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/svg+xml",
+          "image/webp",
+          "audio/mp3",
+          "video/mp4",
+        ];
+        if (allowedMimeTypes.includes(file.mimetype)) {
+          const formatName = fields.galleryName
+            .replace(/\s+/g, "-")
+            .toLowerCase();
+          let galleryFolder = uploadUrl + "\\" + formatName;
+          // Save image to storage
+          const date = new Date();
+          const originalFileName = file.originalFilename;
+          const fileName = `${date.getTime()}-${originalFileName}`;
+          const filepath = `${galleryFolder}\\${fileName}`;
+          const rawData = fs.readFileSync(file.filepath);
+          fs.writeFileSync(filepath, rawData, (err) => {
+            if (err) {
+              return res.json({
+                error: true,
+                status: 400,
+                message: "Failed to save file!",
+              });
+            }
+          });
+          // Add filepath to result value
+          fields.galleryItemUrl = filepath;
+          // Add fileName to result value
+          fields.galleryItemFileName = fileName;
+          // Validate schema after all fields are updated
+          const result = itemSchema.validate(fields);
+          if (result.error) {
             return res.json({
               error: true,
               status: 400,
-              message: "Gallery item already exists!",
+              message: result.error.message,
             });
-          } else {
-            // Add item to gallery if no duplicate item exists
-            const item = new GalleryItem({
-              title: fields.title,
-              description: fields.description,
-              galleryItemUrl: fields.galleryItemUrl,
-              galleryItemFileName: fields.galleryItemFileName,
-              gallery: {
-                name: fields.galleryName,
-              },
-            });
-            await item.save();
-
-            // Get gallery name then update gallery with galleryItem
-            const gallery = await Gallery.findOneAndUpdate(
-              { galleryName: fields.galleryName },
-              {
-                $push: {
-                  galleryItems: fields,
-                },
-              },
-              { new: true }
-            );
-            if (!gallery) {
-              return res.json({
-                error: true,
-                status: 404,
-                message: "Gallery Not Found!",
-              });
-            } else {
-              await gallery.save();
-              return res.json({
-                error: false,
-                status: 200,
-                message: "Gallery Item Added!",
-              });
-            }
           }
         }
-        // Return success
-        return res.json({
-          error: false,
-          status: 200,
-          message: "Item added successfully!",
+        // Check if gallery item exists, if not create it
+        const galleryItemSchemaFind = await GalleryItem.findOne({
+          title: fields.title,
         });
+        if (galleryItemSchemaFind) {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Gallery item already exists!",
+          });
+        } else {
+          // Add item to galleryItem db if no duplicate item exists
+          let newItem = new GalleryItem(fields);
+          await newItem.save();
+        }
+        // Check gallery again and then update gallery
+        if (gallery) {
+          // Add item to galleryItems array in gallery db
+          gallery.galleryItems.push(fields);
+          await gallery.save();
+          return res.json({
+            error: false,
+            status: 200,
+            message: "Gallery item added!",
+          });
+        } else {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Uh oh! Gallery not found!",
+          });
+        }
       } catch (error) {
         return res.json({
           error: true,
           status: 500,
-          message: "Formidable error!",
+          message: "Formidable error! " + error,
         });
       }
     });
@@ -602,7 +587,7 @@ exports.addItemToGallery = async (req, res) => {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error!",
+      message: "Internal server error! " + error,
     });
   }
 };
@@ -634,7 +619,6 @@ exports.deleteItemFromGallery = async (req, res) => {
       message: "Item deleted successfully!",
     });
   } catch (error) {
-    console.log(error);
     return res.json({
       error: true,
       status: 500,

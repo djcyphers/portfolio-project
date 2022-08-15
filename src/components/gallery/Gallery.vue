@@ -72,14 +72,14 @@
             <img
               class="card-img img-thumbnail"
               :src="coverArtImg(gallery)"
-              :alt="gallery.galleryName"
+              :alt="coverArtName(gallery)"
             />
             <div class="card-img-overlay">
               <div class="gallery-title card-title">
-                <h3>{{ gallery.galleryName }}</h3>
+                <h3>{{ coverArtName(gallery) }}</h3>
               </div>
               <div class="gallery-description card-text">
-                <p>{{ gallery.galleryDescription }}</p>
+                <p>{{ coverArtDescription(gallery) }}</p>
               </div>
             </div>
             <template v-if="editGalleryInit">
@@ -102,28 +102,24 @@
         <div class="row">
           <div
             class="col-md-6 col-lg-3 gallery-item"
-            v-for="(galleryItem, index) in gallery.galleryItems"
+            v-for="(galleryItem, index) in galleryItems"
             :key="index"
           >
             <a
-              :href="galleryItem.galleryItemUrl"
+              :href="galleryItemImg(galleryItem)"
               class="glightbox"
-              :data-title="galleryItem.title"
-              :data-description="galleryItem.description"
+              :data-title="galleryItemTitle(galleryItem)"
+              :data-description="galleryItemDescription(galleryItem)"
             >
-              <img :src="galleryItem.galleryItemUrl" :alt="galleryItem.title" />
+              <img :src="galleryItemImg(galleryItem)" :alt="galleryItemTitle(galleryItem)" />
             </a>
-            <img
-              class="gallery-item-image"
-              :src="galleryItem.galleryItemUrl"
-              :alt="galleryItem.title"
-            />
+            
             <div class="gallery-item-edit">
               <button
                 class="btn btn-primary"
                 @click="editGalleryItem(galleryItem.title)"
               >
-                Edit
+                Edit {{ galleryItem }}
               </button>
             </div>
           </div>
@@ -263,6 +259,7 @@ export default {
     const isGalleryItemViewOpen = ref(false);
     const gallery = ref([]);
     const galleries = ref([]);
+    const galleryItem = ref([]);
     const galleryItems = ref([]);
     const galleryId = ref("");
     const files = ref({ files: [] });
@@ -300,16 +297,87 @@ export default {
       },
     });
 
-    // Main()
-    //
+    /*
+
+      Gallery and Gallery Item Views
+
+    */
+  
     // Try and get the cover art image from the assets folder
     function coverArtImg(gallery) {
-      let name = gallery.galleryName.toLowerCase();
+      if (!gallery) {
+        const gallery = {       
+          galleryName: "Image loading...",
+        };
+        return gallery.value;
+      }
+      const name = gallery.galleryName.toLowerCase();
+      const formatName = name.replace(/ /g, "-");
       let img = computed(() => {
         const str = gallery.galleryCoverArtUrl;
         return str.split("\\").pop().split("/").pop();
       });
-      return require(`../../assets/galleries/` + `${name}/${img.value}`);
+      return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
+    }
+
+    // Get the gallery item art image from the assets folder
+    function galleryItemImg(galleryItem) {
+      if (!galleryItem) {
+        const galleryItem = {       
+          title: "Image loading...",
+        };
+        return galleryItem;
+      }
+      const formatName = galleryItem.galleryName.toLowerCase().replace(/ /g, "-");
+      let img = computed(() => {
+        const str = galleryItem.galleryItemUrl;
+        return str.split("\\").pop().split("/").pop();
+      });
+      return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
+    }
+
+    // Get the gallery item title or fallback to this...
+    function galleryItemTitle(galleryItem) {
+      if (!galleryItem) {
+        const galleryItem = {       
+          title: "Image loading...",
+        };
+        return galleryItem.title;
+      };
+      return galleryItem.title;
+    }
+
+    // Get the gallery item description from the db
+    function galleryItemDescription(galleryItem) {
+      if (!galleryItem) {
+        const galleryItem = {       
+          description: "Image loading...",
+        };
+        return galleryItem.description;
+      };
+      return galleryItem.description;
+    }
+
+    // Cover art info fallback
+    function coverArtName(gallery) {
+      if (!gallery) {
+        const gallery = {       
+          galleryName: "Loading...",
+        };
+        return gallery.galleryName;
+      }
+      return gallery.galleryName;
+    }
+
+    // Cover art description fallback why vue why
+    function coverArtDescription(gallery) {
+      if (!gallery) {
+        const gallery = {
+          galleryDescription: "Image loading...",
+        };
+        return gallery.galleryDescription;
+      }
+      return gallery.galleryDescription;
     }
 
     // Get all galleries from db
@@ -334,7 +402,7 @@ export default {
             swal("Error", response.data.message, "error");
           } else {
             galleries.value = response.data;
-            // console.log("GALLERY VALUE: " + galleries.value);
+            // console.log("GALLERY VALUE: " + galleries.value[0]._id);
             // isGalleryOpen defaults to true on mounted
             isGalleryViewOpen.value = true;
           }
@@ -363,8 +431,7 @@ export default {
             swal("Success", "Gallery created!", "success");
             // Return to view galleries
             returnToViewGalleries();
-            // Add new gallery to galleries
-            galleries.value.push(response.data.gallery);
+            getAllGalleries();
           }
         })
         .catch((error) => {
@@ -373,10 +440,35 @@ export default {
         });
     }
 
+    // Get newly created gallery and add it to the galleries array
+    async function getAllGalleries() {
+      await axios
+        .get("gallery/all")
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            galleries.value.push(response.data);
+            console.log("Get all galleries => " + response.data);
+            // isGalleryOpen defaults to true on mounted
+            isGalleryViewOpen.value = true;
+          }
+        })
+        .catch((error) => {
+          swal("Error", error + " Couldn't get any galleries!", "error");
+        });
+    }
+
     // Create new gallery item
     async function createNewGalleryItem() {
       let fData = new FormData();
-      fData.append("galleryName", galleryId.value);
+      if (galleryId !== "") {
+        fData.append("galleryName", galleryId.value);
+        galleryId.value = galleryId.value.toLowerCase();
+      } else {
+        fData.append("galleryName", galleries.value[0].galleryId);
+        galleryId.value = galleries.value[0].galleryId.value.toLowerCase();
+      }
       fData.append("title", newGalleryItem.value.title);
       fData.append("description", newGalleryItem.value.description);
       fData.append("files", files.value.files[0]);
@@ -394,7 +486,7 @@ export default {
             // Return to view gallery items
             openGalleryItemView();
             // Add new gallery to galleries
-            galleryItems.value.push(response.data.galleryItem);
+            galleryItems.value = response.data;
           }
         })
         .catch((error) => {
@@ -531,11 +623,17 @@ export default {
     async function expandGallery(gallery) {
       // Make api call to get items
       await axios
-        .get("gallery/name/" + gallery.galleryName)
+        .get("gallery/items/" + gallery.galleryName)
         .then((response) => {
           if (response.data.error) {
-            swal("Error", response.data.message, "error");
-          } else if (response.data.galleryItems.length === 0) {
+            // Select response depending on error
+            if (response.data.message === "Gallery Item Not Found!") {
+              // Switch to create new gallery item view
+              galleryId.value = gallery.galleryName;
+              openGalleryItemView();
+              swal("Error", "Waiting for user to add content!", "error");
+            }
+          } else if (response.data.title === undefined) {
             // If no gallery items get the name for creating new items (ie: createNewGalleryItem)
             galleryId.value = gallery.galleryName;
             swal("Error", "No gallery items found!", "error");
@@ -543,21 +641,26 @@ export default {
           } else {
             openGalleryItemView();
             // Add gallery items to gallery item array
-            galleryItems.value = response.data.gallery.galleryItems;
-            galleryId.value = gallery.galleryName;
+            galleryItems.value.push(response.data);
+            //console.log("GALLERY ITEMS RESPONSE => " + response.data._id);
+            galleryId.value = response.data.galleryName;
+            //console.log("GALLERY ITEMS => " + galleryItems.value);
           }
         })
         .catch((error) => {
-          swal("Error", error, "error");
+          swal("Error", "Uh oh!" + error, "error");
         });
     }
     return {
       gallery,
       galleries,
+      galleryItem,
+      galleryItems,
       viewGalleries,
       exitGalleries,
       newGallery,
       newGalleryItem,
+      getAllGalleries,
       createNewGallery,
       createNewGalleryView,
       createNewGalleryItemFormView,
@@ -572,6 +675,11 @@ export default {
       updateGallery,
       returnToViewGalleries,
       coverArtImg,
+      coverArtName,
+      coverArtDescription,
+      galleryItemImg,
+      galleryItemTitle,
+      galleryItemDescription,
       store,
       isLoggedIn,
       isGalleryOpen,

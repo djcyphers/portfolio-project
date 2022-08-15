@@ -8,8 +8,11 @@ Route localhost/gallery/route
 All routes are prepended with gallery *Reminder lol*
 
 */
+
 // Get gallery by name
 router.get("/name/:name", galleryController.getGalleryByName);
+// Get gallery items by gallery name
+router.get("/items/:name", galleryController.getGalleryItemsByGalleryName);
 // Create new gallery
 router.post("/create", cleanBody, galleryController.createGallery);
 // Get all galleries

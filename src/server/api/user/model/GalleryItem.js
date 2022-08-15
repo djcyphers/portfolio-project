@@ -24,14 +24,9 @@ const galleryItemSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    // reference to gallery it belongs to
-    gallery: {
-      name: {
-        type: String,
-        required: true,
-      },
-      type: Schema.Types.ObjectId,
-      ref: "Gallery",
+    // reference gallery by name
+    galleryName: {
+      type: String,
       required: true,
     },
   },
