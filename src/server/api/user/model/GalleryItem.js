@@ -24,7 +24,12 @@ const galleryItemSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    // reference gallery by name
+    // reference gallery by ID
+    galleryId: {
+      type: Schema.Types.ObjectId,
+      ref: "Gallery",
+    },
+    // Helpful for getting path names for images
     galleryName: {
       type: String,
       required: true,

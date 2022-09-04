@@ -11,8 +11,12 @@ All routes are prepended with gallery *Reminder lol*
 
 // Get gallery by name
 router.get("/name/:name", galleryController.getGalleryByName);
-// Get gallery items by gallery name
+// Get gallery name by id
+router.get("/id/:id", galleryController.getGalleryNameById);
+// Get gallery items by the gallery name they come from
 router.get("/items/:name", galleryController.getGalleryItemsByGalleryName);
+// Get all gallery items
+router.get("/items/all", galleryController.getAllGalleryItems);
 // Create new gallery
 router.post("/create", cleanBody, galleryController.createGallery);
 // Get all galleries
@@ -23,6 +27,6 @@ router.patch("/update/:name", cleanBody, galleryController.updateGallery);
 router.get("/coverart/:name", galleryController.getGalleryCoverImage);
 // Post gallery item to gallery
 // eslint-disable-next-line prettier/prettier
-router.post("/item/create/:name", cleanBody, galleryController.addItemToGallery);
+router.post("/item/create/:id", cleanBody, galleryController.addItemToGallery);
 
 module.exports = router;

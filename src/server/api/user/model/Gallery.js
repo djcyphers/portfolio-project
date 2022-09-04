@@ -21,12 +21,7 @@ const gallerySchema = new Schema(
       required: true,
     },
     // reference gallery instances with gallery items
-    galleryItems: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "GalleryItem",
-      },
-    ],
+    galleryItems: [{ type: Schema.Types.ObjectId, ref: 'GalleryItem' }],
     // reference gallery instances with user
     user: {
       type: Schema.Types.ObjectId,

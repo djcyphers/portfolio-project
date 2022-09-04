@@ -33,6 +33,7 @@ const galleryUpdateSchema = Joi.object().keys({
 
 // Validate item schema
 const itemSchema = Joi.object().keys({
+  galleryId: Joi.string().required(),
   title: Joi.string().required().min(2),
   description: Joi.string().required(),
   galleryItemUrl: Joi.string(),
@@ -90,6 +91,13 @@ exports.createGallery = async (req, res) => {
             message: "Gallery already exists!",
           });
         }
+
+        /*
+
+        // Need to write image to folder after validation and saving to database
+
+
+        */
         // Create a gallery folder if not exists (it should)
         const formatName = fields.galleryName
           .replace(/\s+/g, "-")
@@ -222,6 +230,29 @@ exports.getGalleryByName = async (req, res) => {
       error: true,
       status: 500,
       message: "Get Gallery Failed",
+    });
+  }
+};
+
+// Get all gallery items from gallery
+exports.getGalleryItemsByGalleryName = async (req, res) => {
+  try {
+    const galleryItems = await GalleryItem.find({ galleryName: req.params.name });
+    if (!galleryItems) {
+      return res.json({
+        error: true,
+        status: 404,
+        message: "Gallery Item Not Found!",
+      });
+    }
+    else {
+      res.send(galleryItems);
+    }
+  } catch (error) {
+    return res.json({
+      error: true,
+      status: 500,
+      message: "Internal server error: " + error,
     });
   }
 };
@@ -408,27 +439,6 @@ exports.updateGallery = async (req, res) => {
   }
 };
 
-// Get all gallery items from gallery
-exports.getGalleryItemsByGalleryName = async (req, res) => {
-  try {
-    const galleryItems = await GalleryItem.findOne({ galleryName: req.params.name });
-    if (!galleryItems) {
-      return res.json({
-        error: true,
-        status: 404,
-        message: "Gallery Item Not Found!",
-      });
-    }
-    res.send(galleryItems);
-  } catch (error) {
-    return res.json({
-      error: true,
-      status: 500,
-      message: "Internal server error: " + error,
-    });
-  }
-};
-
 // Add item to gallery
 exports.addItemToGallery = async (req, res) => {
   try {
@@ -461,6 +471,9 @@ exports.addItemToGallery = async (req, res) => {
             message: "Please upload a gallery item!",
           });
         }
+
+        // Get gallery old filename for later deletion
+        // Validate fields data
         const result = itemSchema.validate(fields);
         if (result.error) {
           return res.json({
@@ -469,11 +482,8 @@ exports.addItemToGallery = async (req, res) => {
             message: result.error.message,
           });
         }
-
-        // Get galleryName then update gallery
-        const gallery = await Gallery.findOne({
-          galleryName: fields.galleryName,
-        });
+        // Get galleryName to prepare for file upload
+        const gallery = await Gallery.findById(fields.galleryId);
 
         if (!gallery) {
           return res.json({
@@ -483,17 +493,17 @@ exports.addItemToGallery = async (req, res) => {
           });
 
         } else {
-          // Create a gallery folder if not exists (it should)
+          // Create a gallery folder if not exists (it should exist)
           const formatName = fields.galleryName
             .replace(/\s+/g, "-")
             .toLowerCase();
           let galleryFolder = `${uploadUrl}\\${formatName}`;
-          console.log("Gallery WTF3 " + galleryFolder);
-          if (!fs.existsSync(galleryFolder)) {
-            fs.mkdirSync(galleryFolder);
+          if (fs.existsSync(galleryFolder)) {
+            console.log("Gallery Exists: " + galleryFolder);
           }
           else {
-            console.log("Gallery WTF FOUND " + galleryFolder);
+            // Gallery should not exist, create anyway
+            fs.mkdirSync(galleryFolder);
           }
         }
         // Save cover art file to storage
@@ -534,7 +544,7 @@ exports.addItemToGallery = async (req, res) => {
           // Add fileName to result value
           fields.galleryItemFileName = fileName;
           // Validate schema after all fields are updated
-          const result = itemSchema.validate(fields);
+          let result = itemSchema.validate(fields);
           if (result.error) {
             return res.json({
               error: true,
@@ -544,10 +554,10 @@ exports.addItemToGallery = async (req, res) => {
           }
         }
         // Check if gallery item exists, if not create it
-        const galleryItemSchemaFind = await GalleryItem.findOne({
+        const galleryItemCheckDuplicate = await GalleryItem.findOne({
           title: fields.title,
         });
-        if (galleryItemSchemaFind) {
+        if (galleryItemCheckDuplicate) {
           return res.json({
             error: true,
             status: 400,
@@ -555,24 +565,15 @@ exports.addItemToGallery = async (req, res) => {
           });
         } else {
           // Add item to galleryItem db if no duplicate item exists
-          let newItem = new GalleryItem(fields);
+          const newItem = new GalleryItem(fields);
           await newItem.save();
-        }
-        // Check gallery again and then update gallery
-        if (gallery) {
           // Add item to galleryItems array in gallery db
-          gallery.galleryItems.push(fields);
+          gallery.galleryItems.push(newItem);
           await gallery.save();
           return res.json({
             error: false,
             status: 200,
             message: "Gallery item added!",
-          });
-        } else {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Uh oh! Gallery not found!",
           });
         }
       } catch (error) {
@@ -626,6 +627,58 @@ exports.deleteItemFromGallery = async (req, res) => {
     });
   }
 };
+
+// Get gallery name by id
+exports.getGalleryNameById = async (req, res) => {
+  try {
+    const gallery = await Gallery.findById(req.params.id);
+    if (!gallery) {
+      return res.json({
+        error: true,
+        status: 400,
+        message: "Gallery does not exist!",
+      });
+    }
+    return res.json({
+      error: false,
+      status: 200,
+      message: "Gallery found!",
+      galleryName: gallery.galleryName,
+    });
+  } catch (error) {
+    return res.json({
+      error: true,
+      status: 500,
+      message: "Internal server error",
+    });
+  }
+}
+
+// Get all gallery items from all galleries
+exports.getAllGalleryItems = async (req, res) => {
+  try {
+    const galleryItem = await GalleryItem.find({});
+    if (!galleryItem) {
+      return res.json({
+        error: true,
+        status: 400,
+        message: "No gallery items found!",
+      });
+    }
+    return res.json({
+      error: false,
+      status: 200,
+      message: "Gallery items found!",
+      galleryItems: galleryItem,
+    });
+  } catch (error) {
+    return res.json({
+      error: true,
+      status: 500,
+      message: "Internal server error",
+    });
+  }
+}
 
 // Send file to gallery cuz Vue is whack
 exports.getGalleryCoverImage = async (req, res) => {

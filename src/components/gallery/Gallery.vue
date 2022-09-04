@@ -119,7 +119,7 @@
                 class="btn btn-primary"
                 @click="editGalleryItem(galleryItem.title)"
               >
-                Edit {{ galleryItem }}
+                Edit
               </button>
             </div>
           </div>
@@ -302,17 +302,42 @@ export default {
       Gallery and Gallery Item Views
 
     */
+
+   // Get all galleries from db
+    onMounted(async () => {
+      // Init gallery button to true
+      isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
+      //lightbox settings
+      lightbox.value = GLightbox({
+        selector: ".glightbox",
+        touchNavigation: true,
+        loop: true,
+        closeButton: true,
+        autoplayVideos: true,
+        autoplayVideosUntilClose: true,
+        closeOnSlideClick: true,
+      });
+      // Get all galleries from db
+        await getGalleriesOnMount().value;
+    });
+
+    // Get all galleries from db function
+    async function getGalleriesOnMount() {
+      await axios
+        .get("gallery/all")
+        .then((response) => {
+          galleries.value = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          swal("Error", "Get all galleries onMount error!", "error");
+        });
+    }
   
     // Try and get the cover art image from the assets folder
     function coverArtImg(gallery) {
-      if (!gallery) {
-        const gallery = {       
-          galleryName: "Image loading...",
-        };
-        return gallery.value;
-      }
-      const name = gallery.galleryName.toLowerCase();
-      const formatName = name.replace(/ /g, "-");
+      const name = gallery.galleryName;
+      const formatName = name.replace(/ /g, "-").toLowerCase();
       let img = computed(() => {
         const str = gallery.galleryCoverArtUrl;
         return str.split("\\").pop().split("/").pop();
@@ -320,20 +345,15 @@ export default {
       return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
     }
 
-    // Get the gallery item art image from the assets folder
     function galleryItemImg(galleryItem) {
-      if (!galleryItem) {
-        const galleryItem = {       
-          title: "Image loading...",
-        };
-        return galleryItem;
-      }
-      const formatName = galleryItem.galleryName.toLowerCase().replace(/ /g, "-");
+      const name = galleryItem.galleryName;
+      const formatName = name.replace(/ /g, "-").toLowerCase();
       let img = computed(() => {
         const str = galleryItem.galleryItemUrl;
         return str.split("\\").pop().split("/").pop();
       });
-      return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
+      // This is ugly because there's errant " in the JSON object smh
+      return require(`@/assets/galleries/` + `${formatName}/${img.value}`);
     }
 
     // Get the gallery item title or fallback to this...
@@ -380,38 +400,6 @@ export default {
       return gallery.galleryDescription;
     }
 
-    // Get all galleries from db
-    onMounted(async () => {
-      // Init gallery button to true
-      isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
-      //lightbox settings
-      lightbox.value = GLightbox({
-        selector: ".glightbox",
-        touchNavigation: true,
-        loop: true,
-        closeButton: true,
-        autoplayVideos: true,
-        autoplayVideosUntilClose: true,
-        closeOnSlideClick: true,
-      });
-      // Get all galleries from db
-      await axios
-        .get("gallery/all")
-        .then((response) => {
-          if (response.data.error) {
-            swal("Error", response.data.message, "error");
-          } else {
-            galleries.value = response.data;
-            // console.log("GALLERY VALUE: " + galleries.value[0]._id);
-            // isGalleryOpen defaults to true on mounted
-            isGalleryViewOpen.value = true;
-          }
-        })
-        .catch((error) => {
-          swal("Error", error, "error");
-        });
-    });
-
     // Create new gallery
     async function createNewGallery() {
       let fData = new FormData();
@@ -448,8 +436,8 @@ export default {
           if (response.data.error) {
             swal("Error", response.data.message, "error");
           } else {
-            galleries.value.push(response.data);
-            console.log("Get all galleries => " + response.data);
+            galleries.value = response.data;
+            //console.log("Get all galleries => " + response.data);
             // isGalleryOpen defaults to true on mounted
             isGalleryViewOpen.value = true;
           }
@@ -462,18 +450,16 @@ export default {
     // Create new gallery item
     async function createNewGalleryItem() {
       let fData = new FormData();
-      if (galleryId !== "") {
-        fData.append("galleryName", galleryId.value);
-        galleryId.value = galleryId.value.toLowerCase();
-      } else {
-        fData.append("galleryName", galleries.value[0].galleryId);
-        galleryId.value = galleries.value[0].galleryId.value.toLowerCase();
-      }
+      // Galleries ref array needs to be accessed with [0] to get the first gallery
+      // This array should always be set as object and not pushed to
+      //console.log("GALLERY ID => " + galleries.value[0]._id);
+      fData.append("galleryId", galleries.value[0]._id);
+      fData.append("galleryName", galleries.value[0].galleryName);
       fData.append("title", newGalleryItem.value.title);
       fData.append("description", newGalleryItem.value.description);
       fData.append("files", files.value.files[0]);
       await axios
-        .post("gallery/item/create/" + galleryId.value, fData, {
+        .post("gallery/item/create/" + galleries.value[0]._id, fData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -535,6 +521,11 @@ export default {
       isNewGalleryButtonVisible.value = true;
       isNewGalleryItemButtonVisible.value = false;
       createNewGalleryItemFormView.value = false;
+      /* 
+        Clear the array when going back to gallery view to prevent duplicate gallery items
+      */
+      galleryItem.value.length = 0;
+      galleryItems.value.length = 0;
     }
 
     // Open gallery item view from clicking on a gallery
@@ -621,35 +612,33 @@ export default {
     }
     // Open gallery to view gallery items
     async function expandGallery(gallery) {
+
+      if (gallery.galleryItems) { // Then go to create gallery item screen
       // Make api call to get items
       await axios
         .get("gallery/items/" + gallery.galleryName)
         .then((response) => {
-          if (response.data.error) {
-            // Select response depending on error
-            if (response.data.message === "Gallery Item Not Found!") {
-              // Switch to create new gallery item view
-              galleryId.value = gallery.galleryName;
-              openGalleryItemView();
-              swal("Error", "Waiting for user to add content!", "error");
-            }
-          } else if (response.data.title === undefined) {
-            // If no gallery items get the name for creating new items (ie: createNewGalleryItem)
-            galleryId.value = gallery.galleryName;
-            swal("Error", "No gallery items found!", "error");
+          if (!response.data.error) {
+            galleryItems.value = response.data;
+            //console.log("GALLERY ITEMS => " + JSON.stringify(galleryItems.value));
+            // Open gallery view
             openGalleryItemView();
-          } else {
+          } else if (response.data.message = "Gallery Item Not Found!") {
             openGalleryItemView();
-            // Add gallery items to gallery item array
-            galleryItems.value.push(response.data);
-            //console.log("GALLERY ITEMS RESPONSE => " + response.data._id);
-            galleryId.value = response.data.galleryName;
-            //console.log("GALLERY ITEMS => " + galleryItems.value);
+            swal("Error", response.data.message, "error");
           }
-        })
+          else {
+            openGalleryView();
+            swal("Error", response.data.message, "error");
+          }
+      })
         .catch((error) => {
           swal("Error", "Uh oh!" + error, "error");
         });
+      } else {
+        openGalleryItemView();
+        swal("Error", "Waiting for user to add content!", "error");
+      }
     }
     return {
       gallery,
@@ -680,6 +669,7 @@ export default {
       galleryItemImg,
       galleryItemTitle,
       galleryItemDescription,
+      getGalleriesOnMount,
       store,
       isLoggedIn,
       isGalleryOpen,
