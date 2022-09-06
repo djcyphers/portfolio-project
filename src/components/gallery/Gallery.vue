@@ -104,12 +104,15 @@
             class="col-md-6 col-lg-3 gallery-item"
             v-for="(galleryItem, index) in galleryItems"
             :key="index"
-          >
+            >
             <a
+              ref="galleryItemRef"
+              @click.prevent="attachLightbox($event)"
               :href="galleryItemImg(galleryItem)"
-              class="glightbox"
-              :data-title="galleryItemTitle(galleryItem)"
-              :data-description="galleryItemDescription(galleryItem)"
+              class="lightbox"
+              :data-footer="galleryItemDescription(galleryItem)"
+              :data-gallery="galleryItemTitle(galleryItem)"
+              data-toggle="lightbox"
             >
               <img :src="galleryItemImg(galleryItem)" :alt="galleryItemTitle(galleryItem)" />
             </a>
@@ -120,6 +123,14 @@
                 @click="editGalleryItem(galleryItem.title)"
               >
                 Edit
+              </button>
+            </div>
+            <div class="gallery-item-delete">
+              <button
+                class="btn btn-primary"
+                @click="deleteGalleryItem(galleryItem)"
+              >
+                Delete
               </button>
             </div>
           </div>
@@ -242,10 +253,7 @@
 import { ref, onMounted, computed, inject } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
-// Bootstrap 5 gLightBox
-import "glightbox/dist/css/glightbox.css";
-import "glightbox/dist/js/glightbox.js";
-import GLightbox from "glightbox";
+import Lightbox from 'bs5-lightbox';
 
 export default {
   name: "Gallery",
@@ -272,7 +280,8 @@ export default {
     const editGalleryForm = ref({ galleryName: "", galleryDescription: "" });
     const newGallery = ref({ galleryName: "", galleryDescription: "" });
     const newGalleryItem = ref({ galleryName: "", title: "", description: "" });
-    // lightbox
+
+    // Lightbox
     const lightbox = ref();
 
     // Setters and Getters
@@ -303,22 +312,12 @@ export default {
 
     */
 
-   // Get all galleries from db
+    // Get all galleries from db
     onMounted(async () => {
       // Init gallery button to true
       isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
-      //lightbox settings
-      lightbox.value = GLightbox({
-        selector: ".glightbox",
-        touchNavigation: true,
-        loop: true,
-        closeButton: true,
-        autoplayVideos: true,
-        autoplayVideosUntilClose: true,
-        closeOnSlideClick: true,
-      });
       // Get all galleries from db
-        await getGalleriesOnMount().value;
+      await getGalleriesOnMount().value;
     });
 
     // Get all galleries from db function
@@ -332,7 +331,17 @@ export default {
           console.log(error);
           swal("Error", "Get all galleries onMount error!", "error");
         });
-    }
+    };
+
+    const lightboxOptions = {
+      keyboard: true,
+    };
+
+    //Start lightbox init
+    const attachLightbox = (event) => {
+      lightbox.value = new Lightbox(event.currentTarget, lightboxOptions);
+      lightbox.value.show();
+    };
   
     // Try and get the cover art image from the assets folder
     function coverArtImg(gallery) {
@@ -347,12 +356,14 @@ export default {
 
     function galleryItemImg(galleryItem) {
       const name = galleryItem.galleryName;
+      if (name === undefined) { // Strange behavoir of name returning undefined after creating a gallery item 
+        return;
+      }
       const formatName = name.replace(/ /g, "-").toLowerCase();
       let img = computed(() => {
         const str = galleryItem.galleryItemUrl;
         return str.split("\\").pop().split("/").pop();
       });
-      // This is ugly because there's errant " in the JSON object smh
       return require(`@/assets/galleries/` + `${formatName}/${img.value}`);
     }
 
@@ -530,6 +541,8 @@ export default {
 
     // Open gallery item view from clicking on a gallery
     function openGalleryItemView() {
+      // Cancel gallery item create form
+      cancelGalleryItemCreateForm();
       // Close gallery view
       isGalleryViewOpen.value = false;
       // Hide create new gallery button
@@ -538,8 +551,6 @@ export default {
       isGalleryItemViewOpen.value = true;
       // Show create new gallery item button
       isNewGalleryItemButtonVisible.value = true;
-      // Cancel gallery item create form
-      cancelGalleryItemCreateForm();
     }
 
     // Create new gallery item open view
@@ -560,6 +571,23 @@ export default {
       isGalleryViewOpen.value = true;
       isNewGalleryFormOpen.value = false;
       editGalleryView.value = false;
+    }
+
+    // Delete gallery item
+    async function deleteGalleryItem(galleryItem) {
+      await axios
+      .delete("gallery/item/delete/" + galleryItem._id)
+      .then((response) => {
+        if (response.data.error) {
+          swal("Error", response.data.message, "error");
+        } 
+        else {
+          swal("Success","File Deleted!", "success");
+        }
+      })
+      .catch((error) => {
+        swal("Error", "Delete Error => " + error, "error");
+      });
     }
 
     // Edit gallery
@@ -661,6 +689,7 @@ export default {
       editGalleryForm,
       editGalleryInit,
       editGalleryView,
+      deleteGalleryItem,
       updateGallery,
       returnToViewGalleries,
       coverArtImg,
@@ -684,6 +713,8 @@ export default {
       cancelGalleryItemCreateForm,
       expandGallery,
       lightbox,
+      lightboxOptions,
+      attachLightbox,
     };
   },
 };

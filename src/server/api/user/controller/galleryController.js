@@ -596,34 +596,54 @@ exports.addItemToGallery = async (req, res) => {
 // Delete item from gallery
 exports.deleteItemFromGallery = async (req, res) => {
   try {
-    // Check if gallery exists
-    const gallery = await Gallery.findOne({
-      galleryName: req.params.name,
+    // Get path from galleryItem db
+    const galleryItem = await GalleryItem.findById({
+      _id: req.params._id,
     });
-    if (!gallery) {
+
+    if (!galleryItem) {
       return res.json({
         error: true,
-        status: 400,
-        message: "Gallery does not exist!",
+        status: 404,
+        message: "Gallery item not found!",
       });
     }
-    // Delete gallery item from gallery
-    await Gallery.findOneAndUpdate(
-      { galleryName: req.params.name },
-      { $pull: { file: { file: req.params.file } } },
-      { new: true }
-    );
-    // Return success
-    return res.json({
-      error: false,
-      status: 200,
-      message: "Item deleted successfully!",
+    // Delete file from gallery folder
+    const path = `${uploadUrl}\\${galleryItem.galleryName.toLowerCase()}\\${galleryItem.galleryItemFileName}`;
+    fs.unlink(path, (err) => {
+      if (err) {
+        console.log(err);
+        return res.json({
+          error: true,
+          status: 500,
+          message: "Gallery Delete Error! => " + err,
+        });
+      }
+      console.log("Deleted file from gallery folder!");
     });
-  } catch (error) {
+
+    // Delete gallery item from gallery db
+    await GalleryItem.deleteOne({ title: galleryItem.title })
+      .then(() => {
+        return res.json({
+          error: false,
+          status: 200,
+          message: "Deletion Successful!",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json({
+          error: true,
+          status: 500,
+          message: "Gallery Delete Error! => " + err,
+        });
+      });
+  } catch (err) {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error",
+      message: "Internal server error! => " + err,
     });
   }
 };

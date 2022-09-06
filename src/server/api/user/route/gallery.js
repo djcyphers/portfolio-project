@@ -28,5 +28,7 @@ router.get("/coverart/:name", galleryController.getGalleryCoverImage);
 // Post gallery item to gallery
 // eslint-disable-next-line prettier/prettier
 router.post("/item/create/:id", cleanBody, galleryController.addItemToGallery);
+// Delete gallery item by title
+router.delete("/item/delete/:_id", cleanBody, galleryController.deleteItemFromGallery);
 
 module.exports = router;

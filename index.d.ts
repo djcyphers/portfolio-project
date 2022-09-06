@@ -1,2 +1,2 @@
-// Lightbox using Bootstrap 5
-declare module 'glightbox';
+// Lightbox using Bootstrap 5 Lightbox is shit...
+//declare module 'glightbox';
