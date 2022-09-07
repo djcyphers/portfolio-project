@@ -12,7 +12,7 @@
           <!-- Create New Gallery -->
           <div
             class="card create-gallery bg-dark text-white"
-            style="height: 255px"
+            style="height: 256px"
           >
             <div class="card-body">
               <h4 class="card-title">Create a New Gallery</h4>
@@ -21,7 +21,7 @@
           </div>
         </div>
         <!-- Bootstrap responsive card (add item to gallery) -->
-        <template v-if="isLoggedIn && isNewGalleryItemButtonVisible">
+        <template v-if="isLoggedIn && isNewGalleryItemButtonVisible && !isGalleryUpdating">
           <div
             class="responsive-box col-md-6 col-lg-3 p-1"
             role="button"
@@ -30,7 +30,7 @@
             <!-- Create New Item -->
             <div
               class="card create-gallery bg-dark text-white"
-              style="height: 255px"
+              style="height: 256px"
             >
               <div class="card-body">
                 <h3 class="card-title">Create a New Gallery Item</h3>
@@ -46,7 +46,7 @@
             <!-- Create New Item -->
             <div
               class="card create-gallery bg-dark text-white"
-              style="height: 255px"
+              style="height: 256px"
             >
               <div class="card-body">
                 <h3 class="card-title">Go Back to Gallery</h3>
@@ -82,13 +82,19 @@
                 <p>{{ coverArtDescription(gallery) }}</p>
               </div>
             </div>
-            <template v-if="editGalleryInit">
-              <div class="gallery-edit">
+            <template v-if="isLoggedIn">
+              <div class="btn-group" role="group" aria-label="Admin Buttons">
                 <button
-                  class="btn btn-primary"
-                  @click="editGallery(gallery.galleryName)"
+                  class="btn btn-primary edit-button"
+                  @click="editGallery(gallery)"
                 >
                   Edit
+                </button>
+                <button
+                  class="btn btn-primary delete-button"
+                  @click="deleteGallery(gallery)"
+                >
+                  Delete
                 </button>
               </div>
             </template>
@@ -97,7 +103,7 @@
       </div>
     </div>
     <!-- Gallery Item View (for item in gallery) -->
-    <template v-if="isGalleryItemViewOpen">
+    <template v-if="isGalleryItemViewOpen && !isGalleryUpdating">
       <div class="gallery-item-view container">
         <div class="row">
           <div
@@ -116,23 +122,22 @@
             >
               <img :src="galleryItemImg(galleryItem)" :alt="galleryItemTitle(galleryItem)" />
             </a>
-            
-            <div class="gallery-item-edit">
-              <button
-                class="btn btn-primary"
-                @click="editGalleryItem(galleryItem.title)"
-              >
-                Edit
-              </button>
-            </div>
-            <div class="gallery-item-delete">
-              <button
-                class="btn btn-primary"
-                @click="deleteGalleryItem(galleryItem)"
-              >
-                Delete
-              </button>
-            </div>
+            <template v-if="isLoggedIn">
+              <div class="btn-group" role="group" aria-label="Admin Buttons">
+                <button
+                  class="btn btn-primary edit-button"
+                  @click="editGalleryItem(galleryItem.title)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-primary delete-button"
+                  @click="deleteGalleryItem(galleryItem)"
+                >
+                  Delete
+                </button>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -180,7 +185,7 @@
     >
       <form enctype="multipart/form-data" @submit.prevent="updateGallery">
         <div class="form-group">
-          <label for="galleryName">Gallery Name</label>
+          <label for="galleryName">Update Gallery Name</label>
           <input
             type="text"
             class="form-control"
@@ -189,7 +194,7 @@
           />
         </div>
         <div class="form-group">
-          <label for="galleryDescription">Gallery Description</label>
+          <label for="galleryDescription">Update Gallery Description</label>
           <input
             type="text"
             class="form-control"
@@ -270,10 +275,12 @@ export default {
     const galleryItem = ref([]);
     const galleryItems = ref([]);
     const galleryId = ref("");
+    const galleryName = ref("");
     const files = ref({ files: [] });
     const isNewGalleryFormOpen = ref(false);
     const isNewGalleryButtonVisible = ref(false);
     const isNewGalleryItemButtonVisible = ref(false);
+    const isGalleryUpdating = ref(false);
     const createNewGalleryItemFormView = ref(false);
     const editGalleryInit = ref(false);
     const editGalleryView = ref(false);
@@ -501,6 +508,10 @@ export default {
     function cancelGalleryUpdate() {
       editGalleryView.value = false;
       isGalleryViewOpen.value = true;
+      isGalleryUpdating.value = false;
+      isGalleryItemViewOpen.value = false;
+      isNewGalleryItemButtonVisible.value = false;
+      isNewGalleryButtonVisible.value = true;
     }
 
     // Cancel Gallery Create New
@@ -590,18 +601,20 @@ export default {
       });
     }
 
-    // Edit gallery
+    // Edit gallery view
     function editGallery(galleryName) {
-      editGalleryView.value = true;
       isNewGalleryFormOpen.value = false;
       isGalleryViewOpen.value = false;
-      // Save gallery id
-      galleryId.value = galleryName;
+      isGalleryUpdating.value = true;
+      editGalleryView.value = true;
+      // Save gallery name to patch with req pram name
+      galleryName.value = galleryName;
     }
+
     // Update gallery
-    async function updateGallery() {
+    async function updateGallery(galleryName) {
       let fData = new FormData();
-      fData.append("galleryOldName", galleryId.value);
+      fData.append("galleryOldName", galleryName);
       fData.append("galleryName", editGalleryForm.value.galleryName);
       fData.append(
         "galleryDescription",
@@ -609,7 +622,7 @@ export default {
       );
       fData.append("files", files.value.files[0]);
       await axios
-        .patch("gallery/update/" + galleryId.value, fData, {
+        .patch("gallery/update/" + galleryName.value, fData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -638,6 +651,7 @@ export default {
           swal("Error", error, "error");
         });
     }
+
     // Open gallery to view gallery items
     async function expandGallery(gallery) {
 
@@ -699,11 +713,13 @@ export default {
       galleryItemTitle,
       galleryItemDescription,
       getGalleriesOnMount,
+      galleryName,
       store,
       isLoggedIn,
       isGalleryOpen,
       isGalleryViewOpen,
       isGalleryItemViewOpen,
+      isGalleryUpdating,
       isNewGalleryButtonVisible,
       isNewGalleryItemButtonVisible,
       openGalleryView,
