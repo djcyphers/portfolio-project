@@ -37,6 +37,8 @@
               </div>
             </div>
           </div>
+          </template>
+          <template v-if="!isGalleryUpdating && !isGalleryViewOpen">
           <!-- Click to go back to gallery -->
           <div
             class="responsive-box col-md-6 col-lg-3 p-1"
@@ -53,7 +55,7 @@
               </div>
             </div>
           </div>
-        </template>
+          </template>
         <!-- Main Galleries -->
         <template v-if="isGalleryViewOpen">
           <div
@@ -221,7 +223,7 @@
     >
       <form
         enctype="multipart/form-data"
-        @submit.prevent="createNewGalleryItem"
+        @submit.prevent="createNewGalleryItem()"
       >
         <div class="form-group">
           <label for="galleryName">Gallery Item Title</label>
@@ -255,7 +257,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, inject } from "vue";
+import { ref, onMounted, computed, inject, watch, onUnmounted } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
 import Lightbox from 'bs5-lightbox';
@@ -271,11 +273,12 @@ export default {
     const isGalleryViewOpen = ref(true);
     const isGalleryItemViewOpen = ref(false);
     const gallery = ref([]);
+    const galleryId = ref("");
     const galleries = ref([]);
     const galleryItem = ref([]);
     const galleryItems = ref([]);
-    const galleryId = ref("");
     const galleryName = ref("");
+    const getStorage = ref([]);
     const files = ref({ files: [] });
     const isNewGalleryFormOpen = ref(false);
     const isNewGalleryButtonVisible = ref(false);
@@ -325,6 +328,8 @@ export default {
       isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
       // Get all galleries from db
       await getGalleriesOnMount().value;
+      gallery.value = localStorage.getItem("gallery") || [] ;
+      //console.log("EXPD GAL => " + JSON.stringify(gallery));
     });
 
     // Get all galleries from db function
@@ -340,6 +345,11 @@ export default {
         });
     };
 
+    // Garbage collection
+    onUnmounted(async () => {
+      localStorage.clear();
+    });
+
     const lightboxOptions = {
       keyboard: true,
     };
@@ -353,6 +363,7 @@ export default {
     // Try and get the cover art image from the assets folder
     function coverArtImg(gallery) {
       const name = gallery.galleryName;
+      if (!name) return; // Vue state trying to add img buggy
       const formatName = name.replace(/ /g, "-").toLowerCase();
       let img = computed(() => {
         const str = gallery.galleryCoverArtUrl;
@@ -468,16 +479,15 @@ export default {
     // Create new gallery item
     async function createNewGalleryItem() {
       let fData = new FormData();
-      // Galleries ref array needs to be accessed with [0] to get the first gallery
-      // This array should always be set as object and not pushed to
-      //console.log("GALLERY ID => " + galleries.value[0]._id);
-      fData.append("galleryId", galleries.value[0]._id);
-      fData.append("galleryName", galleries.value[0].galleryName);
+      let ls = JSON.parse(localStorage.getItem("gallery"));
+      //console.log("NGI => " + ls);
+      fData.append("galleryId", ls._id);
+      fData.append("galleryName", ls.galleryName);
       fData.append("title", newGalleryItem.value.title);
       fData.append("description", newGalleryItem.value.description);
       fData.append("files", files.value.files[0]);
       await axios
-        .post("gallery/item/create/" + galleries.value[0]._id, fData, {
+        .post("gallery/item/create/" + ls._id, fData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -526,6 +536,7 @@ export default {
       isNewGalleryItemButtonVisible.value = true;
       createNewGalleryItemFormView.value = false;
       isGalleryItemViewOpen.value = true;
+      isGalleryViewOpen.value = false;
     }
 
     // Initiate new gallery creation
@@ -546,6 +557,7 @@ export default {
       /* 
         Clear the array when going back to gallery view to prevent duplicate gallery items
       */
+      localStorage.clear();
       galleryItem.value.length = 0;
       galleryItems.value.length = 0;
     }
@@ -582,6 +594,23 @@ export default {
       isGalleryViewOpen.value = true;
       isNewGalleryFormOpen.value = false;
       editGalleryView.value = false;
+    }
+
+    // Delete entire gallery
+    async function deleteGallery(gallery) {
+      await axios
+      .delete("gallery/delete/" + gallery.galleryName)
+      .then((response) => {
+        if (response.data.error) {
+          swal("Error", response.data.message, "error");
+        } 
+        else {
+          swal("Success","Gallery Deleted!", "success");
+        }
+      })
+      .catch((error) => {
+        swal("Error", "Delete Gallery Error => " + error, "error");
+      });
     }
 
     // Delete gallery item
@@ -654,15 +683,21 @@ export default {
 
     // Open gallery to view gallery items
     async function expandGallery(gallery) {
-
       if (gallery.galleryItems) { // Then go to create gallery item screen
-      // Make api call to get items
-      await axios
+        // Make api call to get items
+        //gallery.value = JSON.stringify(gallery);
+        // if (getStorage != gallery.value) { 
+        localStorage.setItem("gallery", JSON.stringify(gallery));
+        console.log(`EXP GAL => ${JSON.stringify(gallery)}`);
+        let getStorage = localStorage.getItem("gallery");
+        console.log(`Local Storage => ${getStorage}`);
+        // }
+        await axios
         .get("gallery/items/" + gallery.galleryName)
         .then((response) => {
           if (!response.data.error) {
+            // Add response to galleryItems array
             galleryItems.value = response.data;
-            //console.log("GALLERY ITEMS => " + JSON.stringify(galleryItems.value));
             // Open gallery view
             openGalleryItemView();
           } else if (response.data.message = "Gallery Item Not Found!") {
@@ -684,6 +719,7 @@ export default {
     }
     return {
       gallery,
+      galleryId,
       galleries,
       galleryItem,
       galleryItems,
@@ -703,6 +739,7 @@ export default {
       editGalleryForm,
       editGalleryInit,
       editGalleryView,
+      deleteGallery,
       deleteGalleryItem,
       updateGallery,
       returnToViewGalleries,
@@ -713,6 +750,7 @@ export default {
       galleryItemTitle,
       galleryItemDescription,
       getGalleriesOnMount,
+      getStorage,
       galleryName,
       store,
       isLoggedIn,

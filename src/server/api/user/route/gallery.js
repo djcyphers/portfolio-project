@@ -30,5 +30,7 @@ router.get("/coverart/:name", galleryController.getGalleryCoverImage);
 router.post("/item/create/:id", cleanBody, galleryController.addItemToGallery);
 // Delete gallery item by title
 router.delete("/item/delete/:_id", cleanBody, galleryController.deleteItemFromGallery);
+// Delete gallery by name
+router.delete("/delete/:name", cleanBody, galleryController.deleteGallery);
 
 module.exports = router;

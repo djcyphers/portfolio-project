@@ -183,17 +183,17 @@ exports.deleteGallery = async (req, res) => {
         message: "Gallery does not exist!",
       });
     }
-    // Delete gallery
+    // Delete gallery folder from drive
+    const path = `${uploadUrl}/${gallery.galleryName.toLowerCase()}`;
+    if (fs.existsSync(path)) {
+      fs.rmdirSync(path, { recursive: true });
+    }
+    await GalleryItem.deleteMany({ galleryName: req.params.name });
+    // Delete gallery from db
     await Gallery.findOneAndDelete({
       // find by name
-      galleryName: req.params.name,
+      galleryName: req.params.name
     });
-    // Delete gallery folder
-    const formatName = req.params.name.replace(/\s+/g, "-").toLowerCase();
-    const galleryFolder = `${uploadUrl}/${formatName}`;
-    if (fs.existsSync(galleryFolder)) {
-      fs.rmdirSync(galleryFolder, { recursive: true });
-    }
     // Return success
     return res.json({
       error: false,
@@ -205,7 +205,7 @@ exports.deleteGallery = async (req, res) => {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error",
+      message: `Internal server error => ${error}`,
     });
   }
 };
