@@ -28,12 +28,25 @@
     <li>
       <a
         href="#"
-        class="nav-link text-white"
+        class="nav-link text-white dropdown-toggle"
+        data-bs-toggle="dropdown"
         @click="
           toggleNavItem($event);
           viewGallery();
         "
       >
+      <ul
+        class="dropdown-menu dropdown-menu-dark text-small shadow"
+        aria-labelledby="dropdownGallery"
+      >
+      <li>
+        <a
+          class="dropdown-item create-gallery-button"
+          href="#"
+          >New Gallery</a
+        >
+      </li>
+      </ul>
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fas', 'images']" />
         </svg>
@@ -112,56 +125,18 @@ import axios from "axios";
 export default {
   name: "LoggedIn",
   setup() {
+    // Store States
     const store = inject("store");
-    const logoutUser = computed({
-      get() {
-        return store.methods.logOut;
-      },
-      set() {
-        return store.methods.logOut;
-      },
-    });
-    const getDashboard = computed({
-      get() {
-        return store.methods.getDashboard;
-      },
-      set() {
-        return store.methods.getDashboard;
-      },
-    });
-    const hideDashboard = computed({
-      get() {
-        return store.methods.hideDashboard;
-      },
-      set() {
-        return store.methods.hideDashboard;
-      },
-    });
-    const selectProfile = computed({
-      get() {
-        return store.methods.getProfile;
-      },
-      set() {
-        return store.methods.getProfile;
-      },
-    });
-    const removeToken = computed({
-      get() {
-        return store.methods.removeToken;
-      },
-      set() {
-        return store.methods.removeToken;
-      },
-    });
+    const logoutUser = computed(() => store.state.logOut);
+    const getDashboard = computed(() => store.state.getDashboard);
+    const hideDashboard = computed(() => store.state.hideDashboard);
+    const selectProfile = computed(() => store.state.getProfile);
+    const removeToken = computed(() => store.state.removeToken);
     // View Gallery
-    const viewGalleryStore = computed({
-      get() {
-        return store.methods.viewGallery;
-      },
-      set() {
-        return store.methods.viewGallery;
-      },
-    });
+    const viewGalleryStore = computed(() => store.state.viewGallery);
+    // Go to gallery item create view
+    const createNewGalleryView = computed(() => store.state.createGallery);
+ 
     // Clear access token from MongoDB via Axios call
     async function removeAuth() {
       axios
@@ -210,6 +185,7 @@ export default {
       removeToken,
       toggleNavItem,
       viewGallery,
+      createNewGalleryView,
     };
   },
 };

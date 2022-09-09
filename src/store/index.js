@@ -9,6 +9,7 @@ const state = reactive({
   accessToken: null,
   resetPassword: false,
   viewGallery: false,
+  createGallery: false,
 });
 
 const methods = {
@@ -66,6 +67,9 @@ const methods = {
   },
   exitGallery() {
     state.viewGallery = false;
+  },
+  createGallery() {
+    state.createGallery = true;
   },
 };
 
