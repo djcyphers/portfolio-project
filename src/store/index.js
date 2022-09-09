@@ -1,6 +1,7 @@
 import { reactive } from "vue";
 
 const state = reactive({
+  isMainGalleryWrapperOpen: true,
   logged: false,
   register: false,
   profile: false,
@@ -8,8 +9,10 @@ const state = reactive({
   activateUser: false,
   accessToken: null,
   resetPassword: false,
-  viewGallery: false,
   createGallery: false,
+  isGalleryViewOpen: true,
+  isGalleryItemViewOpen: false,
+  isNewGalleryFormOpen: false,
 });
 
 const methods = {
@@ -63,13 +66,25 @@ const methods = {
     state.resetPassword = false;
   },
   viewGallery() {
-    state.viewGallery = true;
+    state.isGalleryViewOpen = true;
   },
   exitGallery() {
-    state.viewGallery = false;
+    state.isGalleryViewOpen = false;
   },
   createGallery() {
     state.createGallery = true;
+  },
+  newGalleryForm() {
+    state.isNewGalleryFormOpen = true;
+  },
+  closeGalleryForm() {
+    state.isNewGalleryFormOpen = false;
+  },
+  viewGalleryItems() {
+    state.isGalleryItemViewOpen = true;
+  },
+  closeGalleryItems() {
+    state.isGalleryItemViewOpen = false;
   },
 };
 

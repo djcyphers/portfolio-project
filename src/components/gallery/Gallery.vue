@@ -1,6 +1,6 @@
 <template>
   <div class="gallery-wrapper">
-    <div class="gallery-view container" v-if="isGalleryOpen">
+    <div class="gallery-view container" v-if="isGalleryViewOpen">
       <div class="row">
         <!-- Bootstrap responsive card (create gallery) -->
         <div
@@ -253,14 +253,63 @@ export default {
         // Store StateS
         const store = inject("store");
         const isLoggedIn = computed(() => store.state.logged);
-        const isGalleryOpen = computed(() => store.state.viewGallery);
         // View Gallery
-        const viewGalleries = computed(() => store.state.viewGallery);
+        const viewGalleries = computed({
+          get() {
+            return store.methods.viewGallery;
+          },
+          set() {
+            return store.methods.viewGallery;
+          },
+        });
         // Exit Gallery
-        const exitGalleries = computed(() => store.state.exitGallery);
+        const exitGalleries = computed({
+          get() {
+            return store.methods.exitGallery;
+          },
+          set() {
+            return store.methods.exitGallery;
+          },
+        });
+        // View Gallery Items
+        const viewGalleryItems = computed({
+          get() {
+            return store.methods.viewGalleryItems;
+          },
+          set() {
+            return store.methods.viewGalleryItems;
+          },
+        });
+        // Close Gallery Items View
+        const closeGalleryItemsView = computed({
+          get() {
+            return store.methods.closeGalleryItems;
+          },
+          set() {
+            return store.methods.closeGalleryItems;
+          },
+        });
+        const viewGalleryForm = computed({
+          get() {
+            return store.methods.newGalleryForm;
+          },
+          set() {
+            return store.methods.newGalleryForm;
+          }
+        });
+        const closeGalleryForm = computed({
+          get() {
+            return store.methods.closeGalleryForm;
+          },
+          set() {
+            return store.methods.closeGalleryForm;
+          }
+        });
+        // View Gallery Create Form
+        const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
+        const isGalleryItemViewOpen = computed(() => store.state.isGalleryItemViewOpen);
+        const isNewGalleryFormOpen = computed(() => store.state.isNewGalleryFormOpen);
         // Reactive local states
-        const isGalleryViewOpen = ref(true);
-        const isGalleryItemViewOpen = ref(false);
         const gallery = ref([]);
         const galleryId = ref("");
         const galleries = ref([]);
@@ -269,7 +318,6 @@ export default {
         const galleryName = ref("");
         const getStorage = ref([]);
         const files = ref({ files: [] });
-        const isNewGalleryFormOpen = ref(false);
         const isNewGalleryButtonVisible = ref(false);
         const isNewGalleryItemButtonVisible = ref(false);
         const isGalleryUpdating = ref(false);
@@ -284,24 +332,23 @@ export default {
         
         /*
     
-          Lifecycle Hooks
-    
+        Lifecycle Hooks
+        
         */
-        // Get all galleries from db
-        onMounted(async () => {
-            // Init gallery button to true
-            isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
-            // Get all galleries from db
+       // Get all galleries from db
+       onMounted(async () => {
+         // Init gallery button to true
+         isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
+         // Get all galleries from db
             await getGalleriesOnMount().value;
             gallery.value = localStorage.getItem("gallery") || [];
-            //console.log("EXPD GAL => " + JSON.stringify(gallery));
         });
         // Get all galleries from db function
         async function getGalleriesOnMount() {
             await axios
                 .get("gallery/all")
                 .then((response) => {
-                galleries.value = response.data;
+                  galleries.value = response.data;
             })
                 .catch((error) => {
                 console.log(error);
@@ -431,8 +478,8 @@ export default {
                 else {
                     galleries.value = response.data;
                     //console.log("Get all galleries => " + response.data);
-                    // isGalleryOpen defaults to true on mounted
-                    isGalleryViewOpen.value = true;
+                    // isGalleryView defaults to true on mounted
+                    viewGalleries.value();
                 }
             })
                 .catch((error) => {
@@ -479,39 +526,39 @@ export default {
         // Cancel Gallery Update
         function cancelGalleryUpdate() {
             editGalleryView.value = false;
-            isGalleryViewOpen.value = true;
+            viewGalleries.value();
             isGalleryUpdating.value = false;
-            isGalleryItemViewOpen.value = false;
+            closeGalleryItemsView.value();
             isNewGalleryItemButtonVisible.value = false;
             isNewGalleryButtonVisible.value = true;
         }
         // Cancel Gallery Create New
         function cancelGalleryCreateForm() {
             isNewGalleryButtonVisible.value = true;
-            isNewGalleryFormOpen.value = false;
-            isGalleryViewOpen.value = true;
+            closeGalleryForm.value();
+            viewGalleries.value();
         }
         // Cancel Gallery Item Create New
         function cancelGalleryItemCreateForm() {
             isNewGalleryItemButtonVisible.value = true;
             createNewGalleryItemFormView.value = false;
-            isGalleryItemViewOpen.value = true;
-            isGalleryViewOpen.value = false;
+            viewGalleryItems.value();
+            exitGalleries.value();
         }
         // Initiate new gallery creation
         function createNewGalleryView() {
-            isGalleryViewOpen.value = false;
+            exitGalleries.value();
             isNewGalleryButtonVisible.value = false;
-            isNewGalleryFormOpen.value = true;
+            viewGalleryForm.value();
         }
         // Open gallery view from gallery item view
         function openGalleryView() {
-            isGalleryItemViewOpen.value = false;
-            isGalleryViewOpen.value = true;
+            closeGalleryItemsView.value();
+            viewGalleries.value();
             isNewGalleryButtonVisible.value = true;
             isNewGalleryItemButtonVisible.value = false;
             createNewGalleryItemFormView.value = false;
-            isNewGalleryFormOpen.value = false;
+            closeGalleryForm.value();
             /*
               Clear the array when going back to gallery view to prevent duplicate gallery items
             */
@@ -524,18 +571,18 @@ export default {
             // Cancel gallery item create form
             cancelGalleryItemCreateForm();
             // Close gallery view
-            isGalleryViewOpen.value = false;
+            exitGalleries.value();
             // Hide create new gallery button
             isNewGalleryButtonVisible.value = false;
             // Open gallery item view
-            isGalleryItemViewOpen.value = true;
+            viewGalleryItems.value();
             // Show create new gallery item button
             isNewGalleryItemButtonVisible.value = true;
         }
         // Create new gallery item open view
         function createNewGalleryItemView() {
             // Close gallery view
-            isGalleryViewOpen.value = false;
+            exitGalleries.value();
             // Hide create new gallery button
             isNewGalleryButtonVisible.value = false;
             // Open gallery item view
@@ -546,8 +593,7 @@ export default {
         // Return to view galleries
         function returnToViewGalleries() {
             viewGalleries.value();
-            isGalleryViewOpen.value = true;
-            isNewGalleryFormOpen.value = false;
+            closeGalleryForm.value();
             editGalleryView.value = false;
         }
         // Delete entire gallery
@@ -584,8 +630,8 @@ export default {
         }
         // Edit gallery view
         function editGallery(galleryName) {
-            isNewGalleryFormOpen.value = false;
-            isGalleryViewOpen.value = false;
+            closeGalleryForm.value();
+            exitGalleries.value();
             isGalleryUpdating.value = true;
             editGalleryView.value = true;
             // Save gallery name to patch with req pram name
@@ -622,7 +668,6 @@ export default {
                     });
                     editGalleryView.value = false;
                     viewGalleries.value();
-                    isGalleryViewOpen.value = true;
                 }
             })
                 .catch((error) => {
@@ -634,15 +679,12 @@ export default {
             if (gallery.galleryItems) { // Then go to create gallery item screen
                 // Make api call to get items
                 localStorage.setItem("gallery", JSON.stringify(gallery));
-                //console.log(`EXP GAL => ${JSON.stringify(gallery)}`);
-                //let getStorage = localStorage.getItem("gallery");
-                //console.log(`Local Storage => ${getStorage}`);
                 await axios
                     .get("gallery/items/" + gallery.galleryName)
                     .then((response) => {
                     if (!response.data.error) {
                         // Add response to galleryItems array
-                        galleryItems.value = response.data;
+                        galleryItems.value = response.data || [];
                         // Open gallery view
                         openGalleryItemView();
                     }
@@ -671,6 +713,8 @@ export default {
             galleryItem,
             galleryItems,
             viewGalleries,
+            viewGalleryItems,
+            viewGalleryForm,
             exitGalleries,
             newGallery,
             newGalleryItem,
@@ -701,7 +745,6 @@ export default {
             galleryName,
             store,
             isLoggedIn,
-            isGalleryOpen,
             isGalleryViewOpen,
             isGalleryItemViewOpen,
             isGalleryUpdating,
@@ -709,6 +752,8 @@ export default {
             isNewGalleryItemButtonVisible,
             openGalleryView,
             openGalleryItemView,
+            closeGalleryItemsView,
+            closeGalleryForm,
             cancelGalleryUpdate,
             cancelGalleryCreateForm,
             cancelGalleryItemCreateForm,

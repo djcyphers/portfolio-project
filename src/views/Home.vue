@@ -33,7 +33,7 @@
 
       <li id="box3" class="box">
         <a name="box3"></a>
-        <Gallery v-if="store.state.viewGallery" Class="content3 scroller" />
+        <Gallery v-if="store.state.isMainGalleryWrapperOpen" Class="content3 scroller" />
         <!-- <div class="content3 scroller">@include('album.albumview')</div> -->
       </li>
       <!-- end box3 -->

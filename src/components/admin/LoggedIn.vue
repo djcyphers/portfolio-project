@@ -32,17 +32,18 @@
         data-bs-toggle="dropdown"
         @click="
           toggleNavItem($event);
-          viewGallery();
-        "
+          "
       >
       <ul
-        class="dropdown-menu dropdown-menu-dark text-small shadow"
-        aria-labelledby="dropdownGallery"
+      class="dropdown-menu dropdown-menu-dark text-small shadow"
+      aria-labelledby="dropdownGallery"
       >
       <li>
         <a
-          class="dropdown-item create-gallery-button"
-          href="#"
+        class="dropdown-item create-gallery-button"
+        href="#"
+        @click="toggleNewGalleryForm()">
+        
           >New Gallery</a
         >
       </li>
@@ -133,9 +134,9 @@ export default {
     const selectProfile = computed(() => store.state.getProfile);
     const removeToken = computed(() => store.state.removeToken);
     // View Gallery
-    const viewGalleryStore = computed(() => store.state.viewGallery);
+    const viewGallery = computed(() => store.state.viewGallery);
     // Go to gallery item create view
-    const createNewGalleryView = computed(() => store.state.createGallery);
+    const createNewGallery = computed(() => store.state.createGallery);
  
     // Clear access token from MongoDB via Axios call
     async function removeAuth() {
@@ -160,6 +161,11 @@ export default {
     function getSocialNav() {
       document.querySelector("[data-menu='box4']").click();
     }
+    // Toggle gallery view on
+    function toggleNewGalleryForm() {
+      store.state.isGalleryViewOpen = false;
+      store.state.isNewGalleryFormOpen = true;
+    }
     // Toggle active nav link and remove class from other nav links
     function toggleNavItem(event) {
       const navItems = document.querySelectorAll(".nav-link");
@@ -170,10 +176,6 @@ export default {
       event.target.classList.add("active");
     }
     // View Gallery
-    function viewGallery() {
-      viewGalleryStore.value();
-      document.querySelector("[data-menu='box3']").click();
-    }
     return {
       logoutUser,
       selectProfile,
@@ -185,7 +187,8 @@ export default {
       removeToken,
       toggleNavItem,
       viewGallery,
-      createNewGalleryView,
+      createNewGallery,
+      toggleNewGalleryForm,
     };
   },
 };
