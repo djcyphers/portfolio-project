@@ -27,7 +27,6 @@ export default {
   $borderColor: rgba(white,1);
   $speed: .5s;
   left: 80%;
-  top: -30%;
   width:$size;
   height:$size;
   position: relative;

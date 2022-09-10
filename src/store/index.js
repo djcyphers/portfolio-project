@@ -13,6 +13,7 @@ const state = reactive({
   isGalleryViewOpen: true,
   isGalleryItemViewOpen: false,
   isNewGalleryFormOpen: false,
+  isNewGalleryItemFormOpen: false,
 });
 
 const methods = {
@@ -85,6 +86,12 @@ const methods = {
   },
   closeGalleryItems() {
     state.isGalleryItemViewOpen = false;
+  },
+  newGalleryItemForm() {
+    state.isNewGalleryItemFormOpen = true;
+  },
+  closeGalleryItemForm() {
+    state.isNewGalleryItemFormOpen = false;
   },
 };
 

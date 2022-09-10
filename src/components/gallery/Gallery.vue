@@ -2,42 +2,6 @@
   <div class="gallery-wrapper">
     <div class="gallery-view container" v-if="isGalleryViewOpen">
       <div class="row">
-        <!-- Bootstrap responsive card (create gallery) -->
-        <div
-          v-if="isLoggedIn && isNewGalleryButtonVisible"
-          class="responsive-box col-md-6 col-lg-3 p-1"
-          role="button"
-          @click="createNewGalleryView"
-        >
-          <!-- Create New Gallery -->
-          <div
-            class="card create-gallery bg-dark text-white"
-            style="height: 256px"
-          >
-            <div class="card-body">
-              <h4 class="card-title">Create a New Gallery</h4>
-              <p class="card-text">Click here to begin!</p>
-            </div>
-          </div>
-        </div>
-        <!-- Bootstrap responsive card (add item to gallery) -->
-        <template v-if="isLoggedIn && isNewGalleryItemButtonVisible && !isGalleryUpdating">
-          <div
-            class="responsive-box col-md-6 col-lg-3 p-1"
-            role="button"
-            @click="createNewGalleryItemView"
-          >
-            <!-- Create New Item -->
-            <div
-              class="card create-gallery bg-dark text-white"
-              style="height: 256px"
-            >
-              <div class="card-body">
-                <h3 class="card-title">Create a New Gallery Item</h3>
-              </div>
-            </div>
-          </div>
-          </template>
         <!-- Main Galleries -->
         <template v-if="isGalleryViewOpen">
           <div
@@ -76,7 +40,7 @@
                 </button>
                 <button
                   class="btn btn-primary delete-button"
-                  @click="deleteGallery(gallery)"
+                  @click="deleteGallery(gallery, index)"
                 >
                   Delete
                 </button>
@@ -118,7 +82,7 @@
                 </button>
                 <button
                   class="btn btn-primary delete-button"
-                  @click="deleteGalleryItem(galleryItem)"
+                  @click="deleteGalleryItem(galleryItem, index)"
                 >
                   Delete
                 </button>
@@ -203,7 +167,7 @@
     <div
       class="galleryitem__new card bg-dark text-white p-4"
       style="height: 60%; width: 60%"
-      v-if="createNewGalleryItemFormView"
+      v-if="isNewGalleryItemFormOpen"
     >
       <form
         enctype="multipart/form-data"
@@ -305,10 +269,27 @@ export default {
             return store.methods.closeGalleryForm;
           }
         });
+        const viewGalleryItemForm = computed({
+          get() {
+            return store.methods.newGalleryItemForm;
+            },
+          set() {
+            return store.methods.newGalleryItemForm;
+          }
+        });
+        const closeGalleryItemForm = computed({
+          get() {
+            return store.methods.closeGalleryItemForm;
+          },
+          set() {
+            return store.methods.closeGalleryItemForm;
+          }
+        });
         // View Gallery Create Form
         const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
         const isGalleryItemViewOpen = computed(() => store.state.isGalleryItemViewOpen);
         const isNewGalleryFormOpen = computed(() => store.state.isNewGalleryFormOpen);
+        const isNewGalleryItemFormOpen = computed(() => store.state.isNewGalleryItemFormOpen);
         // Reactive local states
         const gallery = ref([]);
         const galleryId = ref("");
@@ -318,10 +299,7 @@ export default {
         const galleryName = ref("");
         const getStorage = ref([]);
         const files = ref({ files: [] });
-        const isNewGalleryButtonVisible = ref(false);
-        const isNewGalleryItemButtonVisible = ref(false);
         const isGalleryUpdating = ref(false);
-        const createNewGalleryItemFormView = ref(false);
         const editGalleryInit = ref(false);
         const editGalleryView = ref(false);
         const editGalleryForm = ref({ galleryName: "", galleryDescription: "" });
@@ -337,8 +315,6 @@ export default {
         */
        // Get all galleries from db
        onMounted(async () => {
-         // Init gallery button to true
-         isNewGalleryButtonVisible.value = true; // still needs isLoggedIn check
          // Get all galleries from db
             await getGalleriesOnMount().value;
             gallery.value = localStorage.getItem("gallery") || [];
@@ -376,14 +352,19 @@ export default {
         // Try and get the cover art image from the assets folder
         function coverArtImg(gallery) {
             const name = gallery.galleryName;
-            if (!name)
+            if (name === undefined)
                 return; // Vue state trying to add img buggy
             const formatName = name.replace(/ /g, "-").toLowerCase();
             let img = computed(() => {
                 const str = gallery.galleryCoverArtUrl;
                 return str.split("\\").pop().split("/").pop();
             });
+            if (img) {
             return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
+            }
+            else {
+              return []; // Vue state trying to add img buggy webpack issue
+            }
         }
         function galleryItemImg(galleryItem) {
             const name = galleryItem.galleryName;
@@ -395,7 +376,7 @@ export default {
                 const str = galleryItem.galleryItemUrl;
                 return str.split("\\").pop().split("/").pop();
             });
-            return require(`@/assets/galleries/` + `${formatName}/${img.value}`);
+            return require(`@/assets/galleries/` + `${formatName}/${img.value}`) || [];
         }
         // Get the gallery item title or fallback to this...
         function galleryItemTitle(galleryItem) {
@@ -405,7 +386,6 @@ export default {
                 };
                 return galleryItem.title;
             }
-            ;
             return galleryItem.title;
         }
         // Get the gallery item description from the db
@@ -416,7 +396,6 @@ export default {
                 };
                 return galleryItem.description;
             }
-            ;
             return galleryItem.description;
         }
         // Cover art info fallback
@@ -529,35 +508,28 @@ export default {
             viewGalleries.value();
             isGalleryUpdating.value = false;
             closeGalleryItemsView.value();
-            isNewGalleryItemButtonVisible.value = false;
-            isNewGalleryButtonVisible.value = true;
         }
         // Cancel Gallery Create New
         function cancelGalleryCreateForm() {
-            isNewGalleryButtonVisible.value = true;
             closeGalleryForm.value();
             viewGalleries.value();
         }
         // Cancel Gallery Item Create New
         function cancelGalleryItemCreateForm() {
-            isNewGalleryItemButtonVisible.value = true;
-            createNewGalleryItemFormView.value = false;
+            closeGalleryItemForm.value();
             viewGalleryItems.value();
             exitGalleries.value();
         }
         // Initiate new gallery creation
         function createNewGalleryView() {
             exitGalleries.value();
-            isNewGalleryButtonVisible.value = false;
             viewGalleryForm.value();
         }
         // Open gallery view from gallery item view
         function openGalleryView() {
             closeGalleryItemsView.value();
             viewGalleries.value();
-            isNewGalleryButtonVisible.value = true;
-            isNewGalleryItemButtonVisible.value = false;
-            createNewGalleryItemFormView.value = false;
+            closeGalleryItemForm.value();
             closeGalleryForm.value();
             /*
               Clear the array when going back to gallery view to prevent duplicate gallery items
@@ -572,23 +544,15 @@ export default {
             cancelGalleryItemCreateForm();
             // Close gallery view
             exitGalleries.value();
-            // Hide create new gallery button
-            isNewGalleryButtonVisible.value = false;
             // Open gallery item view
             viewGalleryItems.value();
-            // Show create new gallery item button
-            isNewGalleryItemButtonVisible.value = true;
         }
         // Create new gallery item open view
         function createNewGalleryItemView() {
             // Close gallery view
             exitGalleries.value();
-            // Hide create new gallery button
-            isNewGalleryButtonVisible.value = false;
             // Open gallery item view
-            createNewGalleryItemFormView.value = true;
-            // Show create new gallery item button
-            isNewGalleryItemButtonVisible.value = false;
+            viewGalleryItemForm.value();
         }
         // Return to view galleries
         function returnToViewGalleries() {
@@ -597,36 +561,40 @@ export default {
             editGalleryView.value = false;
         }
         // Delete entire gallery
-        async function deleteGallery(gallery) {
-            await axios
-                .delete("gallery/delete/" + gallery.galleryName)
-                .then((response) => {
-                if (response.data.error) {
-                    swal("Error", response.data.message, "error");
-                }
-                else {
-                    swal("Success", "Gallery Deleted!", "success");
-                }
-            })
-                .catch((error) => {
-                swal("Error", "Delete Gallery Error => " + error, "error");
-            });
+        async function deleteGallery(gallery, index) {
+          // Remove from galleries array first
+          galleries.value.splice(index, 1);
+          await axios
+              .delete("gallery/delete/" + gallery.galleryName)
+              .then((response) => {
+              if (response.data.error) {
+                  swal("Error", response.data.message, "error");
+              }
+              else {
+                  swal("Success", "Gallery Deleted!", "success");
+              }
+          })
+              .catch((error) => {
+              swal("Error", "Delete Gallery Error => " + error, "error");
+          });
         }
         // Delete gallery item
-        async function deleteGalleryItem(galleryItem) {
-            await axios
-                .delete("gallery/item/delete/" + galleryItem._id)
-                .then((response) => {
-                if (response.data.error) {
-                    swal("Error", response.data.message, "error");
-                }
-                else {
-                    swal("Success", "File Deleted!", "success");
-                }
-            })
-                .catch((error) => {
-                swal("Error", "Delete Error => " + error, "error");
-            });
+        async function deleteGalleryItem(galleryItem, index) {
+          // Remove from gallery items array first
+          galleryItems.value.splice(index, 1);
+          await axios
+              .delete("gallery/item/delete/" + galleryItem._id)
+              .then((response) => {
+              if (response.data.error) {
+                  swal("Error", response.data.message, "error");
+              }
+              else {
+                  swal("Success", "File Deleted!", "success");
+              }
+          })
+              .catch((error) => {
+              swal("Error", "Delete Error => " + error, "error");
+          });
         }
         // Edit gallery view
         function editGallery(galleryName) {
@@ -678,7 +646,7 @@ export default {
         async function expandGallery(gallery) {
             if (gallery.galleryItems) { // Then go to create gallery item screen
                 // Make api call to get items
-                localStorage.setItem("gallery", JSON.stringify(gallery));
+                localStorage.setItem("gallery", gallery.value);
                 await axios
                     .get("gallery/items/" + gallery.galleryName)
                     .then((response) => {
@@ -715,16 +683,15 @@ export default {
             viewGalleries,
             viewGalleryItems,
             viewGalleryForm,
+            viewGalleryItemForm,
             exitGalleries,
             newGallery,
             newGalleryItem,
             getAllGalleries,
             createNewGallery,
             createNewGalleryView,
-            createNewGalleryItemFormView,
             createNewGalleryItem,
             createNewGalleryItemView,
-            isNewGalleryFormOpen,
             uploadFile,
             editGallery,
             editGalleryForm,
@@ -748,11 +715,12 @@ export default {
             isGalleryViewOpen,
             isGalleryItemViewOpen,
             isGalleryUpdating,
-            isNewGalleryButtonVisible,
-            isNewGalleryItemButtonVisible,
+            isNewGalleryFormOpen,
+            isNewGalleryItemFormOpen,
             openGalleryView,
             openGalleryItemView,
             closeGalleryItemsView,
+            closeGalleryItemForm,
             closeGalleryForm,
             cancelGalleryUpdate,
             cancelGalleryCreateForm,
