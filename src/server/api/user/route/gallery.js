@@ -21,8 +21,8 @@ router.get("/items/all", galleryController.getAllGalleryItems);
 router.post("/create", cleanBody, galleryController.createGallery);
 // Get all galleries
 router.get("/all", galleryController.getAllGalleries);
-// Update gallery by id
-router.patch("/update/:name", cleanBody, galleryController.updateGallery);
+// Update gallery by name
+router.put("/update/:name", cleanBody, galleryController.updateGallery);
 // Get image location in public folder for gallery cover art
 router.get("/coverart/:name", galleryController.getGalleryCoverImage);
 // Post gallery item to gallery

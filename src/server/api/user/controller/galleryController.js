@@ -25,9 +25,9 @@ const gallerySchema = Joi.object().keys({
 
 // Validate Update Scheme with Joi
 const galleryUpdateSchema = Joi.object().keys({
-  galleryName: Joi.string().required().min(2),
+  galleryName: Joi.string().min(2),
   galleryOldName: Joi.string(),
-  galleryDescription: Joi.string().required(),
+  galleryDescription: Joi.string(),
   galleryCoverArtUrl: Joi.string(),
 });
 
@@ -184,9 +184,9 @@ exports.deleteGallery = async (req, res) => {
       });
     }
     // Delete gallery folder from drive
-    const path = `${uploadUrl}/${gallery.galleryName.toLowerCase()}`;
-    if (fs.existsSync(path)) {
-      fs.rmdirSync(path, { recursive: true });
+    const deletePath = `${uploadUrl}/${gallery.galleryName.toLowerCase()}`;
+    if (fs.existsSync(deletePath)) {
+      fs.rmdirSync(deletePath, { recursive: true });
     }
     await GalleryItem.deleteMany({ galleryName: req.params.name });
     // Delete gallery from db
@@ -295,29 +295,15 @@ exports.updateGallery = async (req, res) => {
             message: "Failed to edit gallery!",
           });
         }
-        const { galleryOldName, galleryName, galleryDescription } = fields;
-        if (!galleryName || !galleryDescription || !galleryOldName) {
+        const { galleryName } = fields;
+
+        if (galleryName === undefined || galleryName === "undefined") {
           return res.json({
             error: true,
             status: 400,
-            message: "Please fill all the fields!",
+            message: "Update request returned undefined!",
           });
         }
-        if (!files) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Please upload a cover art!",
-          });
-        }
-
-        // Get gallery old filename for later deletion
-        const gallery = await Gallery.findOne({
-          galleryName: galleryOldName,
-        });
-        // Create a variable to use for later to delete file with fs.unlinkSync
-        const galleryOldFile = gallery.galleryCoverArtFileName;
-
         // Validate data
         const result = galleryUpdateSchema.validate(fields);
         if (result.error) {
@@ -325,6 +311,27 @@ exports.updateGallery = async (req, res) => {
             error: true,
             status: 400,
             message: result.error.message,
+          });
+        }
+        // Check for old file and delete it
+        const oldFile = await Gallery.findOne({ galleryName: fields.galleryOldName });
+        if (!oldFile) {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Could not find the old gallery name!",
+          });
+        }
+        const validUrl = oldFile.galleryCoverArtUrl;
+        try {
+          // Detele the old cover art file
+          fs.unlinkSync(`${validUrl}`);
+        } catch (error) {
+          console.log(error);
+          return res.json({
+            error: true,
+            status: 500,
+            message: "File Delete Error! => " + error,
           });
         }
         // Save cover art file to storage
@@ -341,25 +348,27 @@ exports.updateGallery = async (req, res) => {
           "video/mp4",
         ];
         if (allowedMimeTypes.includes(file.mimetype)) {
-          // Create a gallery folder if not exists
-          const formatName = fields.galleryName
-            .replace(/\s+/g, "-")
-            .toLowerCase();
-          const galleryFolder = `${uploadUrl}\${formatName}`;
-          const oldFormatName = fields.galleryOldName.toLowerCase();
+          // Change gallery folder name
+          const formatName = fields.galleryName.replace(/\s+/g, "-").toLowerCase();
+          const galleryFolder = `${uploadUrl}\\${formatName}`;
+          const oldFormatName = fields.galleryOldName.replace(/\s+/g, "-").toLowerCase();
           // If we change the gallery name,rename the old folder
           if (formatName !== oldFormatName) {
-            const oldGalleryFolder = `${uploadUrl}\${oldFormatName}`;
-            if (fs.existsSync(oldGalleryFolder)) {
-              // rename folder without deleting contents
-              fs.renameSync(oldGalleryFolder, galleryFolder);
+            const oldGalleryFolder = `${uploadUrl}\\${oldFormatName}`;
+            try {
+              if (fs.existsSync(oldGalleryFolder)) {
+                // rename folder without deleting contents
+                fs.renameSync(oldGalleryFolder, galleryFolder);
+              }
+            } catch (error) {
+              console.log(error);
             }
           }
           // Save image to storage
           const date = new Date();
           const originalFileName = file.originalFilename;
           const fileName = `${date.getTime()}-${originalFileName}`;
-          const filepath = `${galleryFolder}/${fileName}`;
+          const filepath = `${galleryFolder}\\${fileName}`;
           const rawData = fs.readFileSync(file.filepath);
           // Save file to storage
           fs.writeFileSync(filepath, rawData, (err) => {
@@ -375,58 +384,23 @@ exports.updateGallery = async (req, res) => {
           fields.galleryCoverArtUrl = filepath;
           fields.galleryCoverArtFileName = fileName;
         }
-        // Check for old file and delete it
-        if (galleryOldFile) {
-          // This is hacky but whatever it will always work
-          const validUrl = fields.galleryCoverArtUrl;
-          const deleteOldFile = validUrl.substring(
-            0,
-            validUrl.lastIndexOf("/") + 1
-          );
-          // Detele the old cover art file
-          try {
-            fs.unlinkSync(`${deleteOldFile}${galleryOldFile}`);
-          } catch (error) {
-            console.log(error);
-            return res.json({
-              error: true,
-              status: 500,
-              message: "File Delete Error!",
-            });
-          }
-          // Get galleryName then update gallery
-          const gallery = await Gallery.findOneAndUpdate(
-            { galleryName: fields.galleryOldName },
-            {
-              $set: {
-                galleryName: fields.galleryName,
-                galleryCoverArtUrl: fields.galleryCoverArtUrl,
-                galleryCoverArtFileName: fields.galleryCoverArtFileName,
-              },
-            },
-            { new: true }
-          );
-          if (!gallery) {
-            return res.json({
-              error: true,
-              status: 404,
-              message: "Gallery Not Found",
-            });
-          } else {
-            gallery.save();
-            return res.json({
-              error: false,
-              status: 200,
-              message: "Gallery Updated",
-            });
-          }
-        }
+        // Update all gallery items with the new gallery name
+        await GalleryItem.updateMany({ galleryName: fields.galleryOldName }, {
+          galleryName: fields.galleryName
+        });
+        // Get galleryName then update gallery
+        await Gallery.findByIdAndUpdate(oldFile._id, fields, { new: true, });
+        return res.json({
+          error: false,
+          status: 200,
+          message: "Gallery Updated!",
+        });
       } catch (error) {
         // Catch Formidable errors
         return res.json({
           error: true,
           status: 400,
-          message: "Failed to edit gallery! Formidable error.",
+          message: "Formidable error => " + error,
         });
       }
     });
@@ -434,7 +408,7 @@ exports.updateGallery = async (req, res) => {
     return res.json({
       error: true,
       status: 500,
-      message: "Internal server error",
+      message: "Internal server error => " + error,
     });
   }
 };
@@ -609,7 +583,7 @@ exports.deleteItemFromGallery = async (req, res) => {
       });
     }
     // Delete file from gallery folder
-    const path = `${uploadUrl}\\${galleryItem.galleryName.toLowerCase()}\\${galleryItem.galleryItemFileName}`;
+    const path = `${uploadUrl}\\${galleryItem.galleryName.replace(/\s+/g, "-").toLowerCase()}\\${galleryItem.galleryItemFileName}`;
     fs.unlink(path, (err) => {
       if (err) {
         console.log(err);
@@ -621,6 +595,8 @@ exports.deleteItemFromGallery = async (req, res) => {
       }
       console.log("Deleted file from gallery folder!");
     });
+    // Delete gallery item from gallery db
+    await Gallery.findOneAndUpdate({ 'galleryName': galleryItem.galleryName }, { $pull: { 'galleryItems': req.params._id } });
 
     // Delete gallery item from gallery db
     await GalleryItem.deleteOne({ title: galleryItem.title })

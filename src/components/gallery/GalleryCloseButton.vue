@@ -1,6 +1,6 @@
 <!-- Glowing Close Button -->
 <template>
-    <div class="gallery-close-button">
+    <div class="gallery-close-button" @click="clearLocalStorage()">
         <span></span>
         <span></span>
         <span></span>
@@ -18,6 +18,14 @@
 <script>
 export default {
     name: "GalleryCloseButton",
+    setup() {
+      function clearLocalStorage() {
+        localStorage.clear();
+      }
+      return {
+        clearLocalStorage,
+      }
+    }
 }
 </script>
 <style lang="scss">

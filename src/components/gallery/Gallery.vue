@@ -115,7 +115,7 @@
             class="form-control"
             id="galleryDescription"
             v-model="newGallery.galleryDescription"
-          />
+          />updateGallery
         </div>
         <div class="form-group">
           <label for="galleryCoverArtUrl">Upload File</label>
@@ -133,7 +133,7 @@
       style="height: 60%; width: 60%"
       v-if="editGalleryView"
     >
-      <form enctype="multipart/form-data" @submit.prevent="updateGallery">
+      <form enctype="multipart/form-data" @submit.prevent="updateGallery()">
         <div class="form-group">
           <label for="galleryName">Update Gallery Name</label>
           <input
@@ -218,6 +218,7 @@ export default {
         const store = inject("store");
         const isLoggedIn = computed(() => store.state.logged);
         // View Gallery
+        // This section needs to be refactored more const viewGalleries = computed(() => store.methods.viewGallery);
         const viewGalleries = computed({
           get() {
             return store.methods.viewGallery;
@@ -296,7 +297,6 @@ export default {
         const galleries = ref([]);
         const galleryItem = ref([]);
         const galleryItems = ref([]);
-        const galleryName = ref("");
         const getStorage = ref([]);
         const files = ref({ files: [] });
         const isGalleryUpdating = ref(false);
@@ -318,24 +318,41 @@ export default {
          // Get all galleries from db
             await getGalleriesOnMount().value;
             gallery.value = localStorage.getItem("gallery") || [];
+            await getGalleryItemsOnMount().value
         });
         // Get all galleries from db function
         async function getGalleriesOnMount() {
-            await axios
-                .get("gallery/all")
-                .then((response) => {
-                  galleries.value = response.data;
+          await axios
+            .get("gallery/all")
+            .then((response) => {
+              galleries.value = response.data;
             })
-                .catch((error) => {
-                console.log(error);
-                swal("Error", "Get all galleries onMount error!", "error");
+            .catch((error) => {
+              console.log(error);
+              swal("Error", "Get all galleries onMount error!", "error");
+            });
+        };
+        // Get all gallery items depending on which gallery is open
+        async function getGalleryItemsOnMount() {
+          if (!gallery.value.length > 0) {
+            return;
+          }
+          const getGalleryByName = JSON.parse(localStorage.getItem("gallery")); 
+          // Get current open gallery from local storage
+          await axios
+            .get("gallery/items/" + getGalleryByName.galleryName)
+            .then((response) => {
+              galleryItems.value = response.data;
+            })
+            .catch((error) => {
+              console.log(error);
+              swal("Error", "Get gallery items onMount error!", "error");
             });
         }
-        ;
         // Garbage collection
-        onUnmounted(async () => {
-            localStorage.clear();
-        });
+        // onUnmounted(async () => {
+        //     localStorage.clear();
+        // });
         /*
     
           Gallery and Gallery Item Views
@@ -597,56 +614,55 @@ export default {
           });
         }
         // Edit gallery view
-        function editGallery(galleryName) {
+        function editGallery(gallery) {
             closeGalleryForm.value();
             exitGalleries.value();
             isGalleryUpdating.value = true;
             editGalleryView.value = true;
-            // Save gallery name to patch with req pram name
-            galleryName.value = galleryName;
+            if (gallery.galleryName) {
+              localStorage.setItem("gallery", JSON.stringify(gallery));
+            }
+            gallery.value = localStorage.getItem("gallery") || [];
         }
         // Update gallery
-        async function updateGallery(galleryName) {
-            let fData = new FormData();
-            fData.append("galleryOldName", galleryName);
-            fData.append("galleryName", editGalleryForm.value.galleryName);
-            fData.append("galleryDescription", editGalleryForm.value.galleryDescription);
-            fData.append("files", files.value.files[0]);
-            await axios
-                .patch("gallery/update/" + galleryName.value, fData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
+        async function updateGallery() {
+          let ls = JSON.parse(localStorage.getItem("gallery"));
+          let fData = new FormData();
+          fData.append("galleryOldName", ls.galleryName);
+          fData.append("galleryName", editGalleryForm.value.galleryName);
+          fData.append("galleryDescription", editGalleryForm.value.galleryDescription);
+          fData.append("files", files.value.files[0]);
+          await axios
+            .put("gallery/update/" + ls.galleryName, fData, {
+              headers: {
+                  "Content-Type": "multipart/form-data",
+              },
             })
-                .then((response) => {
-                if (response.data.error) {
-                    swal("Error", response.data.message, "error");
-                }
-                else {
-                    swal("Success", "Gallery updated!", "success");
-                    // Update gallery in galleries
-                    galleries.value.forEach((gallery) => {
-                        if (gallery.galleryName === response.data.galleryName) {
-                            gallery.galleryName = response.data.gallery.galleryName;
-                            gallery.galleryDescription =
-                                response.data.gallery.galleryDescription;
-                            gallery.galleryCoverArtUrl =
-                                response.data.gallery.galleryCoverArtUrl;
-                        }
-                    });
-                    editGalleryView.value = false;
-                    viewGalleries.value();
-                }
+            .then((response) => {
+            if (response.data.error) {
+              swal("Error", response.data.message, "error");
+            }
+            else {
+              swal("Success", "Gallery updated!", "success");
+              // Update gallery in galleries
+              galleries.value.forEach((gallery) => {
+                  if (gallery.galleryName === response.data.galleryName) {
+                      gallery.galleryName = response.data.galleryName;
+                      gallery.galleryDescription = response.data.galleryDescription;
+                      gallery.galleryCoverArtUrl = response.data.galleryCoverArtUrl;
+                  }
+              });
+              editGalleryView.value = false;
+              viewGalleries.value();
+            }
             })
-                .catch((error) => {
-                swal("Error", error, "error");
-            });
-        }
+            .catch((error) => { swal("Error", error, "error"); });
+          }
         // Open gallery to view gallery items
         async function expandGallery(gallery) {
-            if (gallery.galleryItems) { // Then go to create gallery item screen
-                // Make api call to get items
-                localStorage.setItem("gallery", gallery.value);
+          if (gallery.galleryName !== "" || undefined) { // Then go to create gallery item screen
+            // Make api call to get items
+            localStorage.setItem("gallery", JSON.stringify(gallery));
                 await axios
                     .get("gallery/items/" + gallery.galleryName)
                     .then((response) => {
@@ -709,7 +725,6 @@ export default {
             galleryItemDescription,
             getGalleriesOnMount,
             getStorage,
-            galleryName,
             store,
             isLoggedIn,
             isGalleryViewOpen,
