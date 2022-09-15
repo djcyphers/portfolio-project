@@ -27,7 +27,7 @@ ul {
 }
 
 p {
-    color:#a6b9f0;
+    color:#f8f8f8;
 }
 
 .jumbotron {
@@ -1196,11 +1196,15 @@ h1 { font-family: Verdana, Geneva, sans-serif; font-size: 23px; font-style: norm
  *
  * ------------------------------------------------------------------- */
  .card-text {
-   font-size: 1.4vw !important;
+   font-size: 1.1vw !important;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+   color: #fff;
  }
 
  .card-title {
-    font-size: 1.8vw !important;
+    font-size: 1.4vw !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
   }
 
   .gallery-edit {

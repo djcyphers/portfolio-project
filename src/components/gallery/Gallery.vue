@@ -1,7 +1,7 @@
 <template>
   <div class="gallery-wrapper">
     <div class="gallery-view container" v-if="isGalleryViewOpen">
-      <div class="row">
+      <div class="row g-5">
         <!-- Main Galleries -->
         <template v-if="isGalleryViewOpen">
           <div
@@ -9,24 +9,25 @@
               responsive-box
               col-md-6 col-lg-3
               gallery-base
+              bg-transparent
               card
-              text-black
-              p-1
+              me-3
             "
             v-for="(gallery, index) in galleries"
             :key="index"
             @click="expandGallery(gallery)"
           >
             <img
-              class="card-img img-thumbnail"
+              class="card-img img-thumbnail bg-black"
               :src="coverArtImg(gallery)"
               :alt="coverArtName(gallery)"
             />
-            <div class="card-img-overlay">
-              <div class="gallery-title card-title">
+            <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
+            <div class="card-img-overlay d-flex flex-column justify-content-end">
+              <div class="gallery-title card-title bg-black mb-0 opacity-75">
                 <h3>{{ coverArtName(gallery) }}</h3>
               </div>
-              <div class="gallery-description card-text">
+              <div class="gallery-description card-text bg-black opacity-75">
                 <p>{{ coverArtDescription(gallery) }}</p>
               </div>
             </div>
@@ -70,7 +71,7 @@
               :data-gallery="galleryItemTitle(galleryItem)"
               data-toggle="lightbox"
             >
-              <img :src="galleryItemImg(galleryItem)" :alt="galleryItemTitle(galleryItem)" />
+              <img :src="galleryItemImg(galleryItem)" class="img-fluid rounded" :alt="galleryItemTitle(galleryItem)" />
             </a>
             <template v-if="isLoggedIn">
               <div class="btn-group" role="group" aria-label="Admin Buttons">
@@ -385,7 +386,7 @@ export default {
         }
         function galleryItemImg(galleryItem) {
             const name = galleryItem.galleryName;
-            if (name === undefined) { // Strange behavoir of name returning undefined after creating a gallery item 
+            if (name === undefined || name === "undefined") { // Strange behavoir of name returning undefined after creating a gallery item 
                 return;
             }
             const formatName = name.replace(/ /g, "-").toLowerCase();
