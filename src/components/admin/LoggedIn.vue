@@ -18,7 +18,7 @@
       </a>
     </li>
     <li>
-      <a href="#" class="nav-link text-white" @click="toggleNavItem($event)">
+      <a href="#" class="nav-link text-white" @click="getSocialNav(); hideDashboard(); toggleNavItem($event)">
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fa', 'atlas']" />
         </svg>
@@ -137,15 +137,14 @@ export default {
   setup() {
     // Store States
     const store = inject("store");
-    const logoutUser = computed(() => store.state.logOut);
+    const logoutUser = computed(() => store.methods.logOut);
     const getDashboard = computed(() => store.methods.getDashboard);
-    const hideDashboard = computed(() => store.state.hideDashboard);
-    const selectProfile = computed(() => store.state.getProfile);
-    const removeToken = computed(() => store.state.removeToken);
+    const hideDashboard = computed(() => store.methods.hideDashboard);
+    const selectProfile = computed(() => store.methods.getProfile);
+    const removeToken = computed(() => store.methods.removeToken);
     // View Gallery
-    const viewGallery = computed(() => store.state.viewGallery);
+    const viewGallery = computed(() => store.methods.viewGallery);
     // Go to gallery item create view
-    const createNewGallery = computed(() => store.state.createGallery);
     const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
     const isGalleryItemViewOpen = computed(() => store.state.isGalleryItemViewOpen);
  
@@ -203,7 +202,6 @@ export default {
       removeToken,
       toggleNavItem,
       viewGallery,
-      createNewGallery,
       toggleNewGalleryForm,
       toggleNewGalleryItemForm,
       isGalleryViewOpen,

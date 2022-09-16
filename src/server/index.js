@@ -48,9 +48,13 @@ app.use(express.static(path.join(__dirname, "/../../public")));
 const userRoutes = require("./api/user/route/user"); // bring in our user routes
 app.use("/user", userRoutes);
 
-// Galler routes
+// Gallery routes
 const galleryRoutes = require("./api/user/route/gallery");
 app.use("/gallery", galleryRoutes);
+
+// Blog routes
+const blogRoutes = require("./api/user/route/blog");
+app.use("/blog", blogRoutes);
 
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`);

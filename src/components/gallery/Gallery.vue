@@ -1,7 +1,7 @@
 <template>
   <div class="gallery-wrapper">
     <div class="gallery-view container" v-if="isGalleryViewOpen">
-      <div class="row g-5">
+      <div class="row">
         <!-- Main Galleries -->
         <template v-if="isGalleryViewOpen">
           <div
@@ -206,7 +206,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, inject, onUnmounted } from "vue";
+import { ref, onMounted, computed, inject } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
 import Lightbox from 'bs5-lightbox';
