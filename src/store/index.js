@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 
 const state = reactive({
-  isMainGalleryWrapperOpen: true,
+  // Admin states
   logged: false,
   register: false,
   profile: false,
@@ -10,10 +10,17 @@ const state = reactive({
   accessToken: null,
   resetPassword: false,
   createGallery: false,
+  // Gallery states
+  isMainGalleryWrapperOpen: true, // might be useful later
   isGalleryViewOpen: true,
   isGalleryItemViewOpen: false,
   isNewGalleryFormOpen: false,
   isNewGalleryItemFormOpen: false,
+  // Blog states
+  isBlogViewOpen: true,
+  isBlogUpdating: false,
+  isBlogPostViewOpen: false,
+  isNewBlogPostFormOpen: false,
 });
 
 const methods = {
@@ -92,6 +99,16 @@ const methods = {
   },
   closeGalleryItemForm() {
     state.isNewGalleryItemFormOpen = false;
+  },
+  // Blog methods
+  viewBlogPosts() {
+    state.isBlogViewOpen = true;
+  },
+  exitBlogPosts() {
+    state.isBlogViewOpen = false;
+  },
+  toggleNewBlogPostForm() {
+    state.isNewBlogPostFormOpen = true;
   },
 };
 

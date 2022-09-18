@@ -42,6 +42,7 @@
         <a name="box4"></a>
         <div class="content4 scroller">
           <Dashboard v-if="store.state.dashboard" />
+          <Blog v-if="store.state.isBlogViewOpen" />
         </div>
       </li>
       <!-- end box4 -->
@@ -60,11 +61,12 @@ import About from "../components/About";
 import Admin from "../components/admin/Admin";
 import Dashboard from "../components/dashboard/Dashboard";
 import Gallery from "../components/gallery/Gallery";
+import Blog from "../components/blog/Blog";
 import { inject, onMounted, computed } from "vue";
 
 export default {
   name: "Home",
-  components: { Welcome, Header, Background, About, Admin, Dashboard, Gallery },
+  components: { Welcome, Header, Background, About, Admin, Dashboard, Gallery, Blog },
   setup() {
     const store = inject("store");
     // View Gallery

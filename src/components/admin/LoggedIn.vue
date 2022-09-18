@@ -18,7 +18,27 @@
       </a>
     </li>
     <li>
-      <a href="#" class="nav-link text-white" @click="getSocialNav(); hideDashboard(); toggleNavItem($event)">
+      <a 
+        href="#" 
+        class="nav-link text-white dropdown-toggle" 
+        data-bs-toggle="dropdown"
+        @click="getSocialNav(); hideDashboard(); toggleNavItem($event);
+          "
+      >
+      <ul
+        class="dropdown-menu dropdown-menu-dark text-small shadow"
+        aria-labelledby="dropdownGallery"
+      >
+      <li v-if="isBlogViewOpen">
+        <a
+        class="dropdown-item create-gallery-button"
+        href="#"
+        @click="toggleNewBlogPostForm()"
+        >
+          New Post
+        </a>
+      </li>
+      </ul>
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fa', 'atlas']" />
         </svg>
@@ -35,26 +55,26 @@
           "
       >
       <ul
-      class="dropdown-menu dropdown-menu-dark text-small shadow"
-      aria-labelledby="dropdownGallery"
+        class="dropdown-menu dropdown-menu-dark text-small shadow"
+        aria-labelledby="dropdownGallery"
       >
       <li v-if="isGalleryViewOpen">
         <a
-        class="dropdown-item create-gallery-button"
-        href="#"
-        @click="toggleNewGalleryForm()">
-        
-          >New Gallery</a
+          class="dropdown-item create-gallery-button"
+          href="#"
+          @click="toggleNewBlogPostForm.value"
         >
+          New Gallery
+        </a>
       </li>
       <li v-if="isGalleryItemViewOpen">
         <a
         class="dropdown-item create-galleryitem-button"
         href="#"
-        @click="toggleNewGalleryItemForm()">
-        
-          >New Item</a
+        @click="toggleNewGalleryItemForm()"
         >
+          New Item
+        </a>
       </li>
       </ul>
         <svg class="bi me-2" width="16" height="16">
@@ -142,11 +162,14 @@ export default {
     const hideDashboard = computed(() => store.methods.hideDashboard);
     const selectProfile = computed(() => store.methods.getProfile);
     const removeToken = computed(() => store.methods.removeToken);
+    const toggleNewBlogPostForm = computed(() => store.methods.toggleNewBlogPostForm);
     // View Gallery
     const viewGallery = computed(() => store.methods.viewGallery);
     // Go to gallery item create view
     const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
     const isGalleryItemViewOpen = computed(() => store.state.isGalleryItemViewOpen);
+    // Blog Views
+    const isBlogViewOpen = computed(() => store.state.isBlogViewOpen);
  
     // Clear access token from MongoDB via Axios call
     async function removeAuth() {
@@ -204,8 +227,10 @@ export default {
       viewGallery,
       toggleNewGalleryForm,
       toggleNewGalleryItemForm,
+      toggleNewBlogPostForm,
       isGalleryViewOpen,
       isGalleryItemViewOpen,
+      isBlogViewOpen,
     };
   },
 };

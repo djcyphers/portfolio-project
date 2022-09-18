@@ -3,7 +3,6 @@
     <div class="gallery-view container" v-if="isGalleryViewOpen">
       <div class="row">
         <!-- Main Galleries -->
-        <template v-if="isGalleryViewOpen">
           <div
             class="
               responsive-box
@@ -23,12 +22,12 @@
               :alt="coverArtName(gallery)"
             />
             <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
-            <div class="card-img-overlay d-flex flex-column justify-content-end">
+            <div class="card-img-overlay d-flex flex-column justify-content-end card-img-textarea">
               <div class="gallery-title card-title bg-black mb-0 opacity-75">
-                <h3>{{ coverArtName(gallery) }}</h3>
+                {{ coverArtName(gallery) }}
               </div>
               <div class="gallery-description card-text bg-black opacity-75">
-                <p>{{ coverArtDescription(gallery) }}</p>
+                {{ coverArtDescription(gallery) }}
               </div>
             </div>
             <template v-if="isLoggedIn">
@@ -48,7 +47,6 @@
               </div>
             </template>
           </div>
-        </template>
       </div>
     </div>
     <!-- Gallery Item View (for item in gallery) -->
@@ -95,7 +93,7 @@
     </template>
     <!-- Create new gallery multiplart form -->
     <div
-      class="gallery__new card bg-dark text-white p-4"
+      class="new-gallery-form card bg-dark text-white p-4"
       style="height: 60%; width: 60%"
       v-if="isNewGalleryFormOpen"
     >
@@ -217,7 +215,6 @@ export default {
     setup() {
         // Store StateS
         const store = inject("store");
-        const isLoggedIn = computed(() => store.state.logged);
         // View Gallery
         // This section needs to be refactored more const viewGalleries = computed(() => store.methods.viewGallery);
         const viewGalleries = computed({
@@ -287,6 +284,7 @@ export default {
             return store.methods.closeGalleryItemForm;
           }
         });
+        const isLoggedIn = computed(() => store.state.logged);
         // View Gallery Create Form
         const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
         const isGalleryItemViewOpen = computed(() => store.state.isGalleryItemViewOpen);
@@ -448,18 +446,18 @@ export default {
                     "Content-Type": "multipart/form-data",
                 },
             })
-                .then((response) => {
-                if (response.data.error) {
-                    swal("Error", response.data.message, "error");
-                }
-                else {
-                    swal("Success", "Gallery created!", "success");
-                    // Return to view galleries
-                    returnToViewGalleries();
-                    getAllGalleries();
-                }
-            })
-                .catch((error) => {
+              .then((response) => {
+              if (response.data.error) {
+                  swal("Error", response.data.message, "error");
+              }
+              else {
+                  swal("Success", "Gallery created!", "success");
+                  // Return to view galleries
+                  returnToViewGalleries();
+                  getAllGalleries();
+              }
+              })
+              .catch((error) => {
                 console.log("CG ERROR! => " + fData);
                 swal("Error", error.response.data, "error");
             });
@@ -745,7 +743,7 @@ export default {
             lightbox,
             lightboxOptions,
             attachLightbox,
-        };
+      };
     },
     components: { GalleryCloseButton }
 };

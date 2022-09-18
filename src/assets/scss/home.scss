@@ -12,7 +12,7 @@ Imports
 */
 html {
     background:#000000;
-    /* I guess this helps with REM units? */
+    /* I guess this helps with REM units? Yes. */
     font-size: 12px;
 }
 
@@ -795,14 +795,28 @@ and (min-width : 360px) {
 }
 
 @font-face {
-  font-family: "Ubuntu";
-  font-weight: 400;
+  font-family: NidusSans;
+  font-weight: 100;
   font-style: normal;
   font-display: auto;
   unicode-range: U+000-5FF;
-  src: local("Ubuntu"), url("/fonts/Ubuntu/Ubuntu-Regular.ttf") format("ttf")
+  src: url('~@/assets/fonts/NidusSans/nidsans-webfont.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('~@/assets/fonts/NidusSans/nidsans-webfont.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('~@/assets/fonts/NidusSans/nidsans-webfont.woff2') format('woff2'), /* Super Modern Browsers */
+       url('~@/assets/fonts/NidusSans/nidsans-webfont.woff') format('woff'), /* Modern Browsers */
+       url('~@/assets/fonts/NidusSans/nidsans-webfont.ttf') format('truetype'), /* Safari, Android, iOS */
 }
 
+@font-face {
+  font-family: Dosis;
+  font-weight: 100;
+  font-style: normal;
+  font-display: auto;
+  unicode-range: U+000-5FF;
+  src: local(''),
+  url('~@/assets/fonts/Dosis/Dosis-VariableFont_wght.ttf') format('truetype'),
+}
 /* ===================================================================
  * # Verdana Font blob
  *
@@ -1112,19 +1126,21 @@ pre { font-family: Verdana, Geneva, sans-serif; font-size: 11px; font-style: nor
  * # Gallery (customized)
  *
  * ------------------------------------------------------------------- */
- .card-text {
-   font-size: 1.1vw !important;
-   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-   color: #fff;
- }
-
  .card-title {
-    font-size: 1.4vw !important;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: calc(2vw - 1rem) !important;
+    font-family: Dosis;
+    font-weight: 400;
     color: #fff;
   }
 
-  .gallery-edit {
+ .card-text {
+   font-size: 1vw !important;
+   font-family: Dosis;
+   color: #fff;
+   padding-bottom: 20px;
+ }
+
+ .gallery-edit {
     position: absolute;
     top: 0;
     right: 0;

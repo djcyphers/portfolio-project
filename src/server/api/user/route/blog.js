@@ -9,7 +9,9 @@ All routes are prepended with blog *Reminder lol*
 
 */
 
-// Get gallery name by id
+// Get blog post by id
 router.get("/id/:id", blogController.getBlogPostById);
+// Make a blog post by id
+router.post("/post/:id", blogController.createBlogPost);
 
 module.exports = router;
