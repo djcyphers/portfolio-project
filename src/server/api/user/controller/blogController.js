@@ -50,6 +50,28 @@ exports.getBlogPostById = async (req, res) => {
     }
 }
 
+// Get all blog categories
+exports.getBlogCategories = async (req, res) => {
+    try {
+        const blogCategories = await Blog.find({});
+        if (!blogCategories) {
+            return res.json({
+                error: true,
+                status: 404,
+                message: "Blog categories not found!",
+            });
+        }
+        // Return categories
+        res.send(blogCategories);
+    } catch (error) {
+        return res.json({ 
+            error: true,
+            status: 500,
+            message: "Categories error: " + error,
+        });
+    };
+}
+
 // Create blog post
 exports.createBlogPost = async (req, res) => {
     try {

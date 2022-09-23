@@ -1,10 +1,16 @@
+<!-- eslint-disable vue/no-template-shadow -->
 <template>
   <div class="gallery-wrapper">
-    <div class="gallery-view container" v-if="isGalleryViewOpen">
+    <div
+      v-if="isGalleryViewOpen"
+      class="gallery-view container"
+    >
       <div class="row">
         <!-- Main Galleries -->
-          <div
-            class="
+        <div
+          v-for="(gallery, index) in galleries"
+          :key="index"
+          class="
               responsive-box
               col-md-6 col-lg-3
               gallery-base
@@ -12,67 +18,77 @@
               card
               me-3
             "
-            v-for="(gallery, index) in galleries"
-            :key="index"
-            @click="expandGallery(gallery)"
+          @click="expandGallery(gallery)"
+        >
+          <img
+            class="card-img img-thumbnail bg-black"
+            :src="coverArtImg(gallery)"
+            :alt="coverArtName(gallery)"
           >
-            <img
-              class="card-img img-thumbnail bg-black"
-              :src="coverArtImg(gallery)"
-              :alt="coverArtName(gallery)"
-            />
-            <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
-            <div class="card-img-overlay d-flex flex-column justify-content-end card-img-textarea">
-              <div class="gallery-title card-title bg-black mb-0 opacity-75">
-                {{ coverArtName(gallery) }}
-              </div>
-              <div class="gallery-description card-text bg-black opacity-75">
-                {{ coverArtDescription(gallery) }}
-              </div>
+          <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
+          <div class="card-img-overlay d-flex flex-column justify-content-end card-img-textarea">
+            <div class="gallery-title card-title bg-black mb-0 opacity-75">
+              {{ coverArtName(gallery) }}
             </div>
-            <template v-if="isLoggedIn">
-              <div class="btn-group" role="group" aria-label="Admin Buttons">
-                <button
-                  class="btn btn-primary edit-button"
-                  @click="editGallery(gallery)"
-                >
-                  Edit
-                </button>
-                <button
-                  class="btn btn-primary delete-button"
-                  @click="deleteGallery(gallery, index)"
-                >
-                  Delete
-                </button>
-              </div>
-            </template>
+            <div class="gallery-description card-text bg-black opacity-75">
+              {{ coverArtDescription(gallery) }}
+            </div>
           </div>
+          <template v-if="isLoggedIn">
+            <div
+              class="btn-group"
+              role="group"
+              aria-label="Admin Buttons"
+            >
+              <button
+                class="btn btn-primary edit-button"
+                @click="editGallery(gallery)"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-primary delete-button"
+                @click="deleteGallery(gallery, index)"
+              >
+                Delete
+              </button>
+            </div>
+          </template>
+        </div>
       </div>
     </div>
     <!-- Gallery Item View (for item in gallery) -->
     <template v-if="isGalleryItemViewOpen && !isGalleryUpdating">
       <!-- Close Button -->
-      <GalleryCloseButton @click.prevent="openGalleryView"/>
+      <GalleryCloseButton @click.prevent="openGalleryView" />
       <div class="gallery-item-view container">
         <div class="row">
           <div
-            class="col-md-6 col-lg-3 gallery-item"
             v-for="(galleryItem, index) in galleryItems"
             :key="index"
-            >
+            class="col-md-6 col-lg-3 gallery-item"
+          >
             <a
               ref="galleryItemRef"
-              @click.prevent="attachLightbox($event)"
               :href="galleryItemImg(galleryItem)"
               class="lightbox"
               :data-footer="galleryItemDescription(galleryItem)"
               :data-gallery="galleryItemTitle(galleryItem)"
               data-toggle="lightbox"
+              @click.prevent="attachLightbox($event)"
             >
-              <img :src="galleryItemImg(galleryItem)" class="img-fluid rounded" :alt="galleryItemTitle(galleryItem)" />
+              <img
+                :src="galleryItemImg(galleryItem)"
+                class="img-fluid rounded"
+                :alt="galleryItemTitle(galleryItem)"
+              >
             </a>
             <template v-if="isLoggedIn">
-              <div class="btn-group" role="group" aria-label="Admin Buttons">
+              <div
+                class="btn-group"
+                role="group"
+                aria-label="Admin Buttons"
+              >
                 <button
                   class="btn btn-primary edit-button"
                   @click="editGalleryItem(galleryItem.title)"
@@ -93,80 +109,112 @@
     </template>
     <!-- Create new gallery multiplart form -->
     <div
+      v-if="isNewGalleryFormOpen"
       class="new-gallery-form card bg-dark text-white p-4"
       style="height: 60%; width: 60%"
-      v-if="isNewGalleryFormOpen"
     >
-      <form enctype="multipart/form-data" @submit.prevent="createNewGallery">
+      <form
+        enctype="multipart/form-data"
+        @submit.prevent="createNewGallery"
+      >
         <div class="form-group">
           <label for="galleryName">Gallery Name</label>
           <input
-            type="text"
-            class="form-control"
             id="galleryName"
             v-model="newGallery.galleryName"
-          />
+            type="text"
+            class="form-control"
+          >
         </div>
         <div class="form-group">
           <label for="galleryDescription">Gallery Description</label>
           <input
-            type="text"
-            class="form-control"
             id="galleryDescription"
             v-model="newGallery.galleryDescription"
-          />updateGallery
+            type="text"
+            class="form-control"
+          >
         </div>
         <div class="form-group">
           <label for="galleryCoverArtUrl">Upload File</label>
-          <input type="file" id="file" @change="uploadFile($event)" multiple />
+          <input
+            id="file"
+            type="file"
+            multiple
+            @change="uploadFile($event)"
+          >
         </div>
-        <button type="submit" class="btn btn-primary">Create</button>
-        <button class="btn btn-secondary" @click="cancelGalleryCreateForm">
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Create
+        </button>
+        <button
+          class="btn btn-secondary"
+          @click="cancelGalleryCreateForm"
+        >
           Cancel
         </button>
       </form>
     </div>
     <!-- Edit gallery form -->
     <div
+      v-if="editGalleryView"
       class="gallery__edit card bg-dark text-white mx-auto p-4"
       style="height: 60%; width: 60%"
-      v-if="editGalleryView"
     >
-      <form enctype="multipart/form-data" @submit.prevent="updateGallery()">
+      <form
+        enctype="multipart/form-data"
+        @submit.prevent="updateGallery()"
+      >
         <div class="form-group">
           <label for="galleryName">Update Gallery Name</label>
           <input
-            type="text"
-            class="form-control"
             id="galleryName"
             v-model="editGalleryForm.galleryName"
-          />
+            type="text"
+            class="form-control"
+          >
         </div>
         <div class="form-group">
           <label for="galleryDescription">Update Gallery Description</label>
           <input
-            type="text"
-            class="form-control"
             id="galleryDescription"
             v-model="editGalleryForm.galleryDescription"
-          />
+            type="text"
+            class="form-control"
+          >
         </div>
-        <br />
+        <br>
         <div class="form-group">
           <label for="galleryCoverArtUrl">Upload File</label>
-          <input type="file" id="file" @change="uploadFile($event)" multiple />
+          <input
+            id="file"
+            type="file"
+            multiple
+            @change="uploadFile($event)"
+          >
         </div>
-        <button type="submit" class="btn btn-primary">Update</button>
-        <button class="btn btn-secondary" @click="cancelGalleryUpdate">
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Update
+        </button>
+        <button
+          class="btn btn-secondary"
+          @click="cancelGalleryUpdate"
+        >
           Cancel
         </button>
       </form>
     </div>
     <!-- Create new gallery item multiplart form -->
     <div
+      v-if="isNewGalleryItemFormOpen"
       class="galleryitem__new card bg-dark text-white p-4"
       style="height: 60%; width: 60%"
-      v-if="isNewGalleryItemFormOpen"
     >
       <form
         enctype="multipart/form-data"
@@ -175,27 +223,40 @@
         <div class="form-group">
           <label for="galleryName">Gallery Item Title</label>
           <input
-            type="text"
-            class="form-control"
             id="title"
             v-model="newGalleryItem.title"
-          />
+            type="text"
+            class="form-control"
+          >
         </div>
         <div class="form-group">
           <label for="galleryDescription">Gallery Item Description</label>
           <input
-            type="text"
-            class="form-control"
             id="galleryDescription"
             v-model="newGalleryItem.description"
-          />
+            type="text"
+            class="form-control"
+          >
         </div>
         <div class="form-group">
           <label for="galleryCoverArtUrl">Upload File</label>
-          <input type="file" id="file" @change="uploadFile($event)" multiple />
+          <input
+            id="file"
+            type="file"
+            multiple
+            @change="uploadFile($event)"
+          >
         </div>
-        <button type="submit" class="btn btn-primary">Create</button>
-        <button class="btn btn-secondary" @click="cancelGalleryItemCreateForm">
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Create
+        </button>
+        <button
+          class="btn btn-secondary"
+          @click="cancelGalleryItemCreateForm"
+        >
           Cancel
         </button>
       </form>
@@ -212,6 +273,7 @@ import GalleryCloseButton from "./GalleryCloseButton";
 
 export default {
     name: "Gallery",
+    components: { GalleryCloseButton },
     setup() {
         // Store StateS
         const store = inject("store");
@@ -330,7 +392,7 @@ export default {
               console.log(error);
               swal("Error", "Get all galleries onMount error!", "error");
             });
-        };
+        }
         // Get all gallery items depending on which gallery is open
         async function getGalleryItemsOnMount() {
           if (!gallery.value.length > 0) {
@@ -375,7 +437,7 @@ export default {
                 const str = gallery.galleryCoverArtUrl;
                 return str.split("\\").pop().split("/").pop();
             });
-            if (img) {
+            if (img.value) {
             return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
             }
             else {
@@ -744,7 +806,6 @@ export default {
             lightboxOptions,
             attachLightbox,
       };
-    },
-    components: { GalleryCloseButton }
+    }
 };
 </script>

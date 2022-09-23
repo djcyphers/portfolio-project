@@ -34,6 +34,10 @@ module.exports = {
         target: "http://localhost:4000",
         changeOrigin: true,
       },
+      "/blog": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+      },
     },
   },
 };

@@ -13,5 +13,7 @@ All routes are prepended with blog *Reminder lol*
 router.get("/id/:id", blogController.getBlogPostById);
 // Make a blog post by id
 router.post("/post/:id", blogController.createBlogPost);
+// Get blog categores
+router.get("/categories/all", blogController.getBlogCategories);
 
 module.exports = router;

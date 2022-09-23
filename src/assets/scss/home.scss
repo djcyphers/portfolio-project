@@ -21,6 +21,20 @@ body {
     background-color:black !important;
 }
 
+h1 {
+  font-family: Dosis;
+  font-size: calc(2rem + 1vw);
+  font-weight: 400;
+  color: #fff;
+}
+
+h2 {
+  font-family: Dosis;
+  font-size: calc(1rem + 1vw);
+  font-weight: 300;
+  color: #fff;
+}
+
 ul {
     list-style: none;
 }
@@ -31,6 +45,13 @@ p {
 
 .jumbotron {
     background-color: linen;
+}
+
+blockquote {
+  padding-left: 1rem;
+  border-left: 4px solid rgba(#0848d29b, 0.7);
+  background-color: rgba(#293755, 0.7);
+  display: table; /* keep the background color wrapped tight */
 }
 
 /*  Front Page Under Construction
@@ -420,10 +441,6 @@ ul.socialshare-icons i.fa {
     height: 255px;
 }
 
-.about-blog {
-    height: 255px;
-}
-
 .line-1{
     position: relative;
     top: 50%;
@@ -794,6 +811,11 @@ and (min-width : 360px) {
 
 }
 
+/* ===================================================================
+ * # Fonts
+ * 
+ * ------------------------------------------------------------------- */
+
 @font-face {
   font-family: NidusSans;
   font-weight: 100;
@@ -817,17 +839,6 @@ and (min-width : 360px) {
   src: local(''),
   url('~@/assets/fonts/Dosis/Dosis-VariableFont_wght.ttf') format('truetype'),
 }
-/* ===================================================================
- * # Verdana Font blob
- *
- * 
-h1 { font-family: Verdana, Geneva, sans-serif; font-size: 23px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 23px; } 
-h3 { font-family: Verdana, Geneva, sans-serif; font-size: 17px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 23px; } 
-p { font-family: Verdana, Geneva, sans-serif; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 23px; } 
-blockquote { font-family: Verdana, Geneva, sans-serif; font-size: 17px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 23px; } 
-pre { font-family: Verdana, Geneva, sans-serif; font-size: 11px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 23px; }
-
-------------------------------------------------------------------- */
 
 /* ===================================================================
  * # Animated Close Button
@@ -1149,4 +1160,83 @@ pre { font-family: Verdana, Geneva, sans-serif; font-size: 11px; font-style: nor
     background: #fff;
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+  }
+
+  /* ===================================================================
+ * # Code highlighting styles
+ * # Highlight.js
+ * ------------------------------------------------------------------- */
+
+  pre {
+    color: #FFF;
+    font-family: 'JetBrainsMono', monospace;
+    background-color: rgba(#0e0e0e7c, 0.7);
+
+    code {
+      color: inherit;
+      padding: 0;
+      font-size: 1rem;
+    }
+
+    .hljs-comment,
+    .hljs-quote {
+      color: #616161;
+    }
+
+    .hljs-variable,
+    .hljs-template-variable,
+    .hljs-attribute,
+    .hljs-tag,
+    .hljs-name,
+    .hljs-regexp,
+    .hljs-link,
+    .hljs-name,
+    .hljs-selector-id,
+    .hljs-selector-class {
+      color: #F98181;
+    }
+
+    .hljs-number,
+    .hljs-meta,
+    .hljs-built_in,
+    .hljs-builtin-name,
+    .hljs-literal,
+    .hljs-type,
+    .hljs-params {
+      color: #FBBC88;
+    }
+
+    .hljs-string,
+    .hljs-symbol,
+    .hljs-bullet {
+      color: #B9F18D;
+    }
+
+    .hljs-title,
+    .hljs-section {
+      color: #FAF594;
+    }
+
+    .hljs-keyword,
+    .hljs-selector-tag {
+      color: #70CFF8;
+    }
+
+    .hljs-emphasis {
+      font-style: italic;
+    }
+
+    .hljs-strong {
+      font-weight: 700;
+    }
+  }
+
+  /* ===================================================================
+ * # Blog Utilities
+ * # 
+ * ------------------------------------------------------------------- */
+ // Fit image to blog editor. Should reflect actual plublished content size
+  img.blog-image {
+    width: 50% !important;
+    object-fit: contain;
   }
