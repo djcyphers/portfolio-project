@@ -20,7 +20,7 @@ const state = reactive({
   isBlogViewOpen: true,
   isBlogUpdating: false,
   isBlogPostViewOpen: false,
-  isNewBlogPostFormOpen: false,
+  isBlogEditorOpen: false,
 });
 
 const methods = {
@@ -88,6 +88,9 @@ const methods = {
   closeGalleryForm() {
     state.isNewGalleryFormOpen = false;
   },
+  viewGallery() {
+    state.isGalleryViewOpen = true;
+  },
   viewGalleryItems() {
     state.isGalleryItemViewOpen = true;
   },
@@ -107,8 +110,8 @@ const methods = {
   exitBlogPosts() {
     state.isBlogViewOpen = false;
   },
-  toggleNewBlogPostForm() {
-    state.isNewBlogPostFormOpen = true;
+  toggleBlogEditor() {
+    state.isBlogEditorOpen = !state.isBlogEditorOpen; // best way
   },
 };
 

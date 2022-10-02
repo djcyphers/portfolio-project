@@ -72,6 +72,7 @@ exports.createGallery = async (req, res) => {
             message: "Please upload a cover art!",
           });
         }
+        console.log("Fields: " + JSON.stringify(fields));
         const result = gallerySchema.validate(fields);
         if (result.error) {
           return res.json({

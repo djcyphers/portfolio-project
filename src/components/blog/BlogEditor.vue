@@ -141,7 +141,7 @@
 </template>
 
 <script>
-import { computed, ref, inject, onMounted } from "vue";
+import { computed, ref, inject, onMounted, reactive } from "vue";
 import {
   useEditor,
   EditorContent,
@@ -165,6 +165,7 @@ import html from "highlight.js/lib/languages/xml";
 import "highlight.js/styles/github.css";
 // load all highlight.js languages
 import { lowlight } from "lowlight";
+import any from "bluebird/js/release/any";
 lowlight.registerLanguage("html", html);
 lowlight.registerLanguage("css", css);
 lowlight.registerLanguage("js", js);
@@ -179,12 +180,18 @@ export default {
   setup() {
     // onMounted
     onMounted(async () => {
-      await getCategoriesOnMount();
+      await getAllCategories();
     });
     // Create a new blog post
     const newBlogPostData = ref({ blogTitle: "", blogContent: "", blogCategory: "" });
+    // Toggle Blog Editor
+    const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
+    // Blog Posts Store
+    const blogPosts = reactive([]);
     // Categories ref
-    const categories = ref([]);
+    const categories = reactive([]);
+    // Category input ref
+    const categoryInput = ref('');
     // Blog Editor
     const editor = useEditor({
       content: "<p>I’m running Tiptap with Vue.js. 🎉</p>",
@@ -236,51 +243,78 @@ export default {
     * Manage blog data
     *
     */
+    // Responsive refs
+    const files = reactive({ files: [] });
+    const isLoggedIn = computed(() => store.state.logged);
+    const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
+    // Form data reactive
+    const fData = reactive( new FormData() );
+    // Global store state
+    const store = inject("store");
    
     // Process blog post data
     function processBlogPost() {
-      const blogTitleElement = document.querySelector('h1').innerHTML.toString();
+      // Get blog title from first h1
+      const blogTitleElement = document.querySelector('h1').innerHTML;
       if (!blogTitleElement) {
         return swal("Error", "Add a blog title!", "error");
       }
-      const blogContentElment = document.querySelector('.ProseMirror').children.toString();
       newBlogPostData.value.blogTitle = blogTitleElement;
-      newBlogPostData.value.blogContent = blogContentElment;
-      console.log("Process Post => " + JSON.stringify(newBlogPostData));
+      // Get all elements inside Prose Mirror div
+      const nl = document.querySelector('.ProseMirror').childNodes;
+      if (nl) {
+        // Get image src's from nodeList and convert to div class img element
+        toArray(nl);
+        createBlogPost(); // Use converted data and send to backend
+        //console.log("ARRAY: " + arr);
+        //console.table(imgArray);
+      }
     }
 
     // Create blog post
     async function createBlogPost() {
-      let fData = new FormData();
         fData.append("blogTitle", newBlogPostData.value.blogTitle);
         fData.append("blogCategory", newBlogPostData.value.blogCategory);
-        fData.append("blogContent", newBlogPostData.value.blogContent);
-        for (let file of files) {
-            fData.append('files', file, file.name) // note, no square-brackets
+        fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
+        // This honesly was difficult to figure out. I hate you FormData!
+        for (let i = 0; i < files.files.length; i++) {
+          fData.append('files', files.files[i])
         }
         await axios
             .post("blog/create", fData, {
+              headers: {
+                  "Content-Type": "multipart/form-data",
+              },
             })
             .then((response) => {
               if (response.data.error) {
                 swal("Error", response.data.message, "error");
               } else {
                 swal("Success", response.data.message, "success");
-                returnToViewBlogPosts();
+                toggleBlogEditor.value();
                 getAllBlogPosts();
               }
             })
             .catch((error) => {
-              console.log("Create post error! => " + error);
-              swal("Error", error.response.data, "error");
+              swal("Error", "Create Post Error: " + error, "error");
             })
     }
-
-    // Responsive refs
-    const files = ref({ files: [] });
-    const isLoggedIn = computed(() => store.state.logged);
-    // Global store state
-    const store = inject("store");
+    // Get all blog posts on mount (after loading a new image or refresh)
+    async function getAllBlogPosts() {
+      await axios
+        .get("blog/posts/all")
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            // Put all posts into reactive array
+            blogPosts = response.data;
+          }
+        })
+        .catch((error) => {
+          swal("Error", error, "error");
+        });
+    }
     // Image url and file uploadf for Tiptap
     const addImageLink = computed(() => {
       const url = window.prompt("URL");
@@ -298,9 +332,9 @@ export default {
         swal("Error", `Upload Image Error! => ${error}`, "error");
         return;
       }
-      files.value.files = event.target.files[0];
-      if (files.value) {
-        const rawData = await toBase64(files.value.files);
+      files.files.push(event.target.files[0]);
+      if (files.files) {
+        const rawData = await toBase64(event.target.files[0]);
         editor.value.chain().focus().setImage({ src: rawData }).run();
       } else {
         swal("Error", `Upload Error! => ${error}`, "error");
@@ -361,11 +395,11 @@ export default {
     }
 
     // Get all categories onMount
-    async function getCategoriesOnMount() {
+    async function getAllCategories() {
       await axios
         .get("blog/categories/all")
         .then((response) => {
-          categories.value = response.data;
+          categories = response.data;
         })
         .catch((error) => {
           console.log(error);
@@ -374,12 +408,36 @@ export default {
     }
     // Input category in editor menu bar
     function enterInputCategory() {
-      category.value = document.querySelector('.category-input-box').innerHTML;
-      console.log('Category is inputed: ' + category.value);
+      categoryInput.value = document.querySelector('.category-input-box').value;
+      newBlogPostData.value.blogCategory = categoryInput.value;
+      console.log('Category is inputed: ' + categoryInput.value);
     }
     // Select categories from selection from db response
     function selectInputCategory(category) {
       newBlogPostData.value.blogCategory = category;
+    }
+
+    // Convert nodeList to Array
+    function toArray(obj) {
+      const array = [];
+      // iterate backwards ensuring that length is an UInt32
+      for (var i = obj.length >>> 0; i--;) { 
+        array[i] = obj[i];
+      }
+      // Push the src image to be saved later in db via axios / formidable
+      //const fileArray = [];
+      const tmpArray = []; 
+      array.forEach(function(chunk) {
+        if (chunk.firstChild.src != undefined) {
+          //console.log('ImgSrc: ' + chunk.firstChild.src);
+          //fileArray.push(chunk.firstChild.src);
+          chunk.firstChild.src = "getBlogImage()";
+        }
+        tmpArray.push(chunk.outerHTML);
+      })
+      //files.value.files = fileArray;
+      //console.log('Array: ' + tmpArray)
+      return newBlogPostData.value.blogContent = tmpArray;
     }
 
     return {
@@ -407,11 +465,18 @@ export default {
       setLink,
       createBlogPost,
       newBlogPostData,
+      toggleBlogEditor,
+      isBlogEditorOpen,
       processBlogPost,
       categories,
-      getCategoriesOnMount,
+      categoryInput,
+      getAllCategories,
+      getAllBlogPosts,
       enterInputCategory,
       selectInputCategory,
+      toArray,
+      fData,
+      blogPosts,
     };
   },
 };

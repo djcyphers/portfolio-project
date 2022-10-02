@@ -5,7 +5,6 @@
       class="blog-view container"
     >
       <div class="row">
-        <template>
           <!-- Blog Posts -->
           <div
             v-for="(blogPost, index) in blogPosts"
@@ -17,25 +16,19 @@
               card
               me-3
             "
-            @click="viewBlogPost(blogPost)"
+            @click="viewBlogPosts(blogPost)"
           >
-            <img 
-              v-if="blogPost"
+            <img
               class="card-img img-thumbnail bg-black"
               :src="blogImgUrl(blogPost)"
               :alt="blogPostTitle(blogPost)"
             >
-            <p v-else>
-              Create your first blog post! Yay!
-            </p>
             <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
-            <template v-if="blogPost">
-              <!-- Deal with first time init. You're welcome -->
               <div class="card-img-overlay d-flex flex-column justify-content-end card-img-textarea">
-                <div class="gallery-title card-title bg-black mb-0 opacity-75">
+                <div class="blog-title card-title bg-black mb-0 opacity-75">
                   {{ blogPostTitle(blogPost) }}
                 </div>
-                <div class="gallery-description card-text bg-black opacity-75">
+                <div class="blog-category card-text bg-black opacity-75">
                   {{ blogPostCategory(blogPost) }}
                 </div>
               </div>
@@ -60,13 +53,11 @@
                   </button>
                 </div>
               </template>
-            </template>
           </div>
-        </template>
       </div>
     </div>
     <!-- Create new blog post multiplart form -->
-    <template v-if="isNewBlogPostFormOpen">
+    <template v-if="isBlogEditorOpen">
       <!-- Wysygig Editor -->
       <div class="blog-editor-wrapper container">
         <div class="row">
@@ -130,17 +121,39 @@ export default {
     const viewBlogPosts = computed(() => store.methods.viewBlogPosts);
     const isBlogViewOpen = computed(() => store.state.isBlogViewOpen);
     const isBlogPostViewOpen = computed(() => store.state.isBlogPostViewOpen);
-    const isNewBlogPostFormOpen = computed(() => store.state.isNewBlogPostFormOpen);
+    const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     // Local ref
     const isBlogUpdating = ref(false);
     const editBlogPostView = ref(false);
     const editBlogPostForm = ref(false);
     // Logged in?
-    const isLoggedIn = computed(() => store.state.logged );
-    // Blog post arrays
+    const isLoggedIn = computed(() => store.state.logged);
+    // Blog Posts Store
     const blogPosts = ref([]);
-    const files = ref({ files: [] });
 
+    const files = ref({ files: [] });
+    
+    onMounted(async () => {
+      viewBlogPosts.value();
+      await getAllBlogPosts();
+    });
+
+    // Get all blog posts on mount (after loading a new image or refresh)
+    async function getAllBlogPosts() {
+      await axios
+        .get("blog/posts/all")
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            // Put all posts into reactive array
+            blogPosts.value = response.data;
+          }
+        })
+        .catch((error) => {
+          swal("Error", error, "error");
+        });
+    }
     // Edit blog post
     function editBlogPost(blogPost) {
      // Close blog post view
@@ -155,13 +168,40 @@ export default {
       // Remove blog post from array
     }
 
+    // Pull images and add them to webpack (require())
+    function blogImgUrl(blogPost) {
+      const name = blogPost.blogTitle;
+      if (name === undefined) return;
+      const formatName = name.replace(/ /g, "-").toLowerCase();
+      let img = computed(() => {
+          const str = blogPost.blogImagesUrls[0]; // get first image in blog post for thumbnail
+          return str.split("\\").pop().split("/").pop();
+      });
+      if (img.value) {
+            return require(`@/assets/blog/` + `${formatName}/${img.value}`);
+            }
+            else {
+              return []; // Vue state trying to add img buggy webpack issue
+            }
+      }
+      // Get blog post title
+      function blogPostTitle(blogPost) {
+        if (!blogPost) return;
+        return blogPost.blogTitle;
+      }
+      // Get blog post content
+      function blogPostCategory(blogPost) {
+        if (!blogPost) return;
+        return blogPost.blogCategory;
+      }
+
     return {
       store,
       viewBlogPosts,
       isBlogViewOpen,
       isBlogUpdating,
       isBlogPostViewOpen,
-      isNewBlogPostFormOpen,
+      isBlogEditorOpen,
       isLoggedIn,
       blogPosts,
       files,
@@ -169,6 +209,9 @@ export default {
       deleteBlogPost,
       editBlogPostView,
       editBlogPostForm,
+      blogImgUrl,
+      blogPostTitle,
+      blogPostCategory,
     }
   }
 };

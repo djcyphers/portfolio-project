@@ -42,13 +42,13 @@
             >
               <button
                 class="btn btn-primary edit-button"
-                @click="editGallery(gallery)"
+                @click.stop="editGallery(gallery)"
               >
                 Edit
               </button>
               <button
                 class="btn btn-primary delete-button"
-                @click="deleteGallery(gallery, index)"
+                @click.stop="deleteGallery(gallery, index)"
               >
                 Delete
               </button>
@@ -279,73 +279,22 @@ export default {
         const store = inject("store");
         // View Gallery
         // This section needs to be refactored more const viewGalleries = computed(() => store.methods.viewGallery);
-        const viewGalleries = computed({
-          get() {
-            return store.methods.viewGallery;
-          },
-          set() {
-            return store.methods.viewGallery;
-          },
-        });
+        const viewGalleries = computed(() => store.methods.viewGallery);
         // Exit Gallery
-        const exitGalleries = computed({
-          get() {
-            return store.methods.exitGallery;
-          },
-          set() {
-            return store.methods.exitGallery;
-          },
-        });
+        const exitGalleries = computed(() => store.methods.exitGallery);
         // View Gallery Items
-        const viewGalleryItems = computed({
-          get() {
-            return store.methods.viewGalleryItems;
-          },
-          set() {
-            return store.methods.viewGalleryItems;
-          },
-        });
+        const viewGalleryItems = computed(() => store.methods.viewGalleryItems);
         // Close Gallery Items View
-        const closeGalleryItemsView = computed({
-          get() {
-            return store.methods.closeGalleryItems;
-          },
-          set() {
-            return store.methods.closeGalleryItems;
-          },
-        });
-        const viewGalleryForm = computed({
-          get() {
-            return store.methods.newGalleryForm;
-          },
-          set() {
-            return store.methods.newGalleryForm;
-          }
-        });
-        const closeGalleryForm = computed({
-          get() {
-            return store.methods.closeGalleryForm;
-          },
-          set() {
-            return store.methods.closeGalleryForm;
-          }
-        });
-        const viewGalleryItemForm = computed({
-          get() {
-            return store.methods.newGalleryItemForm;
-            },
-          set() {
-            return store.methods.newGalleryItemForm;
-          }
-        });
-        const closeGalleryItemForm = computed({
-          get() {
-            return store.methods.closeGalleryItemForm;
-          },
-          set() {
-            return store.methods.closeGalleryItemForm;
-          }
-        });
+        const closeGalleryItemsView = computed(() => store.methods.closeGalleryItems);
+        // View new gallery create form
+        const viewGalleryForm = computed(() => store.methods.newGalleryForm);
+        // Close new gallery form
+        const closeGalleryForm = computed(() => store.methods.closeGalleryForm);
+        // View new gallery item create form
+        const viewGalleryItemForm = computed(() => store.methods.newGalleryItemForm);
+        // Close gallery item form
+        const closeGalleryItemForm = computed(() => store.methods.closeGalleryItemForm);
+ 
         const isLoggedIn = computed(() => store.state.logged);
         // View Gallery Create Form
         const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
@@ -438,7 +387,7 @@ export default {
                 return str.split("\\").pop().split("/").pop();
             });
             if (img.value) {
-            return require(`../../assets/galleries/` + `${formatName}/${img.value}`);
+            return require(`@/assets/galleries/` + `${formatName}/${img.value}`);
             }
             else {
               return []; // Vue state trying to add img buggy webpack issue
@@ -514,14 +463,15 @@ export default {
               }
               else {
                   swal("Success", "Gallery created!", "success");
+                  // Cancel gallery create form
+                  closeGalleryForm.value();
                   // Return to view galleries
-                  returnToViewGalleries();
                   getAllGalleries();
               }
               })
               .catch((error) => {
-                console.log("CG ERROR! => " + fData);
-                swal("Error", error.response.data, "error");
+                console.log("Create Gallery ERROR! => " + fData);
+                swal("Error", "Create Gallery Error: " + error, "error");
             });
         }
         // Get newly created gallery and add it to the galleries array
@@ -598,11 +548,6 @@ export default {
             viewGalleryItems.value();
             exitGalleries.value();
         }
-        // Initiate new gallery creation
-        function createNewGalleryView() {
-            exitGalleries.value();
-            viewGalleryForm.value();
-        }
         // Open gallery view from gallery item view
         function openGalleryView() {
             closeGalleryItemsView.value();
@@ -633,10 +578,8 @@ export default {
             viewGalleryItemForm.value();
         }
         // Return to view galleries
-        function returnToViewGalleries() {
-            viewGalleries.value();
-            closeGalleryForm.value();
-            editGalleryView.value = false;
+        function returnToViewGalleriesAfterDelete() {
+            cancelGalleryCreateForm();
         }
         // Delete entire gallery
         async function deleteGallery(gallery, index) {
@@ -649,6 +592,7 @@ export default {
                   swal("Error", response.data.message, "error");
               }
               else {
+                  returnToViewGalleriesAfterDelete();
                   swal("Success", "Gallery Deleted!", "success");
               }
           })
@@ -721,6 +665,7 @@ export default {
           }
         // Open gallery to view gallery items
         async function expandGallery(gallery) {
+          console.log("Expand Gallery Just Fired!");
           if (gallery.galleryName !== "" || undefined) { // Then go to create gallery item screen
             // Make api call to get items
             localStorage.setItem("gallery", JSON.stringify(gallery));
@@ -766,7 +711,6 @@ export default {
             newGalleryItem,
             getAllGalleries,
             createNewGallery,
-            createNewGalleryView,
             createNewGalleryItem,
             createNewGalleryItemView,
             uploadFile,
@@ -777,7 +721,7 @@ export default {
             deleteGallery,
             deleteGalleryItem,
             updateGallery,
-            returnToViewGalleries,
+            returnToViewGalleriesAfterDelete,
             coverArtImg,
             coverArtName,
             coverArtDescription,

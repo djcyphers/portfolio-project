@@ -13,9 +13,7 @@ const blogSchema = new Schema(
             required: true,
         },
         // reference image instances to their folder path
-        blogImagesUrls: [{
-            type: String,
-        }],
+        blogImagesUrls: [ String ],
         blogCategory: {
             type: String,
             required: true,

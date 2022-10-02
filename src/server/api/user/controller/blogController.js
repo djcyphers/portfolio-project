@@ -13,6 +13,8 @@ const path = require("path");
 // const util = require('util')
 // Multiform Upload
 const formidable = require("formidable");
+const { errorMonitor } = require("events");
+const { response } = require("express");
 const vueAssets = "../../../../assets/blog";
 const uploadUrl = path.join(__dirname, vueAssets);
 
@@ -20,8 +22,7 @@ const uploadUrl = path.join(__dirname, vueAssets);
 const blogSchema = Joi.object().keys({
     blogTitle: Joi.string().required().min(2),
     blogContent: Joi.string().required(),
-    blogImages: Joi.string(),
-    blogCategory: Joi.string().required().min(2)
+    blogCategory: Joi.string().required(),
 });
 
 // Get blog post by id
@@ -50,10 +51,31 @@ exports.getBlogPostById = async (req, res) => {
     }
 }
 
+// Get all blog posts
+exports.getAllBlogPosts = async (req, res) => {
+    try {
+        const blogPosts = await Blog.find({});
+        if (!blogPosts) {
+            return res.json({
+                error: true,
+                status: 404,
+                message: "Blog post not found!",
+            });
+        }
+        res.send(blogPosts);
+    } catch (error) {
+        return res.json({
+            error: true,
+            status: 404,
+            message: "Get all blog posts failed!",
+        });
+    }
+}
+
 // Get all blog categories
 exports.getBlogCategories = async (req, res) => {
     try {
-        const blogCategories = await Blog.find({});
+        const blogCategories = await Blog.find({}, 'blogCategory');
         if (!blogCategories) {
             return res.json({
                 error: true,
@@ -75,81 +97,102 @@ exports.getBlogCategories = async (req, res) => {
 // Create blog post
 exports.createBlogPost = async (req, res) => {
     try {
+        // Have to do this the hard way, no default for multi files :(
         const form = new formidable.IncomingForm();
+        const fields = [];
+        const files = [];
         // Each post can have multiple images
         form.multiples = true;
-        // Parse form data
-        form.parse(req, async (err, fields, files) => {
-            try {
-                if (err) {
-                    return res.json({
-                        error: true,
-                        status: 400,
-                        message: "Failed to create blog post!",
-                    });
-                }
-                // Check if undefined or missing fields
-                const { blogTitle, blogContent, blogCategory } = fields;
-                if (!blogTitle || !blogContent || !blogCategory) {
-                    return res.json({
-                        error: true,
-                        status: 400,
-                        message: "Please fill all the fields!",
-                    });
-                }
-                // Check files
-                if (!files) {
-                    return res.json({
-                        error: true,
-                        status: 400,
-                        message: "Please upload an image. So lazy!",
-                    });
-                }
-                // Validate fields
-                const result = blogSchema.validate(fields);
-                if (result.error) {
-                    return res.json({
-                        error: true,
-                        status: 400,
-                        message: result.error.message,
-                    });
-                }
-                // Check if post already exists
-                const blogPost = await Blog.findOne({
-                    blogTitle: fields.blogTitle,
+        // Push fields and files to the array arrgh I had to re-study [] properties :`(
+        form.on('field', (fieldName, fieldValue) => {
+            // Note how you push the object fields bleh
+            fields.push( { field: fieldName, value: fieldValue } );
+        });
+        // Parse each file because parsing files doesn't work smh
+        form.on('file', (fieldName, file) => {
+            //console.log("On file: " + fieldName + "||" + file);
+            files.push({ field: fieldName, value: file })
+        });
+        form.on('error', console.error);
+        // All the logic goes here instead of form.parse
+        form.on('end', async () => {
+            // Check if undefined or missing fields
+            if (!fields[0].value || !fields[1].value || !fields[2].value) {
+                return res.json({
+                    error: true,
+                    status: 400,
+                    message: "Please fill all the fields!",
                 });
-                if (blogPost) {
-                    return res.json({
-                        error: true,
-                        status: 400,
-                        message: "Blog post already exists!",
-                    });
-                }
-                // Create new blog and save data to database
-                const newBlogPost = new Blog(fields);
-                await newBlogPost.save();
-                // Create a blog folder if not exists (it should)
-                const formatName = fields.blogTitle.replace(/\s+/g, "-").toLowerCase();
-                const blogFolder = `${uploadUrl}\\${formatName}`;
-                if (!fs.existsSync(blogFolder)) {
-                    fs.mkdirSync(blogFolder);
-                }
-                // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
-                const allowedMimeTypes = [
-                    "image/jpeg",
-                    "image/png",
-                    "image/gif",
-                    "image/svg+xml",
-                    "image/webp",
-                    "audio/mp3",
-                    "video/mp4",
-                ];
-                for (let file in files.files) {
+            }
+            const fieldValues = {
+                "blogTitle": [fields[0].value].toString(),
+                "blogCategory": [fields[1].value].toString(),
+                "blogContent": [fields[2].value].toString(),
+            }
+            // Check files
+            if (!files) {
+                return res.json({
+                    error: true,
+                    status: 400,
+                    message: "Please include an image. So lazy!",
+                });
+            }
+            // Validate fields
+            const result = blogSchema.validate(fieldValues);
+            console.log(JSON.stringify(result));
+            if (result.error) {
+                return res.json({
+                    error: true,
+                    status: 400,
+                    message: "Schema Error: " + result.error.details[0].message,
+                });
+            }
+            // Check if post already exists
+            const blogPost = await Blog.findOne({
+                blogTitle: fields.blogTitle,
+            });
+            if (blogPost) {
+                return res.json({
+                    error: true,
+                    status: 400,
+                    message: "Blog post already exists!",
+                });
+            }  
+            // Create new blog and save result data we validated earlier to database
+            const newBlogPost = new Blog({
+                blogTitle: fieldValues.blogTitle,
+                blogCategory: fieldValues.blogCategory,
+                blogContent: fieldValues.blogContent,
+            });
+            await newBlogPost.save();
+            // Create a blog folder if not exists (it should)
+            const formatName = fieldValues.blogTitle.replace(/\s+/g, "-").toLowerCase();
+            const blogFolder = `${uploadUrl}\\${formatName}`;
+            if (!fs.existsSync(blogFolder)) {
+                fs.mkdirSync(blogFolder, { recursive: true });
+            }  
+            // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
+            const allowedMimeTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/svg+xml",
+                "image/webp",
+                "audio/mp3",
+                "video/mp4",
+            ];
+            // Iterate through files and convert to file
+            // might work
+            for (let i = 0; i < Object.keys(files).length; i++) { // can't get the length on files?
+                const file = files[i].value;
+                // Iterate through and skip undefined
+                if (file != undefined) {
                     if (allowedMimeTypes.includes(file.mimetype)) {
+                        const formatName = fieldValues.blogTitle.replace(/\s+/g, "-").toLowerCase();
+                        const blogFolder = `${uploadUrl}\\${formatName}`;
                         // Save image to storage
                         const date = new Date();
-                        const originalFileName = file.originalFilename;
-                        const fileName = `${date.getTime()}-${originalFileName}`;
+                        const fileName = `${date.getTime()}-${file.originalFilename}`;
                         const filepath = `${blogFolder}\\${fileName}`;
                         const rawData = fs.readFileSync(file.filepath);
                         // Save file to storage
@@ -164,7 +207,7 @@ exports.createBlogPost = async (req, res) => {
                         });
                         // Push image to new blog post
                         Blog.updateOne(
-                            { _id: req.param._id },
+                            { blogTitle: fieldValues.blogTitle },
                             { $addToSet: { blogImagesUrls: filepath } },
                             function (err, result) {
                                 if (err) {
@@ -172,29 +215,26 @@ exports.createBlogPost = async (req, res) => {
                                     return res.json({
                                         error: true,
                                         status: 400,
-                                        message: "DB Update Failed on Update => " + err
+                                        message: "DB Failed on Update => " + err
                                     })
                                 } else {
                                     console.log("Blog Update => " + result);
                                 }
                             }
                         )
-                        // Return success
-                        return res.json({
-                            error: false,
-                            status: 200,
-                            message: "Blog post created successfully!",
-                        });
                     }
                 }
-            } catch (error) {
-                return res.json({
-                    error: true,
-                    status: 500,
-                    message: "Formidable error! => " + error,
-                })
             }
-        })
+            console.log( files[0].value );
+            return res.json({
+                error: false,
+                status: 200,
+                message: "Blog post created successfully!",
+            });
+        });
+        form.parse(req);
+        // Return success
+            
     } catch (error) {
         return res.json({
             error: true,

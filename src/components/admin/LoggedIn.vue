@@ -33,7 +33,7 @@
         <a
         class="dropdown-item create-gallery-button"
         href="#"
-        @click="toggleNewBlogPostForm()"
+        @click="toggleBlogEditor()"
         >
           New Post
         </a>
@@ -62,7 +62,7 @@
         <a
           class="dropdown-item create-gallery-button"
           href="#"
-          @click="toggleNewBlogPostForm.value"
+          @click="toggleNewGalleryForm()"
         >
           New Gallery
         </a>
@@ -162,7 +162,7 @@ export default {
     const hideDashboard = computed(() => store.methods.hideDashboard);
     const selectProfile = computed(() => store.methods.getProfile);
     const removeToken = computed(() => store.methods.removeToken);
-    const toggleNewBlogPostForm = computed(() => store.methods.toggleNewBlogPostForm);
+    const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
     // View Gallery
     const viewGallery = computed(() => store.methods.viewGallery);
     // Go to gallery item create view
@@ -227,7 +227,7 @@ export default {
       viewGallery,
       toggleNewGalleryForm,
       toggleNewGalleryItemForm,
-      toggleNewBlogPostForm,
+      toggleBlogEditor,
       isGalleryViewOpen,
       isGalleryItemViewOpen,
       isBlogViewOpen,
