@@ -431,7 +431,6 @@ export default {
           //console.log('ImgSrc: ' + chunk.firstChild.src);
           //fileArray.push(chunk.firstChild.src);
           chunk.firstChild.removeAttribute("src");
-          chunk.firstChild.setAttribute(':src', "getBlogImage");
         }
         tmpArray.push(chunk.outerHTML);
       })
