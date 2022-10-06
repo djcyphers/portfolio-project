@@ -112,6 +112,7 @@ const methods = {
   },
   toggleBlogEditor() {
     state.isBlogEditorOpen = !state.isBlogEditorOpen; // best way
+    state.isBlogUpdating = !state.isBlogUpdating;
   },
 };
 

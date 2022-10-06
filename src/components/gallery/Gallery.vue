@@ -379,8 +379,7 @@ export default {
         // Try and get the cover art image from the assets folder
         function coverArtImg(gallery) {
             const name = gallery.galleryName;
-            if (name === undefined)
-                return; // Vue state trying to add img buggy
+            if (name === undefined) return; // Vue state trying to add img buggy
             const formatName = name.replace(/ /g, "-").toLowerCase();
             let img = computed(() => {
                 const str = gallery.galleryCoverArtUrl;

@@ -308,14 +308,14 @@ export default {
             swal("Error", response.data.message, "error");
           } else {
             // Put all posts into reactive array
-            blogPosts = response.data;
+            blogPosts.push(response.data);
           }
         })
         .catch((error) => {
           swal("Error", error, "error");
         });
     }
-    // Image url and file uploadf for Tiptap
+    // Image url and file upload for Tiptap
     const addImageLink = computed(() => {
       const url = window.prompt("URL");
       if (url) {
@@ -399,7 +399,7 @@ export default {
       await axios
         .get("blog/categories/all")
         .then((response) => {
-          categories = response.data;
+          categories.push(response.data);
         })
         .catch((error) => {
           console.log(error);
@@ -425,13 +425,13 @@ export default {
         array[i] = obj[i];
       }
       // Push the src image to be saved later in db via axios / formidable
-      //const fileArray = [];
       const tmpArray = []; 
       array.forEach(function(chunk) {
         if (chunk.firstChild.src != undefined) {
           //console.log('ImgSrc: ' + chunk.firstChild.src);
           //fileArray.push(chunk.firstChild.src);
-          chunk.firstChild.src = "getBlogImage()";
+          chunk.firstChild.removeAttribute("src");
+          chunk.firstChild.setAttribute(':src', "getBlogImage");
         }
         tmpArray.push(chunk.outerHTML);
       })

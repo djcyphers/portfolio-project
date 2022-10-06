@@ -1,7 +1,7 @@
 <template>
   <div class="blog-wrapper">
     <div
-      v-if="isBlogViewOpen"
+      v-if="isBlogViewOpen && !isBlogUpdating && !isBlogPostViewOpen"
       class="blog-view container"
     >
       <div class="row">
@@ -16,10 +16,10 @@
               card
               me-3
             "
-            @click="viewBlogPosts(blogPost)"
+            @click="getBlogPost(blogPost)"
           >
             <img
-              class="card-img img-thumbnail bg-black"
+              class="card-img bg-black img-fluid img-center img-thumbnail"
               :src="blogImgUrl(blogPost)"
               :alt="blogPostTitle(blogPost)"
             >
@@ -29,7 +29,7 @@
                   {{ blogPostTitle(blogPost) }}
                 </div>
                 <div class="blog-category card-text bg-black opacity-75">
-                  {{ blogPostCategory(blogPost) }}
+                  {{ "Category: " + blogPostCategory(blogPost) }}
                 </div>
               </div>
               <!-- Check if logged in to prevent editing todo: add user roles -->
@@ -66,12 +66,13 @@
       </div>
     </template>
     <!-- Blog Post View -->
-    <template v-if="isBlogPostViewOpen && !isBlogUpdating">
+    <template v-if="isBlogPostViewOpen">
       <!-- Close Button -->
-      <BlogPostCloseButton @click.prevent="openBlogView" />
+      <!-- <BlogPostCloseButton @click.prevent="openBlogView" /> -->
       <div class="blog-post-view container">
         <div class="row">
-          <BlogPost v-if="blogPost" /> <!-- Get the blog post from component? -->
+          <!-- DB content is string, convert to HTML object I hope-->
+          <div class="col-lg-12 blog-post" v-if="savedPost" v-html="convertStringToHTML(savedPost[0].blogContent)"></div>
           <template v-if="isLoggedIn">
             <div
               class="btn-group"
@@ -100,10 +101,9 @@
 
 // Using new script setup
 <script>
-import { ref, onMounted, computed, inject } from "vue";
+import { ref, onMounted, computed, inject, onUpdated, reactive } from "vue";
 import BlogEditor from './BlogEditor'
 import BlogPostCloseButton from "./BlogPostCloseButton";
-import BlogPost from "./BlogPost";
 import swal from "sweetalert";
 import axios from "axios";
 
@@ -111,7 +111,6 @@ export default {
   name: "Blog",
   components: {
     BlogPostCloseButton,
-    BlogPost,
     BlogEditor,
   },
   setup() {
@@ -123,20 +122,33 @@ export default {
     const isBlogPostViewOpen = computed(() => store.state.isBlogPostViewOpen);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     // Local ref
-    const isBlogUpdating = ref(false);
+    const isBlogUpdating = computed(() => store.state.isBlogUpdating);
     const editBlogPostView = ref(false);
     const editBlogPostForm = ref(false);
     // Logged in?
     const isLoggedIn = computed(() => store.state.logged);
     // Blog Posts Store
     const blogPosts = ref([]);
-
+    const savedPost = ref([]);
+    // Image Count for blog posts img array
+    const blogPostImageCount = ref(0);
     const files = ref({ files: [] });
+    // Get blog post images ref
+    const getBlogImage = reactive([]); 
     
     onMounted(async () => {
       viewBlogPosts.value();
       await getAllBlogPosts();
     });
+    
+    onUpdated( async () => {
+      const blogImages = document.querySelectorAll('.blog-image');
+      if (blogImages === null) return;
+      for (let i = 0; i < Object.keys(blogImages).length; i++) {
+        blogImages[i].setAttribute('src', getBlogImage[i]);
+      }
+    });
+    // watchEffect(async () => getBlogImage.value = await nextTick());
 
     // Get all blog posts on mount (after loading a new image or refresh)
     async function getAllBlogPosts() {
@@ -178,25 +190,67 @@ export default {
           return str.split("\\").pop().split("/").pop();
       });
       if (img.value) {
-            return require(`@/assets/blog/` + `${formatName}/${img.value}`);
-            }
-            else {
-              return []; // Vue state trying to add img buggy webpack issue
-            }
+        return require(`@/assets/blog/` + `${formatName}/${img.value}`);
+        }
+        else {
+          return []; // Vue state trying to add img buggy webpack issue
+        }
+    }
+
+    // Get blog post title
+    function blogPostTitle(blogPost) {
+      if (!blogPost) return;
+      return blogPost.blogTitle;
+    }
+
+    // Get blog post content
+    function blogPostCategory(blogPost) {
+      if (!blogPost) return;
+      return blogPost.blogCategory;
+    }
+
+    function getBlogPost(blogPost) {
+      store.state.isBlogPostViewOpen = true; // keep forgetting you can access store directly
+      savedPost.value.push(blogPost); // Let's try props lol fuck props
+      getBlogImageUrls(blogPost);
+    }
+
+    let convertStringToHTML = (str) => {
+      const tmpArray = [];
+      let n = JSON.parse(str);
+      for (let i = 0; i < Object.keys(n).length; i++) {
+        tmpArray.push(n[i]);
       }
-      // Get blog post title
-      function blogPostTitle(blogPost) {
-        if (!blogPost) return;
-        return blogPost.blogTitle;
-      }
-      // Get blog post content
-      function blogPostCategory(blogPost) {
-        if (!blogPost) return;
-        return blogPost.blogCategory;
-      }
+      return tmpArray.join("");
+    }
+
+    function getBlogImageUrls(blogPost) {
+      if (!savedPost.value.length > 0) return;
+      console.log("Blog Image: " + blogPost.blogImagesUrls[0]);
+      for (blogPostImageCount.value = 0; blogPostImageCount.value < Object.keys(blogPost.blogImagesUrls).length; blogPostImageCount.value++) {
+        const name = blogPost.blogTitle;
+        if (name === undefined) return; // Vue state trying to add img buggy
+        const formatName = name.replace(/ /g, "-").toLowerCase();
+        console.log("FormatName: " + formatName);
+        let img = computed(() => {
+          const str = blogPost.blogImagesUrls[blogPostImageCount.value];
+          return str.split("\\").pop().split("/").pop();
+        });
+        if (img.value) {
+          console.log("bImage: " + JSON.stringify(img));
+          getBlogImage.push(require(`@/assets/blog/` + `${formatName}/${img.value}`))
+        }
+        else {
+          return []; // Vue state trying to add img buggy webpack issue
+        }
+    }
+  }
 
     return {
       store,
+      getBlogPost,
+      getBlogImageUrls,
+      blogPostImageCount,
       viewBlogPosts,
       isBlogViewOpen,
       isBlogUpdating,
@@ -204,6 +258,7 @@ export default {
       isBlogEditorOpen,
       isLoggedIn,
       blogPosts,
+      savedPost,
       files,
       editBlogPost,
       deleteBlogPost,
@@ -212,6 +267,7 @@ export default {
       blogImgUrl,
       blogPostTitle,
       blogPostCategory,
+      convertStringToHTML,
     }
   }
 };
@@ -222,5 +278,11 @@ export default {
   .blog-editor-wrapper {
     background: rgba($color: #000000, $alpha: 0.8);
     border: 1px solid rgb(199, 208, 253);
+  }
+
+  img {
+    width: 100%;
+    height: 15vw;
+    object-fit: contain;
   }
 </style>
