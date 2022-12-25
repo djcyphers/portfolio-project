@@ -18,7 +18,7 @@ const state = reactive({
   isNewGalleryItemFormOpen: false,
   // Blog states
   isBlogViewOpen: true,
-  isBlogUpdating: false,
+  isMainBlogWrapperOpen: true, // might be useful later as well
   isBlogPostViewOpen: false,
   isBlogEditorOpen: false,
 });
@@ -112,7 +112,9 @@ const methods = {
   },
   toggleBlogEditor() {
     state.isBlogEditorOpen = !state.isBlogEditorOpen; // best way
-    state.isBlogUpdating = !state.isBlogUpdating;
+  },
+  toggleBlogPostView() {
+    state.isBlogPostViewOpen = !state.isBlogPostViewOpen;
   },
 };
 

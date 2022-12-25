@@ -1,19 +1,19 @@
-<!-- Glowing Close Button -->
+<!-- Animated Close Button -->
+<!-- Credit https://codepen.io/maneeshc -->
 <template>
-    <div class="blog-post-close" @click="clearLocalStorage()">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <svg viewBox="0 0 36 36" class="circle">
-            <path
-            stroke-dasharray="100, 100"
-            d="M18 2.0845
-                a 15.9155 15.9155 0 0 1 0 31.831
-                a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-        </svg>
+<div class="button-wrapper">
+  <!-- Don't need to "close" the button, use @click on component from parent -->
+  <a href="#" class="close-button" @click="clearLocalStorage()">
+    <div class="in">
+      <div class="close-button-block"></div>
+      <div class="close-button-block"></div>
     </div>
+    <div class="out">
+      <div class="close-button-block"></div>
+      <div class="close-button-block"></div>
+    </div>
+  </a>
+</div>
 </template>
 <script>
 export default {
@@ -29,79 +29,93 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.blog-post-close {
-  $size: 60px;
-  $borderSize: 2px;
-  $borderColor: rgba(white,1);
-  $speed: .5s;
-  left: 80%;
-  width:$size;
-  height:$size;
+$button-size: 40px;
+$close-width: ($button-size / 10);
+.button-wrapper {
+  width: 40px;
+  height: 40px;
+  float: right;
+  left: 57vw;
+  position: absolute;
+  top: 3vh;
+}
+
+.close-button {
+  display: block;
+  width: $button-size;
+  height: $button-size;
   position: relative;
-  background: #455A64;
-  border-radius:50%;
-  box-shadow: 0 0 20px -5px rgba(white,.5);
-  transition: .25s ease-in-out;
-  cursor: pointer;
-  animation: fade-in $speed ease-out .25s both;
-  @keyframes fade-in {
-    from { opacity: 0; transform:scale(1.1) }
+  overflow: hidden;
+  > div {
+    position: relative;
   }
-  .circle {
-    path {
-      stroke: $borderColor;
-      fill: none;
-      stroke-width: $borderSize/2;
-      stroke-linecap: round;
-      animation: progress $speed ease-out .25s both;
-      @keyframes progress {
-        from { stroke-dasharray: 0 100; }
+  &-block {
+    width: 40px;
+    height: 20px;
+    position: relative;
+    overflow: hidden;
+    &:before,
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: calc(55% - 0.22em);
+      display: block;
+      width: 1px;
+      height: 30px;
+      transform-origin: bottom center;
+      background: white;
+      transition: all ease-out 280ms;
+    }
+    &:last-of-type {
+      transform: rotate(180deg);
+    }
+  }
+  .in {
+    .close-button-block {
+      &:before {
+        transition-delay: 280ms;
+        transform: translateX(20px) translateY(-20px) rotate(45deg);
+      }
+      &:after {
+        transition-delay: 280ms;
+        transform: translateX(-22px) translateY(-22px) rotate(-45deg);
       }
     }
   }
-  span{
-    display:block;
-    width:($size/4) - 2px;
-    height:$borderSize;
-    background: $borderColor;
-    box-shadow: 0 0 20px -5px rgba(white,.5);
-    border-radius: 20px;
+  .out {
     position: absolute;
-    $padding: $size/3;
-    transition: .25s ease-in-out;
-    animation: slide-in $speed ease-in-out .25s both;
-    @keyframes slide-in {
-      from { width:0; }
-    }
-    &:nth-child(1){
-      top:($padding - ($borderSize/2));
-      left:$padding;
-      transform:rotate(45deg);
-      transform-origin: top left;
-    }
-    &:nth-child(2){
-      top:($padding - ($borderSize/2));
-      right:$padding;
-      transform:rotate(-45deg);
-      transform-origin: top right;
-    }
-    &:nth-child(3){
-      bottom:($padding - ($borderSize/2));
-      left:$padding;
-      transform:rotate(-45deg);
-      transform-origin: bottom left;
-    }
-    &:nth-child(4){
-      bottom:($padding - ($borderSize/2));
-      right:$padding;
-      transform:rotate(45deg);
-      transform-origin: bottom right;
+    top: 0;
+    left: 0;
+    .close-button-block {
+      &:before {
+        transform: translateX(-5px) translateY(5px) rotate(45deg);
+      }
+      &:after {
+        transform: translateX(5px) translateY(5px) rotate(-45deg);
+      }
     }
   }
-  &:hover{
-    background: #37474F;
-    span{
-      width:($size/4);
+  &:hover {
+    .in {
+      .close-button-block {
+        &:before {
+          transform: translateX(-5px) translateY(5px) rotate(45deg);
+        }
+        &:after {
+          transform: translateX(5px) translateY(5px) rotate(-45deg);
+        }
+      }
+    }
+    .out {
+      .close-button-block {
+        &:before {
+          transform: translateX(-20px) translateY(20px) rotate(45deg);
+        }
+        &:after {
+          transform: translateX(20px) translateY(20px) rotate(-45deg);
+        }
+      }
     }
   }
 }

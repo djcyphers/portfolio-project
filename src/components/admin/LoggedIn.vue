@@ -33,7 +33,7 @@
         <a
         class="dropdown-item create-gallery-button"
         href="#"
-        @click="toggleBlogEditor()"
+        @click="toggleBlogEditor(); exitBlogPosts();"
         >
           New Post
         </a>
@@ -163,6 +163,7 @@ export default {
     const selectProfile = computed(() => store.methods.getProfile);
     const removeToken = computed(() => store.methods.removeToken);
     const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
+    const exitBlogPosts = computed(() => store.methods.exitBlogPosts);
     // View Gallery
     const viewGallery = computed(() => store.methods.viewGallery);
     // Go to gallery item create view
@@ -231,6 +232,7 @@ export default {
       isGalleryViewOpen,
       isGalleryItemViewOpen,
       isBlogViewOpen,
+      exitBlogPosts,
     };
   },
 };

@@ -77,6 +77,7 @@ export default {
       confirmPassword: "",
       referrer: "",
     });
+
     const resetLogin = computed({
       get() {
         return store.methods.cancelRegister;
@@ -85,6 +86,7 @@ export default {
         return store.methods.cancelRegister;
       },
     });
+
     const activateUser = computed({
       get() {
         return store.methods.activateUser;
@@ -93,6 +95,7 @@ export default {
         return store.methods.activateUser;
       },
     });
+    
     async function registerUser() {
       try {
         let response = await axios.post("user/register", register.value);

@@ -42,7 +42,7 @@
         <a name="box4"></a>
         <div class="content4 scroller">
           <Dashboard v-if="store.state.dashboard" />
-          <Blog v-if="isBlogViewOpen" />
+          <Blog v-if="isMainBlogWrapperOpen" />
         </div>
       </li>
       <!-- end box4 -->
@@ -78,14 +78,14 @@ export default {
         return store.methods.viewGallery;
       },
     });
-    const isBlogViewOpen = computed(() => store.state.isBlogViewOpen);
+    const isMainBlogWrapperOpen = computed(() => store.state.isMainBlogWrapperOpen);
     onMounted(async () => {
       viewGalleries.value();
     });
     return {
       store,
       viewGalleries,
-      isBlogViewOpen,
+      isMainBlogWrapperOpen,
     };
   },
 };

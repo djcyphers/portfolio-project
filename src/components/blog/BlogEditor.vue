@@ -141,7 +141,7 @@
 </template>
 
 <script>
-import { computed, ref, inject, onMounted, reactive } from "vue";
+import { computed, ref, inject, onMounted, reactive, nextTick } from "vue";
 import {
   useEditor,
   EditorContent,
@@ -252,11 +252,16 @@ export default {
     // Global store state
     const store = inject("store");
    
+    // onMounted
+    onMounted(() => {
+      getAllBlogPosts();
+    });
+    
     // Process blog post data
     function processBlogPost() {
       // Get blog title from first h1
       const blogTitleElement = document.querySelector('h1').innerHTML;
-      if (!blogTitleElement) {
+      if (blogTitleElement == undefined) {
         return swal("Error", "Add a blog title!", "error");
       }
       newBlogPostData.value.blogTitle = blogTitleElement;
@@ -292,7 +297,6 @@ export default {
               } else {
                 swal("Success", response.data.message, "success");
                 toggleBlogEditor.value();
-                getAllBlogPosts();
               }
             })
             .catch((error) => {

@@ -94,6 +94,38 @@ exports.getBlogCategories = async (req, res) => {
     };
 }
 
+// Delete blog post by ID
+exports.deleteBlogPost = async (req, res) => {
+    try {
+        const blogPost = await Blog.findById({
+            // find by name
+            _id: req.params._id,
+        });
+        if (!blogPost) {
+            return res.json({
+                error: true,
+                status: 400,
+                message: "Blog post does not exist!",
+            });
+        }
+        // Delete folder recursively
+        const blogFolderName = blogPost.blogTitle.replace(/\s+/g, "-").toLowerCase().trim();
+        const blogFolder = `${uploadUrl}\\${blogFolderName}`;
+        if (fs.existsSync(blogFolder)) {
+            fs.rmSync(blogFolder, { recursive: true, force: true });
+            console.log('Blog Post Deleted!'); 
+        }
+        await Blog.findByIdAndDelete(req.params._id);
+
+    } catch (error) {
+        return res.json({ 
+            error: true,
+            status: 500,
+            message: "Delete Blog Post Error => " + error,
+        });
+    }
+}
+
 // Create blog post
 exports.createBlogPost = async (req, res) => {
     try {
