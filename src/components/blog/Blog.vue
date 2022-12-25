@@ -1,7 +1,7 @@
 <template>
   <div class="blog-wrapper">
     <div
-      v-if="isBlogViewOpen && !isBlogUpdating && !isBlogPostViewOpen"
+      v-if="isBlogViewOpen"
       class="blog-view container"
     >
       <div class="row">
@@ -16,7 +16,7 @@
               card
               me-3
             "
-            @click="getBlogPost(blogPost)"
+            @click.prevent="getBlogPost(blogPost, index)"
           >
             <img
               class="card-img bg-black img-fluid img-center img-thumbnail"
@@ -41,13 +41,13 @@
                 >
                   <button
                     class="btn btn-primary edit-button"
-                    @click="editBlogPost(blogPost)"
+                    @click.prevent="editBlogPost(blogPost, index)"
                   >
                     Edit
                   </button>
                   <button
                     class="btn btn-primary delete-button"
-                    @click="deleteBlogPost(blogPost, index)"
+                    @click.prevent="deleteBlogPost(blogPost, index)"
                   >
                     Delete
                   </button>
@@ -68,31 +68,11 @@
     <!-- Blog Post View -->
     <template v-if="isBlogPostViewOpen">
       <!-- Close Button -->
-      <!-- <BlogPostCloseButton @click.prevent="openBlogView" /> -->
+      <BlogPostCloseButton @click.prevent="viewBlogPosts();toggleBlogPostView();clearSavedPostArray();" />
       <div class="blog-post-view container">
         <div class="row">
           <!-- DB content is string, convert to HTML object I hope-->
           <div class="col-lg-12 blog-post" v-if="savedPost" v-html="convertStringToHTML(savedPost[0].blogContent)"></div>
-          <template v-if="isLoggedIn">
-            <div
-              class="btn-group"
-              role="group"
-              aria-label="Admin Buttons"
-            >
-              <button
-                class="btn btn-primary edit-button"
-                @click="editBlogPost(blogPost.title)"
-              >
-                Edit
-              </button>
-              <button
-                class="btn btn-primary delete-button"
-                @click="deleteBlogPost(blogPost)"
-              >
-                Delete
-              </button>
-            </div>
-          </template>
         </div>
       </div>
     </template>
@@ -101,7 +81,7 @@
 
 // Using new script setup
 <script>
-import { ref, onMounted, computed, inject, onUpdated, reactive } from "vue";
+import { ref, onMounted, computed, inject, onUpdated, reactive, nextTick, onBeforeUpdate, onUnmounted } from "vue";
 import BlogEditor from './BlogEditor'
 import BlogPostCloseButton from "./BlogPostCloseButton";
 import swal from "sweetalert";
@@ -121,15 +101,17 @@ export default {
     const isBlogViewOpen = computed(() => store.state.isBlogViewOpen);
     const isBlogPostViewOpen = computed(() => store.state.isBlogPostViewOpen);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
+    const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
+    const toggleBlogPostView = computed(() => store.methods.toggleBlogPostView);
     // Local ref
-    const isBlogUpdating = computed(() => store.state.isBlogUpdating);
     const editBlogPostView = ref(false);
     const editBlogPostForm = ref(false);
+    const isBlogDeleting = ref(false);
     // Logged in?
     const isLoggedIn = computed(() => store.state.logged);
     // Blog Posts Store
     const blogPosts = ref([]);
-    const savedPost = ref([]);
+    const savedPost = reactive([]);
     // Image Count for blog posts img array
     const blogPostImageCount = ref(0);
     const files = ref({ files: [] });
@@ -141,14 +123,18 @@ export default {
       await getAllBlogPosts();
     });
     
-    onUpdated( async () => {
+    onUnmounted(async () => {
+      isBlogDeleting.value = false;
+    });
+    
+    onUpdated(() => {
+      // Handle blog images on being updated or when selecting different blog posts
       const blogImages = document.querySelectorAll('.blog-image');
       if (blogImages === null) return;
       for (let i = 0; i < Object.keys(blogImages).length; i++) {
         blogImages[i].setAttribute('src', getBlogImage[i]);
       }
     });
-    // watchEffect(async () => getBlogImage.value = await nextTick());
 
     // Get all blog posts on mount (after loading a new image or refresh)
     async function getAllBlogPosts() {
@@ -166,18 +152,40 @@ export default {
           swal("Error", error, "error");
         });
     }
+
     // Edit blog post
     function editBlogPost(blogPost) {
-     // Close blog post view
-
-     // Open blog edit form
+      // Close blog post view
+      store.state.isBlogPostViewOpen = false;
+      store.state.isBlogViewOpen = false;
+      // Open blog edit form
+      toggleBlogEditor.value();
     }
 
     // Delete blog post
-    function deleteBlogPost(blogPost) {
+    async function deleteBlogPost(blogPost, index) {
+      // Set this first not last lol especially before an axios call
+      isBlogDeleting.value = true;
       // Send axios delete
-
+      await axios
+        .delete("blog/delete/" + blogPost._id)
+        .then((response) => {
+          if (response.data.error) {
+              swal("Error", response.data.message, "error");
+          }
+          else {
+              swal("Success", "Blog Post Deleted!", "success");
+          }
+        })
+        .catch((error) => {
+        swal("Error", "Delete Blog Error => " + error, "error");
+        });
+      console.log("DELETE BLOG POST: " + JSON.stringify(blogPost));
+      /// Set blog to deleting to avoid triggering getBlogPost() method and states
       // Remove blog post from array
+      blogPosts.value.splice(index, 1);
+      // Meh, not sure how to handle this...  we could watch and then use nextTick method (maybe)
+      setTimeout(() => isBlogDeleting.value = false, 5);
     }
 
     // Pull images and add them to webpack (require())
@@ -209,12 +217,18 @@ export default {
       return blogPost.blogCategory;
     }
 
-    function getBlogPost(blogPost) {
+    function getBlogPost(blogPost, index) {
+      if (isBlogDeleting.value === true) return;
+      store.state.isBlogViewOpen = false;
       store.state.isBlogPostViewOpen = true; // keep forgetting you can access store directly
-      savedPost.value.push(blogPost); // Let's try props lol fuck props
-      getBlogImageUrls(blogPost);
+      savedPost.push(blogPost);
+      console.log("SAVED POST: => " + JSON.stringify(savedPost));
+      getBlogImageUrls(blogPost, index);
+      nextTick(() => {
+        isBlogDeleting.value = false;
+      });
     }
-
+    // Discombobulate blog post from db
     let convertStringToHTML = (str) => {
       const tmpArray = [];
       let n = JSON.parse(str);
@@ -223,27 +237,32 @@ export default {
       }
       return tmpArray.join("");
     }
-
-    function getBlogImageUrls(blogPost) {
-      if (!savedPost.value.length > 0) return;
-      console.log("Blog Image: " + blogPost.blogImagesUrls[0]);
-      for (blogPostImageCount.value = 0; blogPostImageCount.value < Object.keys(blogPost.blogImagesUrls).length; blogPostImageCount.value++) {
-        const name = blogPost.blogTitle;
-        if (name === undefined) return; // Vue state trying to add img buggy
-        const formatName = name.replace(/ /g, "-").toLowerCase();
-        console.log("FormatName: " + formatName);
-        let img = computed(() => {
-          const str = blogPost.blogImagesUrls[blogPostImageCount.value];
-          return str.split("\\").pop().split("/").pop();
-        });
-        if (img.value) {
-          console.log("bImage: " + JSON.stringify(img));
-          getBlogImage.push(require(`@/assets/blog/` + `${formatName}/${img.value}`))
+    // Nightmare code lol
+    function getBlogImageUrls() {
+      if (!savedPost.length > 0) return;
+        for (blogPostImageCount.value = 0; blogPostImageCount.value < savedPost[0].blogImagesUrls.length; blogPostImageCount.value++) {
+          const name = savedPost[0].blogTitle;
+          if (name === undefined) return; // Vue state trying to add img buggy
+          const formatName = name.replace(/ /g, "-").toLowerCase();
+          console.log("Blog Image: " + savedPost[0].blogImagesUrls[blogPostImageCount.value]);
+          let img = computed(() => {
+            const str = savedPost[0].blogImagesUrls[blogPostImageCount.value];
+            return str.split("\\").pop().split("/").pop();
+          });
+          if (img.value) {
+            console.log("bImage: " + JSON.stringify(img));
+            getBlogImage.push(require(`@/assets/blog/` + `${formatName}/${img.value}`))
+          }
+          else {
+            return []; // Vue state trying to add img buggy webpack issue
+          }
         }
-        else {
-          return []; // Vue state trying to add img buggy webpack issue
-        }
+        blogPostImageCount.value = 0;
     }
+  // Clear savedPost array to prevent showing the same post when you click on a different blog post
+  function clearSavedPostArray() {
+    savedPost.splice(0);
+    getBlogImage.splice(0);
   }
 
     return {
@@ -253,9 +272,11 @@ export default {
       blogPostImageCount,
       viewBlogPosts,
       isBlogViewOpen,
-      isBlogUpdating,
+      isBlogDeleting,
       isBlogPostViewOpen,
       isBlogEditorOpen,
+      toggleBlogEditor,
+      toggleBlogPostView,
       isLoggedIn,
       blogPosts,
       savedPost,
@@ -268,6 +289,7 @@ export default {
       blogPostTitle,
       blogPostCategory,
       convertStringToHTML,
+      clearSavedPostArray,
     }
   }
 };
