@@ -126,6 +126,174 @@ exports.deleteBlogPost = async (req, res) => {
     }
 }
 
+// Update blog post
+exports.updateBlogPost = async (req, res) => {
+    let responseSent = false;
+    try {
+    // Have to do this the hard way, no default for multi files :(
+    const form = new formidable.IncomingForm();
+    const fields = [];
+    const files = [];
+    // Each post can have multiple images
+    form.multiples = true;
+    // Push fields and files to the array arrgh I had to re-study [] properties :`(
+    form.on('field', (fieldName, fieldValue) => {
+      // Note how you push the object fields bleh
+      fields.push({ field: fieldName, value: fieldValue });
+    });
+    // Parse each file because parsing files doesn't work smh
+    form.on('file', (fieldName, file) => {
+      files.push({ field: fieldName, value: file });
+    });
+    form.on('error', console.error);
+    // All the logic goes here instead of form.parse
+    form.on('end', async () => {
+        // Check if undefined or missing fields
+        if (!fields[0].value || !fields[1].value || !fields[2].value) {
+            sendResponse({
+            error: true,
+            status: 400,
+            message: 'Please fill all the fields!',
+            });
+            return;
+        }
+        const fieldValues = {
+            blogTitle: [fields[0].value].toString(),
+            blogCategory: [fields[1].value].toString(),
+            blogContent: [fields[2].value].toString(),
+        };
+        // Check files
+        if (!files) {
+            return res.json({
+                error: true,
+                status: 400,
+                message: "Please include an image. So lazy!",
+            });
+        }
+        
+        // Validate fields
+        const result = blogSchema.validate(fieldValues);
+        console.log("Field Values: " + JSON.stringify(result));
+        console.log("Files: " + files.files);
+        if (result.error) {
+            sendResponse({
+            error: true,
+            status: 400,
+            message: `Schema Error: ${result.error.details[0].message}`,
+            });
+            return;
+        }
+        // Find the blog post
+        const blogPost = await Blog.findById(req.params._id);
+        if (!blogPost) {
+            sendResponse({
+            error: true,
+            status: 400,
+            message: 'Blog post not found',
+            });
+            return;
+        }
+        // Create new blog and save result data we validated earlier to database
+        Blog.findByIdAndUpdate({ _id:req.params._id },
+            {
+            blogTitle: fieldValues.blogTitle,
+            blogCategory: fieldValues.blogCategory,
+            blogContent: fieldValues.blogContent,
+            },
+        );
+        
+        // Update the folder name to match the new blog title
+        const oldBlogTitle = blogPost.blogTitle;
+        const newBlogTitle = fieldValues.blogTitle;
+        const oldFolderName = oldBlogTitle.replace(/\s+/g, '-').toLowerCase();
+        const newFolderName = newBlogTitle.replace(/\s+/g, '-').toLowerCase();
+        fs.renameSync(`${uploadUrl}\\${oldFolderName}`, `${uploadUrl}\\${newFolderName}`);
+
+        // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
+        const allowedMimeTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/svg+xml",
+            "image/webp",
+            "audio/mp3",
+            "video/mp4",
+        ];
+        
+        // Save the files
+        for (let i = 0; i < Object.keys(files).length; i++) {
+            const file = files.files[i].value;
+            if (!allowedMimeTypes.includes(file.mimetype)) {
+                sendResponse({
+                  error: true,
+                  status: 400,
+                  message: `Error: Unsupported file type ${file.mimetype}`,
+                });
+                return;
+            }
+            // Formulate the file name
+            const date = new Date();
+            const fileName = `${date.getTime()}-${file.originalFilename}`;
+            // Save the file
+            const filepath = `${newFolderName}\\${fileName}`;
+            const rawData = fs.readFileSync(file.filepath);
+                // Save file to storage
+                fs.writeFileSync(filepath, rawData, (err) => {
+                    if (err) {
+                        return res.json({
+                            error: true,
+                            status: 400,
+                            message: "Failed to save file!",
+                        });
+                    }
+                });
+                // Push image to new blog post
+                Blog.updateOne(
+                    { _id: req.params._id },
+                    {
+                    $set: {
+                        blogTitle: fieldValues.blogTitle,
+                        blogCategory: fieldValues.blogCategory,
+                        blogContent: fieldValues.blogContent,
+                        blogImagesUrls: filepath,
+                    },
+                    },
+                    function (err, result) {
+                        if (err) {
+                            console.log(err);
+                            return res.json({
+                                error: true,
+                                status: 400,
+                                message: "DB Failed on Update => " + err
+                            })
+                        } else {
+                            console.log("Blog Update => " + JSON.stringify(result));
+                        }
+                    }
+                )
+        }
+        sendResponse({
+        error: false,
+        status: 200,
+        message: 'Blog post updated',
+        });
+    });
+    form.parse(req);
+    } catch (error) {
+        return res.json({
+            error: true,
+            status: 500,
+            message: "Internal server error => " + error,
+        })
+    }
+    function sendResponse(response) {
+        if (!responseSent) {
+        res.json(response);
+        responseSent = true;
+        }
+    }
+};
+
 // Create blog post
 exports.createBlogPost = async (req, res) => {
     try {
@@ -142,7 +310,6 @@ exports.createBlogPost = async (req, res) => {
         });
         // Parse each file because parsing files doesn't work smh
         form.on('file', (fieldName, file) => {
-            //console.log("On file: " + fieldName + "||" + file);
             files.push({ field: fieldName, value: file })
         });
         form.on('error', console.error);
@@ -171,7 +338,6 @@ exports.createBlogPost = async (req, res) => {
             }
             // Validate fields
             const result = blogSchema.validate(fieldValues);
-            console.log(JSON.stringify(result));
             if (result.error) {
                 return res.json({
                     error: true,
@@ -214,7 +380,6 @@ exports.createBlogPost = async (req, res) => {
                 "video/mp4",
             ];
             // Iterate through files and convert to file
-            // might work
             for (let i = 0; i < Object.keys(files).length; i++) { // can't get the length on files?
                 const file = files[i].value;
                 // Iterate through and skip undefined

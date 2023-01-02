@@ -21,6 +21,7 @@ const state = reactive({
   isMainBlogWrapperOpen: true, // might be useful later as well
   isBlogPostViewOpen: false,
   isBlogEditorOpen: false,
+  isBlogEditingPost: false,
 });
 
 const methods = {
@@ -115,6 +116,9 @@ const methods = {
   },
   toggleBlogPostView() {
     state.isBlogPostViewOpen = !state.isBlogPostViewOpen;
+  },
+  toggleBlogPostViewOff() {
+    state.isBlogPostViewOpen = false;
   },
 };
 

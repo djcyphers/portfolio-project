@@ -41,7 +41,7 @@
                 >
                   <button
                     class="btn btn-primary edit-button"
-                    @click.prevent="editBlogPost(blogPost, index)"
+                    @click.stop="editBlogPost(blogPost, index);store.state.isBlogEditingPost = true;"
                   >
                     Edit
                   </button>
@@ -61,14 +61,14 @@
       <!-- Wysygig Editor -->
       <div class="blog-editor-wrapper container">
         <div class="row">
-          <BlogEditor />
+          <BlogEditor :blogPostData="blogPostData" />
         </div>
       </div>
     </template>
     <!-- Blog Post View -->
     <template v-if="isBlogPostViewOpen">
       <!-- Close Button -->
-      <BlogPostCloseButton @click.prevent="viewBlogPosts();toggleBlogPostView();clearSavedPostArray();" />
+      <BlogPostCloseButton @click.prevent="viewBlogPosts();toggleBlogPostViewOff();clearSavedPostArray();" />
       <div class="blog-post-view container">
         <div class="row">
           <!-- DB content is string, convert to HTML object I hope-->
@@ -79,7 +79,6 @@
   </div>
 </template>
 
-// Using new script setup
 <script>
 import { ref, onMounted, computed, inject, onUpdated, reactive, nextTick, onBeforeUpdate, onUnmounted } from "vue";
 import BlogEditor from './BlogEditor'
@@ -102,16 +101,18 @@ export default {
     const isBlogPostViewOpen = computed(() => store.state.isBlogPostViewOpen);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
-    const toggleBlogPostView = computed(() => store.methods.toggleBlogPostView);
+    const toggleBlogPostViewOff = computed(() => store.methods.toggleBlogPostViewOff);
     // Local ref
     const editBlogPostView = ref(false);
     const editBlogPostForm = ref(false);
     const isBlogDeleting = ref(false);
+    const checkBlogPostViewOpen = ref(false);
     // Logged in?
     const isLoggedIn = computed(() => store.state.logged);
-    // Blog Posts Store
+    // Blog Posts Temp storage
     const blogPosts = ref([]);
     const savedPost = reactive([]);
+    const blogPostData = ref([]);
     // Image Count for blog posts img array
     const blogPostImageCount = ref(0);
     const files = ref({ files: [] });
@@ -160,6 +161,9 @@ export default {
       store.state.isBlogViewOpen = false;
       // Open blog edit form
       toggleBlogEditor.value();
+      // Add data back into the editor lol no
+      blogPostData.value = blogPost;
+      console.log("EDIT BLOG POST: " + JSON.stringify(blogPostData.value));
     }
 
     // Delete blog post
@@ -201,7 +205,7 @@ export default {
         return require(`@/assets/blog/` + `${formatName}/${img.value}`);
         }
         else {
-          return []; // Vue state trying to add img buggy webpack issue
+          return `@/assets/blog/${formatName}/${blogPost.blogImagesUrls[0].split("\\").pop().split("/").pop()}`; // Vue state trying to add img buggy webpack issue
         }
     }
 
@@ -222,7 +226,7 @@ export default {
       store.state.isBlogViewOpen = false;
       store.state.isBlogPostViewOpen = true; // keep forgetting you can access store directly
       savedPost.push(blogPost);
-      console.log("SAVED POST: => " + JSON.stringify(savedPost));
+      //console.log("SAVED POST: => " + JSON.stringify(savedPost));
       getBlogImageUrls(blogPost, index);
       nextTick(() => {
         isBlogDeleting.value = false;
@@ -270,13 +274,15 @@ export default {
       getBlogPost,
       getBlogImageUrls,
       blogPostImageCount,
+      blogPostData,
       viewBlogPosts,
       isBlogViewOpen,
       isBlogDeleting,
       isBlogPostViewOpen,
       isBlogEditorOpen,
       toggleBlogEditor,
-      toggleBlogPostView,
+      toggleBlogPostViewOff,
+      checkBlogPostViewOpen,
       isLoggedIn,
       blogPosts,
       savedPost,

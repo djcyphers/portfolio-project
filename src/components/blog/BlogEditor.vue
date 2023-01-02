@@ -118,8 +118,11 @@
       <button @click="addYoutubeLink">
         YouTube
       </button>
-      <button @click="processBlogPost">
+      <button v-if="!store.state.isBlogEditingPost" @click="processBlogPost();">
         Publish
+      </button>
+      <button v-if="store.state.isBlogEditingPost" @click="processBlogPost();store.state.isBlogEditingPost = false">
+        Update
       </button>
       <div class="input-group">
         <!-- Add category manually -->
@@ -141,7 +144,7 @@
 </template>
 
 <script>
-import { computed, ref, inject, onMounted, reactive, nextTick } from "vue";
+import { computed, ref, inject, onMounted, reactive, watch } from "vue";
 import {
   useEditor,
   EditorContent,
@@ -165,7 +168,7 @@ import html from "highlight.js/lib/languages/xml";
 import "highlight.js/styles/github.css";
 // load all highlight.js languages
 import { lowlight } from "lowlight";
-import any from "bluebird/js/release/any";
+import any from "bluebird/js/release/any"; // I don't like this
 lowlight.registerLanguage("html", html);
 lowlight.registerLanguage("css", css);
 lowlight.registerLanguage("js", js);
@@ -177,24 +180,36 @@ export default {
     BubbleMenu,
     FloatingMenu,
   },
-  setup() {
+  props: {
+    blogPostData: {
+     type: Object,
+     required: false,
+    },
+  },
+  setup(props) {
+
+    // Setup reactive store
+    const store = inject("store");
+
     // onMounted
     onMounted(async () => {
       await getAllCategories();
     });
+
+    const blogPostDataArray = ref(props.blogPostData);
     // Create a new blog post
     const newBlogPostData = ref({ blogTitle: "", blogContent: "", blogCategory: "" });
     // Toggle Blog Editor
     const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
     // Blog Posts Store
     const blogPosts = reactive([]);
-    // Categories ref
+    // Categories
     const categories = reactive([]);
     // Category input ref
     const categoryInput = ref('');
     // Blog Editor
     const editor = useEditor({
-      content: "<p>I’m running Tiptap with Vue.js. 🎉</p>",
+      content: getEditorContent(),
       extensions: [
         StarterKit.configure({
           blockquote: {
@@ -249,20 +264,62 @@ export default {
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     // Form data reactive
     const fData = reactive( new FormData() );
-    // Global store state
-    const store = inject("store");
+
    
     // onMounted
     onMounted(() => {
       getAllBlogPosts();
     });
-    
+
+    watch(blogPostDataArray, (newValue, oldValue) => {
+        if (newValue === '') {
+         blogPostDataArray.value = oldValue;
+          console.log("WATCHING BLOG DATA => " + newValue);
+        }
+    })
+
+    // ChatGPT helped. It was painful, but we did it!
+    function getEditorContent() {
+      let data = JSON.stringify(props.blogPostData);
+      if (data.length > 2) {
+        const pJSON = JSON.parse(data);
+        let blogContent = pJSON.blogContent;
+        // Parse the blogContent string into a JavaScript object
+        blogContent = JSON.parse(blogContent);
+        // Combine the elements of the object into a single string
+        let htmlString = blogContent.join('');
+        // Replace the escaped HTML strings with actual HTML tags
+        htmlString = htmlString.replace(/\\"/g, '"');
+        // Get the list of image URLs
+        const imageUrls = pJSON.blogImagesUrls;
+        // Get the blog title
+        const blogTitle = pJSON.blogTitle.toLowerCase().replace(/ /g, '-');
+        // Replace the <img> tags with the actual image data
+        for (let i = 0; i < imageUrls.length; i++) {
+          const regex = new RegExp(`<img class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`, '');
+          // Split the URL to get the file name
+          const fileName = imageUrls[i].split('/').pop();
+          const filePathParts = fileName.split('\\');
+          // Import the image file using the `require` function
+          const requiredImage = require(`@/assets/blog/${blogTitle}/${filePathParts[filePathParts.length - 1]}`);
+          // Construct the required image URL
+          const requiredImageUrl = requiredImage;
+          htmlString = htmlString.replace(regex, `<img src="${requiredImageUrl}" class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`);
+        }
+        console.log("EDITOR DATA => " + htmlString);
+        return htmlString;
+      } else {
+        return `<p> Add your new blog post here! ✌🏻😎</p>
+          <p>Make sure to add a H1 tag for Title to register!</p>`
+      }
+    }
+
     // Process blog post data
     function processBlogPost() {
       // Get blog title from first h1
       const blogTitleElement = document.querySelector('h1').innerHTML;
       if (blogTitleElement == undefined) {
-        return swal("Error", "Add a blog title!", "error");
+        return swal("Error", "Add a blog title with a H1 tag!", "error");
       }
       newBlogPostData.value.blogTitle = blogTitleElement;
       // Get all elements inside Prose Mirror div
@@ -270,10 +327,45 @@ export default {
       if (nl) {
         // Get image src's from nodeList and convert to div class img element
         toArray(nl);
-        createBlogPost(); // Use converted data and send to backend
+        if (!store.state.isBlogEditingPost) {
+          createBlogPost(); // Use converted data and send to backend
+        }
+        else {
+          updateBlogPost();
+        }
         //console.log("ARRAY: " + arr);
         //console.table(imgArray);
       }
+    }
+
+    // Update blog post data
+    async function updateBlogPost() {
+        
+        fData.append("blogTitle", newBlogPostData.value.blogTitle);
+        fData.append("blogCategory", newBlogPostData.value.blogCategory);
+        fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
+        console.log("UPDATE POST: " + JSON.stringify(newBlogPostData.value.blogContent));
+        // This honesly was difficult to figure out. I hate you FormData!
+        for (let i = 0; i < files.files.length; i++) {
+          fData.append('files', files.files[i])
+        }
+        await axios
+            .put("blog/update/" + props.blogPostData._id, fData, {
+              headers: {
+                  "Content-Type": "multipart/form-data",
+              },
+            })
+            .then((response) => {
+              if (response.data.error) {
+                swal("Error", response.data.message, "error");
+              } else {
+                swal("Success", response.data.message, "success");
+                toggleBlogEditor.value();
+              }
+            })
+            .catch((error) => {
+              swal("Error", "Update Post Error: " + error, "error");
+            })
     }
 
     // Create blog post
@@ -281,6 +373,7 @@ export default {
         fData.append("blogTitle", newBlogPostData.value.blogTitle);
         fData.append("blogCategory", newBlogPostData.value.blogCategory);
         fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
+        console.log("CREATE FUCKING POST: " + JSON.stringify(newBlogPostData.value.blogContent));
         // This honesly was difficult to figure out. I hate you FormData!
         for (let i = 0; i < files.files.length; i++) {
           fData.append('files', files.files[i])
@@ -303,6 +396,7 @@ export default {
               swal("Error", "Create Post Error: " + error, "error");
             })
     }
+
     // Get all blog posts on mount (after loading a new image or refresh)
     async function getAllBlogPosts() {
       await axios
@@ -319,6 +413,7 @@ export default {
           swal("Error", error, "error");
         });
     }
+
     // Image url and file upload for Tiptap
     const addImageLink = computed(() => {
       const url = window.prompt("URL");
@@ -422,7 +517,7 @@ export default {
     }
 
     // Convert nodeList to Array
-    function toArray(obj) {
+    function toArray(obj) { // nodeList object
       const array = [];
       // iterate backwards ensuring that length is an UInt32
       for (var i = obj.length >>> 0; i--;) { 
@@ -447,6 +542,8 @@ export default {
       editor,
       useEditor,
       EditorContent,
+      getEditorContent,
+      blogPostDataArray,
       Link,
       Highlight,
       Youtube,
@@ -471,6 +568,7 @@ export default {
       toggleBlogEditor,
       isBlogEditorOpen,
       processBlogPost,
+      updateBlogPost,
       categories,
       categoryInput,
       getAllCategories,

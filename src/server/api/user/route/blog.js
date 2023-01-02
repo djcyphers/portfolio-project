@@ -19,4 +19,6 @@ router.post("/create", cleanBody, blogController.createBlogPost);
 router.get("/categories/all", blogController.getBlogCategories);
 // Delete blog post
 router.delete("/delete/:_id", blogController.deleteBlogPost);
+// Update blog post
+router.put("/update/:_id", cleanBody, blogController.updateBlogPost);
 module.exports = router;
