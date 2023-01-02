@@ -193,12 +193,14 @@ exports.updateBlogPost = async (req, res) => {
             });
             return;
         }
-        // Create new blog and save result data we validated earlier to database
+        // Save result data we validated earlier to database
         Blog.findByIdAndUpdate({ _id:req.params._id },
             {
-            blogTitle: fieldValues.blogTitle,
-            blogCategory: fieldValues.blogCategory,
-            blogContent: fieldValues.blogContent,
+                $set: {
+                    blogTitle: fieldValues.blogTitle,
+                    blogCategory: fieldValues.blogCategory,
+                    blogContent: fieldValues.blogContent,
+                },
             },
         );
         
@@ -229,6 +231,7 @@ exports.updateBlogPost = async (req, res) => {
                   status: 400,
                   message: `Error: Unsupported file type ${file.mimetype}`,
                 });
+                console.log(`Error: No supported files types found for ${file.mimetype}`);
                 return;
             }
             // Formulate the file name
@@ -251,10 +254,7 @@ exports.updateBlogPost = async (req, res) => {
                 Blog.updateOne(
                     { _id: req.params._id },
                     {
-                    $set: {
-                        blogTitle: fieldValues.blogTitle,
-                        blogCategory: fieldValues.blogCategory,
-                        blogContent: fieldValues.blogContent,
+                    $addToset: {
                         blogImagesUrls: filepath,
                     },
                     },

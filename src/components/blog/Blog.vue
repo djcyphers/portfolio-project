@@ -163,7 +163,7 @@ export default {
       toggleBlogEditor.value();
       // Add data back into the editor lol no
       blogPostData.value = blogPost;
-      console.log("EDIT BLOG POST: " + JSON.stringify(blogPostData.value));
+      console.log("EDIT BLOG POST (BlogPostData): " + JSON.stringify(blogPostData.value));
     }
 
     // Delete blog post
