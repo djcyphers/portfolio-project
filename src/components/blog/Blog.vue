@@ -254,7 +254,6 @@ export default {
             return str.split("\\").pop().split("/").pop();
           });
           if (img.value) {
-            console.log("bImage: " + JSON.stringify(img));
             getBlogImage.push(require(`@/assets/blog/` + `${formatName}/${img.value}`))
           }
           else {

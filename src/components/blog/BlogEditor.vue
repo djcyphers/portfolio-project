@@ -344,7 +344,6 @@ export default {
         fData.append("blogTitle", newBlogPostData.value.blogTitle);
         fData.append("blogCategory", newBlogPostData.value.blogCategory);
         fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
-        console.log("UPDATE POST: " + JSON.stringify(newBlogPostData.value.blogContent));
         // This honesly was difficult to figure out. I hate you FormData!
         for (let i = 0; i < files.files.length; i++) {
           fData.append('files', files.files[i])
