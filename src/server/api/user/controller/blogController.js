@@ -25,6 +25,11 @@ const blogSchema = Joi.object().keys({
     blogCategory: Joi.string().required(),
 });
 
+// This should work in node.js and other ES5 compliant implementations.
+function isEmptyObject(obj) {
+    return !Object.keys(obj).length;
+}
+
 // Get blog post by id
 exports.getBlogPostById = async (req, res) => {
     try {
@@ -174,7 +179,7 @@ exports.updateBlogPost = async (req, res) => {
         // Validate fields
         const result = blogSchema.validate(fieldValues);
         console.log("Field Values: " + JSON.stringify(result));
-        console.log("Files: " + files.files);
+        console.log("Files: " + JSON.stringify(files));
         if (result.error) {
             sendResponse({
             error: true,
@@ -193,8 +198,9 @@ exports.updateBlogPost = async (req, res) => {
             });
             return;
         }
-        // Save result data we validated earlier to database
-        Blog.findByIdAndUpdate({ _id:req.params._id },
+        // Update the field values
+        await Blog.findOneAndUpdate(
+            { _id: req.params._id },
             {
                 $set: {
                     blogTitle: fieldValues.blogTitle,
@@ -202,6 +208,7 @@ exports.updateBlogPost = async (req, res) => {
                     blogContent: fieldValues.blogContent,
                 },
             },
+            { new: true }
         );
         
         // Update the folder name to match the new blog title
@@ -209,8 +216,9 @@ exports.updateBlogPost = async (req, res) => {
         const newBlogTitle = fieldValues.blogTitle;
         const oldFolderName = oldBlogTitle.replace(/\s+/g, '-').toLowerCase();
         const newFolderName = newBlogTitle.replace(/\s+/g, '-').toLowerCase();
-        fs.renameSync(`${uploadUrl}\\${oldFolderName}`, `${uploadUrl}\\${newFolderName}`);
-
+        if (oldFolderName !== newFolderName) {
+            fs.renameSync(`${uploadUrl}\\${oldFolderName}`, `${uploadUrl}\\${newFolderName}`);
+        }
         // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
         const allowedMimeTypes = [
             "image/jpeg",
@@ -221,10 +229,28 @@ exports.updateBlogPost = async (req, res) => {
             "audio/mp3",
             "video/mp4",
         ];
-        
+        // If there are no images to upload to update, then skip the file update
+        if (!isEmptyObject(files)) {
+            // Clear file array to be later replaced with new files
+            Blog.updateOne(
+                { _id: req.params._id },
+                { $set: { blogImagesUrls: [] } },
+                function (err, result) {
+                  if (err) {
+                    console.log(err);
+                    return res.json({
+                      error: true,
+                      status: 400,
+                      message: "DB Failed on Update => " + err
+                    })
+                  } else {
+                    console.log("Blog Updated: Clear Array => " + JSON.stringify(result));
+                  }
+                }
+            )
         // Save the files
         for (let i = 0; i < Object.keys(files).length; i++) {
-            const file = files.files[i].value;
+            const file = files[i].value;
             if (!allowedMimeTypes.includes(file.mimetype)) {
                 sendResponse({
                   error: true,
@@ -237,8 +263,10 @@ exports.updateBlogPost = async (req, res) => {
             // Formulate the file name
             const date = new Date();
             const fileName = `${date.getTime()}-${file.originalFilename}`;
+            const formatName = fieldValues.blogTitle.replace(/\s+/g, "-").toLowerCase();
+            const blogFolder = `${uploadUrl}\\${formatName}`;
             // Save the file
-            const filepath = `${newFolderName}\\${fileName}`;
+            const filepath = `${blogFolder}\\${fileName}`;
             const rawData = fs.readFileSync(file.filepath);
                 // Save file to storage
                 fs.writeFileSync(filepath, rawData, (err) => {
@@ -252,12 +280,8 @@ exports.updateBlogPost = async (req, res) => {
                 });
                 // Push image to new blog post
                 Blog.updateOne(
-                    { _id: req.params._id },
-                    {
-                    $addToset: {
-                        blogImagesUrls: filepath,
-                    },
-                    },
+                    { blogTitle: fieldValues.blogTitle },
+                    { $addToSet: { blogImagesUrls: filepath } },
                     function (err, result) {
                         if (err) {
                             console.log(err);
@@ -271,6 +295,7 @@ exports.updateBlogPost = async (req, res) => {
                         }
                     }
                 )
+            }
         }
         sendResponse({
         error: false,
