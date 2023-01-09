@@ -2,6 +2,8 @@
     Blog Controller
     Upload, save, etc, to MongoDB and Storage folder(s)
 */
+// Load the core build.
+var _ = require('lodash');
 // Validate
 const Joi = require("joi");
 // Models
@@ -152,51 +154,40 @@ exports.updateBlogPost = async (req, res) => {
     });
     form.on('error', console.error);
     // All the logic goes here instead of form.parse
-    form.on('end', async () => {
+    form.once('end', async () => {
         // Check if undefined or missing fields
         if (!fields[0].value || !fields[1].value || !fields[2].value) {
-            sendResponse({
+            return res.json({
             error: true,
             status: 400,
             message: 'Please fill all the fields!',
             });
-            return;
         }
         const fieldValues = {
             blogTitle: [fields[0].value].toString(),
             blogCategory: [fields[1].value].toString(),
             blogContent: [fields[2].value].toString(),
         };
-        // Check files
-        if (!files) {
-            return res.json({
-                error: true,
-                status: 400,
-                message: "Please include an image. So lazy!",
-            });
-        }
         
         // Validate fields
         const result = blogSchema.validate(fieldValues);
         console.log("Field Values: " + JSON.stringify(result));
         console.log("Files: " + JSON.stringify(files));
         if (result.error) {
-            sendResponse({
+            return res.json({
             error: true,
             status: 400,
             message: `Schema Error: ${result.error.details[0].message}`,
             });
-            return;
         }
         // Find the blog post
         const blogPost = await Blog.findById(req.params._id);
         if (!blogPost) {
-            sendResponse({
+            return res.json({
             error: true,
             status: 400,
             message: 'Blog post not found',
             });
-            return;
         }
         // Update the field values
         await Blog.findOneAndUpdate(
@@ -210,7 +201,7 @@ exports.updateBlogPost = async (req, res) => {
             },
             { new: true }
         );
-        
+
         // Update the folder name to match the new blog title
         const oldBlogTitle = blogPost.blogTitle;
         const newBlogTitle = fieldValues.blogTitle;
@@ -219,56 +210,32 @@ exports.updateBlogPost = async (req, res) => {
         if (oldFolderName !== newFolderName) {
             fs.renameSync(`${uploadUrl}\\${oldFolderName}`, `${uploadUrl}\\${newFolderName}`);
         }
-        // if file is mime type jpeg, png, gif, svg, webp, mp3 or mp4
-        const allowedMimeTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/svg+xml",
-            "image/webp",
-            "audio/mp3",
-            "video/mp4",
-        ];
-        // If there are no images to upload to update, then skip the file update
-        if (!isEmptyObject(files)) {
-            // Clear file array to be later replaced with new files
-            Blog.updateOne(
-                { _id: req.params._id },
-                { $set: { blogImagesUrls: [] } },
-                function (err, result) {
-                  if (err) {
-                    console.log(err);
-                    return res.json({
-                      error: true,
-                      status: 400,
-                      message: "DB Failed on Update => " + err
-                    })
-                  } else {
-                    console.log("Blog Updated: Clear Array => " + JSON.stringify(result));
-                  }
-                }
-            )
-        // Save the files
-        for (let i = 0; i < Object.keys(files).length; i++) {
-            const file = files[i].value;
-            if (!allowedMimeTypes.includes(file.mimetype)) {
-                sendResponse({
-                  error: true,
-                  status: 400,
-                  message: `Error: Unsupported file type ${file.mimetype}`,
+
+        // Get the list of filenames from the database and file system
+        const dataBaseFilenames = blogPost.blogImagesUrls.map(url => path.basename(url));
+        const modifiedFilenames = [fields[3].value].toString().split(",");
+        const deletedFilenames = _.difference(dataBaseFilenames, modifiedFilenames);
+        console.log(`Deleted Filenames: ${deletedFilenames} || URL: ${req.url}`);
+        // Delete the deleted filenames from the folder and DB
+        if (deletedFilenames.length > 0) {
+            for (const filename of deletedFilenames) {
+                const fileUrl = `${uploadUrl}\\${newFolderName}\\${filename}`;
+                if (fs.existsSync(fileUrl)) {
+                fs.unlinkSync(fileUrl, (err) => {
+                    if (err) console.log(`fs.unlink Error: ${ err }`);
+                    console.log(`${ fileUrl } was deleted`);
                 });
-                console.log(`Error: No supported files types found for ${file.mimetype}`);
-                return;
+                await Blog.findOneAndUpdate({ _id: req.params._id }, { $pull: { blogImagesUrls: fileUrl } }, { new: true });
+                }
             }
-            // Formulate the file name
-            const date = new Date();
-            const fileName = `${date.getTime()}-${file.originalFilename}`;
-            const formatName = fieldValues.blogTitle.replace(/\s+/g, "-").toLowerCase();
-            const blogFolder = `${uploadUrl}\\${formatName}`;
-            // Save the file
-            const filepath = `${blogFolder}\\${fileName}`;
-            const rawData = fs.readFileSync(file.filepath);
-                // Save file to storage
+        }
+        if (files.length > 0) {
+            // Save the new uploaded filenames to the folder and DB
+            for (const file of files) {
+                const date = new Date();
+                const fileName = `${date.getTime()}-${file.value.originalFilename}`;
+                const filepath = `${uploadUrl}\\${newFolderName}\\${fileName}`;
+                const rawData = fs.readFileSync(file.value.filepath);
                 fs.writeFileSync(filepath, rawData, (err) => {
                     if (err) {
                         return res.json({
@@ -278,44 +245,26 @@ exports.updateBlogPost = async (req, res) => {
                         });
                     }
                 });
-                // Push image to new blog post
-                Blog.updateOne(
-                    { blogTitle: fieldValues.blogTitle },
-                    { $addToSet: { blogImagesUrls: filepath } },
-                    function (err, result) {
-                        if (err) {
-                            console.log(err);
-                            return res.json({
-                                error: true,
-                                status: 400,
-                                message: "DB Failed on Update => " + err
-                            })
-                        } else {
-                            console.log("Blog Update => " + JSON.stringify(result));
-                        }
-                    }
-                )
+                await Blog.findOneAndUpdate({ _id: req.params._id }, { $addToSet: { blogImagesUrls: filepath } }, { new: true });
             }
         }
-        sendResponse({
-        error: false,
-        status: 200,
-        message: 'Blog post updated',
+        // An extra check to make sure a response isn't sent twice. form.once solves this tho.
+        responseSent = true;
+        return res.json({
+            error: false,
+            status: 200,
+            message: 'Blog post updated!',
         });
     });
     form.parse(req);
     } catch (error) {
-        return res.json({
-            error: true,
-            status: 500,
-            message: "Internal server error => " + error,
-        })
-    }
-    function sendResponse(response) {
         if (!responseSent) {
-        res.json(response);
-        responseSent = true;
-        }
+            return res.json({
+                error: true,
+                status: 500,
+                message: "Internal server error => " + error,
+            })
+        } else { console.log(`Error Caught in Update Blog Post: ${ error }`) };
     }
 };
 
