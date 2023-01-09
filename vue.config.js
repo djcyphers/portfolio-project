@@ -27,15 +27,15 @@ module.exports = {
     port: 8080,
     proxy: {
       "/user": {
-        target: "http://localhost:4000",
+        target: "http://127.0.0.1:4000/",
         changeOrigin: true,
       },
       "/gallery": {
-        target: "http://localhost:4000",
+        target: "http://127.0.0.1:4000/",
         changeOrigin: true,
       },
       "/blog": {
-        target: "http://localhost:4000",
+        target: "http://127.0.0.1:4000/",
         changeOrigin: true,
       },
     },

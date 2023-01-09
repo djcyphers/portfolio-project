@@ -118,10 +118,10 @@
       <button @click="addYoutubeLink">
         YouTube
       </button>
-      <button v-if="!store.state.isBlogEditingPost" @click="processBlogPost();">
+      <button v-if="!store.state.isBlogEditingPost" @click.stop="processBlogPost();">
         Publish
       </button>
-      <button v-if="store.state.isBlogEditingPost" @click="processBlogPost();store.state.isBlogEditingPost = false">
+      <button v-if="store.state.isBlogEditingPost" @click.stop="processBlogPost();turnOffIsBlogEditing();">
         Update
       </button>
       <div class="input-group">
@@ -153,6 +153,7 @@ import {
 } from "@tiptap/vue-3";
 import axios from "axios";
 import swal from "sweetalert";
+import { debounce } from 'lodash';
 // Tiptap Extensions
 import Link from '@tiptap/extension-link'
 import Highlight from '@tiptap/extension-highlight'
@@ -169,6 +170,7 @@ import "highlight.js/styles/github.css";
 // load all highlight.js languages
 import { lowlight } from "lowlight";
 import any from "bluebird/js/release/any"; // I don't like this
+import { nextTick } from "process";
 lowlight.registerLanguage("html", html);
 lowlight.registerLanguage("css", css);
 lowlight.registerLanguage("js", js);
@@ -264,7 +266,10 @@ export default {
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     // Form data reactive
     const fData = reactive( new FormData() );
-
+    
+    const debouncedFunc = ref(debounce(() => {
+      processBlogPost();
+    }, 1000));
    
     // onMounted
     onMounted(() => {
@@ -313,6 +318,12 @@ export default {
           <p>Make sure to add a H1 tag for Title to register!</p>`
       }
     }
+    
+    function turnOffIsBlogEditing() {
+      nextTick(() => {
+        store.state.isBlogEditingPost = false;
+      }) 
+    }
 
     // Process blog post data
     function processBlogPost() {
@@ -340,31 +351,40 @@ export default {
 
     // Update blog post data
     async function updateBlogPost() {
-        
-        fData.append("blogTitle", newBlogPostData.value.blogTitle);
-        fData.append("blogCategory", newBlogPostData.value.blogCategory);
-        fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
-        // This honesly was difficult to figure out. I hate you FormData!
-        for (let i = 0; i < files.files.length; i++) {
-          fData.append('files', files.files[i])
-        }
-        await axios
-            .put("blog/update/" + props.blogPostData._id, fData, {
-              headers: {
-                  "Content-Type": "multipart/form-data",
-              },
-            })
-            .then((response) => {
-              if (response.data.error) {
-                swal("Error", response.data.message, "error");
-              } else {
-                swal("Success", response.data.message, "success");
-                toggleBlogEditor.value();
-              }
-            })
-            .catch((error) => {
-              swal("Error", "Update Post Error: " + error, "error");
-            })
+      const htmlContent = editor.value.getHTML();
+      const imageFileUrls = htmlContent.match(/src="\/img\/[^"]+/g);
+      const imageFileUrlsExtracted = imageFileUrls.map(imageFileUrl => imageFileUrl.substring(imageFileUrl.lastIndexOf("/") + 1));
+      const cleanedImageFileUrls = imageFileUrlsExtracted.map(imageFileUrl => {
+        const parts = imageFileUrl.split('.');
+        parts.splice(parts.length - 2, 1);
+        return parts.join('.');
+      });
+      //console.log("IMAGE NAMES TO BACKEND: " + cleanedImageFileUrls);
+      fData.append("blogTitle", newBlogPostData.value.blogTitle);
+      fData.append("blogCategory", newBlogPostData.value.blogCategory);
+      fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
+      fData.append("images", cleanedImageFileUrls);
+      // This honesly was difficult to figure out. I hate you FormData!
+      for (let i = 0; i < files.files.length; i++) {
+        fData.append('files', files.files[i])
+      }
+      await axios
+          .put("blog/update/" + props.blogPostData._id, fData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+          })
+          .then((response) => {
+            if (response.data.error) {
+              swal("Error", response.data.message, "error");
+            } else {
+              swal("Success", response.data.message, "success");
+              toggleBlogEditor.value();
+            }
+          })
+          .catch((error) => {
+            swal("Error", "Update Post Error: " + error, "error");
+          })
     }
 
     // Create blog post
@@ -372,7 +392,7 @@ export default {
         fData.append("blogTitle", newBlogPostData.value.blogTitle);
         fData.append("blogCategory", newBlogPostData.value.blogCategory);
         fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
-        console.log("CREATE FUCKING POST: " + JSON.stringify(newBlogPostData.value.blogContent));
+        //console.log("Create Blog Post: " + JSON.stringify(newBlogPostData.value.blogContent));
         // This honesly was difficult to figure out. I hate you FormData!
         for (let i = 0; i < files.files.length; i++) {
           fData.append('files', files.files[i])
@@ -564,6 +584,7 @@ export default {
       toggleBlogEditor,
       isBlogEditorOpen,
       processBlogPost,
+      debouncedFunc,
       updateBlogPost,
       categories,
       categoryInput,
@@ -574,6 +595,7 @@ export default {
       toArray,
       fData,
       blogPosts,
+      turnOffIsBlogEditing,
     };
   },
 };

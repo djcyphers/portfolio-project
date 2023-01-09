@@ -11,6 +11,8 @@ const config = require("./config/db");
 const path = require("path");
 const app = express();
 
+// Suppress warning
+mongoose.set('strictQuery', true);
 //configure database and mongoose
 mongoose
   .connect(config.database, {
@@ -24,6 +26,7 @@ mongoose
   .catch((err) => {
     console.log({ database_error: err });
   });
+  
 
 // db configuaration ends here
 //registering cors
@@ -55,6 +58,11 @@ app.use("/gallery", galleryRoutes);
 // Blog routes
 const blogRoutes = require("./api/user/route/blog");
 app.use("/blog", blogRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  next(res.status(500).send('Express: Something went wrong!'));
+});
 
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`);
