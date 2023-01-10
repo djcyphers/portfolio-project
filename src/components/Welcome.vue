@@ -1,9 +1,9 @@
 <template>
   <!-- {{-- Needs better UI. Blog Updates, Live Updates, Something --}} -->
-  <div class="main-name">DJ CYPHERS</div>
-  <div class="subtitle-portfolio-text">Designer || Developer || 3D Artist</div>
+  <div class="main-name ms-3 mt-1">DJ CYPHERS</div>
+  <div class="subtitle-portfolio-text ms-3 mb-3">Designer || Developer || 3D Artist</div>
 
-  <div class="mainpage-links">
+  <div class="mainpage-links ms-3">
     <!-- Links go here -->
     <span>
       <a href="https://github.com/djcyphers">
@@ -24,8 +24,8 @@
     </span>
 
     <span>
-      <a href="https://djcyphers.com/blog">
-        <font-awesome-icon :icon="['fa', 'atlas']" />Blog
+      <a href="https://artstation.com/djcyphers">
+        <font-awesome-icon :icon="['fab', 'artstation']" />ArtStation
       </a>
     </span>
   </div>

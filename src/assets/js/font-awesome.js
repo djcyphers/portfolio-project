@@ -16,7 +16,13 @@ import { faBehanceSquare } from "@fortawesome/free-brands-svg-icons";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import { faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import { faSatellite } from "@fortawesome/free-solid-svg-icons";
+import { faArtstation } from "@fortawesome/free-brands-svg-icons";
+import { faSoundcloud } from "@fortawesome/free-brands-svg-icons";
+import { faMixcloud } from "@fortawesome/free-brands-svg-icons";
 
+library.add(faMixcloud);
+library.add(faSoundcloud);
+library.add(faArtstation);
 library.add(faAtlas);
 library.add(faGithubSquare);
 library.add(faLinkedin);

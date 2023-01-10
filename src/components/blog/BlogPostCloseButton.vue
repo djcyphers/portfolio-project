@@ -30,7 +30,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 $button-size: 40px;
-$close-width: ($button-size / 10);
+$close-width: calc($button-size / 10);
 .button-wrapper {
   width: 40px;
   height: 40px;

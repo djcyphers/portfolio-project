@@ -41,7 +41,7 @@
 
           <div class="card-body about-card mb-2">
             <h5 class="card-title-center about-title">DJ Cyphers</h5>
-            <p class="card-text small job-title">Designer / Developer</p>
+            <p class="mt-4 card-text text-dark small job-title">Designer / Developer</p>
           </div>
         </div>
       </div>
@@ -96,7 +96,6 @@
                       ><font-awesome-icon :icon="['fas', 'music']" /></i
                   ></span>
                 </div>
-                <img :src="placeholder" alt="Avatar" />
               </div>
               <div class="flip-card-back">
                 <ul class="list-group list-group-flush rounded">
@@ -107,12 +106,11 @@
                       d-flex
                       align-items-center
                       justify-content-center
-                      fa fa-soundcloud
                     "
                     @click="scUrl()"
-                    style="height: 100%"
+                    style="height: 100%; font-size: 2rem;"
                   >
-                    &nbsp; SoundCloud
+                    &nbsp; <font-awesome-icon :icon="['fab', 'soundcloud']" />SoundCloud
                   </li>
                   <li
                     class="
@@ -121,12 +119,11 @@
                       d-flex
                       align-items-center
                       justify-content-center
-                      fa fa-mixcloud
                     "
                     @click="mcUrl()"
-                    style="height: 100%"
+                    style="height: 100%; font-size: 2rem;"
                   >
-                    &nbsp; MixCloud
+                    &nbsp;<font-awesome-icon :icon="['fab', 'mixcloud']" />MixCloud
                   </li>
                 </ul>
               </div>

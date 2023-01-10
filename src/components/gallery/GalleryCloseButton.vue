@@ -51,7 +51,7 @@ export default {
     path {
       stroke: $borderColor;
       fill: none;
-      stroke-width: $borderSize/2;
+      stroke-width: calc($borderSize / 2);
       stroke-linecap: round;
       animation: progress $speed ease-out .25s both;
       @keyframes progress {
@@ -61,38 +61,38 @@ export default {
   }
   span{
     display:block;
-    width:($size/4) - 2px;
+    width: calc(($size / 4) - 2px);
     height:$borderSize;
     background: $borderColor;
     box-shadow: 0 0 20px -5px rgba(white,.5);
     border-radius: 20px;
     position: absolute;
-    $padding: $size/3;
+    $padding: calc($size / 3);
     transition: .25s ease-in-out;
     animation: slide-in $speed ease-in-out .25s both;
     @keyframes slide-in {
       from { width:0; }
     }
     &:nth-child(1){
-      top:($padding - ($borderSize/2));
+      top: calc($padding - ($borderSize / 2));
       left:$padding;
       transform:rotate(45deg);
       transform-origin: top left;
     }
     &:nth-child(2){
-      top:($padding - ($borderSize/2));
+      top: calc($padding - ($borderSize / 2));
       right:$padding;
       transform:rotate(-45deg);
       transform-origin: top right;
     }
     &:nth-child(3){
-      bottom:($padding - ($borderSize/2));
+      bottom: calc($padding - ($borderSize / 2));
       left:$padding;
       transform:rotate(-45deg);
       transform-origin: bottom left;
     }
     &:nth-child(4){
-      bottom:($padding - ($borderSize/2));
+      bottom: calc($padding - ($borderSize / 2));
       right:$padding;
       transform:rotate(45deg);
       transform-origin: bottom right;
@@ -101,7 +101,7 @@ export default {
   &:hover{
     background: #37474F;
     span{
-      width:($size/4);
+      width:calc($size / 4);
     }
   }
 }

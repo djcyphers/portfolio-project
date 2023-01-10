@@ -56,12 +56,13 @@ blockquote {
 
 /*  Front Page Under Construction
 */
+
 .main-name {
   display: flex;
   word-wrap:break-word;
   white-space:normal;
-  font-size: 4.2rem;
-  font-family: 'Nunito';
+  font-size: 4rem;
+  font-family: 'AudioWide-Regular';
 }
 .underconstruction-text {
     display: flex;
@@ -445,10 +446,10 @@ ul.socialshare-icons i.fa {
     position: relative;
     top: 50%;
     width: 24em;
-    height: 1.1em;
+    height: 2.5rem;
     margin: 0 auto;
     border-right: 2px solid rgba(255,255,255,.75);
-    font-size: 2rem;
+    font-size: 4rem;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -588,13 +589,11 @@ transform: rotateY(180deg);
 
 .flip-card-text {
     /* Centered text */
-    top:45%;
-    background: black;
     color: white;
-    position: absolute;
-    left: 39%;
-    scale: 1.8;
-    margin: auto;
+    position: relative;
+    top: 50%;
+    transform: translate(0%, -50%);
+    font-size: calc(1vw + 1rem);
 
 }
 
@@ -839,6 +838,16 @@ and (min-width : 360px) {
   src: local(''),
   url('~@/assets/fonts/Dosis/Dosis-VariableFont_wght.ttf') format('truetype'),
 }
+
+@font-face {
+  font-family: AudioWide-Regular;
+  font-weight: 100;
+  font-style: normal;
+  font-display: auto;
+  unicode-range: U+000-5FF;
+  src: local(''), 
+  url('~@/assets/fonts/AudioWide/Audiowide-Regular.ttf') format("truetype");
+  }
 
 /* ===================================================================
  * # Animated Close Button
