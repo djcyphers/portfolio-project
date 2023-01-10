@@ -40,7 +40,6 @@
     "node-pre-gyp": "^0.17.0",
     "sweetalert": "^2.1.2",
     "tippy.js": "^6.3.7",
-    "uninstall": "^0.0.0",
     "vue": "^3.0.0",
     "vue-axios": "^3.3.7",
     "vue-router": "^4.0.0-0",

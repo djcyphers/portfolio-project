@@ -35,7 +35,7 @@
       />
     </p>
     <!-- Reset password -->
-    <div class="fs-6 text-center">Enter new password and email code</div>
+    <div class="fs-6 text-center">Enter a New Password</div>
     <button class="btn btn-primary btn-block w-75 my-1" type="submit">
       Reset Password
     </button>

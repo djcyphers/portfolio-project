@@ -5,7 +5,7 @@
     <li class="list-group-item lg-user">Points : {{ user.points }}</li>
     <li class="list-group-item lg-user">Ref Code : {{ user.referralCode }}</li>
     <li class="list-group-item lg-user">Blog Posts Count</li>
-    <li class="list-group-item lg-user">Change Password</li>
+    <button class="list-group-item lg-user" @click="changePassword()">Change Password</button>
   </ul>
   <button
     class="btn btn-primary btn-block w-40 my-2 center"
@@ -32,6 +32,7 @@ export default {
       referralCode: "",
       points: 0,
     });
+
     const backButton = computed({
       get() {
         return store.methods.exitProfile;
@@ -40,6 +41,7 @@ export default {
         return store.methods.exitProfile;
       },
     });
+
     const getAdminPanel = computed({
       get() {
         return store.methods.logIn;
@@ -48,6 +50,7 @@ export default {
         return store.methods.logIn;
       },
     });
+    
     onMounted(async () => {
       axios
         .get("/user/profile", {
@@ -67,10 +70,16 @@ export default {
           console.log(err);
         });
     });
+
+    function changePassword() {
+      store.state.profile = false;
+      store.state.resetPassword = true;
+    }
     return {
       user,
       backButton,
       getAdminPanel,
+      changePassword,
     };
   },
 };

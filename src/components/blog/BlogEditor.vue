@@ -124,17 +124,37 @@
       <button v-if="store.state.isBlogEditingPost" @click.stop="processBlogPost();turnOffIsBlogEditing();">
         Update
       </button>
-      <div class="input-group">
-        <!-- Add category manually -->
-        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"  type="button" aria-expanded="false">Categories</button>
+      <button class="category-dropdown">
+        <a 
+          href="#" 
+          class="nav-link text-white dropdown-toggle" 
+          data-bs-toggle="dropdown" 
+          @click="toggleNavItem($event)"
+        >
         <!-- Select categories from db -->
-        <ul class="dropdown-menu">
-          <template v-for="(category, index) in categories" :key="index">
-            <button class="dropdown-item" type="button" tabindex="0" @click.prevent="selectInputCategory(category)"> {{ category }} </button>
-          </template>
+        <ul 
+          class="btn btn-sm btn-outline-secondary dropdown-menu" 
+          aria-labelledby="dropdown-categories"
+        >
+          <li v-for="category in deduplicatedCategories" :key="category._id" >
+            <a 
+              href="#" 
+              class="dropdown-item add-category-button"
+              @click="selectInputCategory(category.blogCategory);"
+            >
+            {{ category.blogCategory }}
+            </a>
+          </li>
         </ul>
-        <input @keyup.enter="enterInputCategory" type="text" class="form-control category-input-box" tabindex="0" aria-label="Enter category input box">
-      </div>
+        Categories
+        </a>
+      </button>
+      <!-- Add category manually -->
+      <input @keyup.enter="enterInputCategory" type="text" class="form-control category-input-box" tabindex="0" aria-label="Enter category input box">
+      <!-- Cancel button -->
+      <button @click="cancelEditor();">
+        Cancel
+      </button>
     </FloatingMenu>
   </div>
   <EditorContent
@@ -144,7 +164,7 @@
 </template>
 
 <script>
-import { computed, ref, inject, onMounted, reactive, watch } from "vue";
+import { computed, ref, inject, onMounted, reactive, watch, nextTick } from "vue";
 import {
   useEditor,
   EditorContent,
@@ -153,7 +173,6 @@ import {
 } from "@tiptap/vue-3";
 import axios from "axios";
 import swal from "sweetalert";
-import { debounce } from 'lodash';
 // Tiptap Extensions
 import Link from '@tiptap/extension-link'
 import Highlight from '@tiptap/extension-highlight'
@@ -170,7 +189,6 @@ import "highlight.js/styles/github.css";
 // load all highlight.js languages
 import { lowlight } from "lowlight";
 import any from "bluebird/js/release/any"; // I don't like this
-import { nextTick } from "process";
 lowlight.registerLanguage("html", html);
 lowlight.registerLanguage("css", css);
 lowlight.registerLanguage("js", js);
@@ -194,8 +212,8 @@ export default {
     const store = inject("store");
 
     // onMounted
-    onMounted(async () => {
-      await getAllCategories();
+    onMounted(async() => {
+        await getAllCategories();
     });
 
     const blogPostDataArray = ref(props.blogPostData);
@@ -207,6 +225,8 @@ export default {
     const blogPosts = reactive([]);
     // Categories
     const categories = reactive([]);
+    // Filter duplicates from categories
+    const deduplicatedCategories = computed(() => categories.filter((item, index) => categories.findIndex(i => i.blogCategory === item.blogCategory) === index));
     // Category input ref
     const categoryInput = ref('');
     // Blog Editor
@@ -260,16 +280,13 @@ export default {
     * Manage blog data
     *
     */
+   
     // Responsive refs
     const files = reactive({ files: [] });
     const isLoggedIn = computed(() => store.state.logged);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     // Form data reactive
     const fData = reactive( new FormData() );
-    
-    const debouncedFunc = ref(debounce(() => {
-      processBlogPost();
-    }, 1000));
    
     // onMounted
     onMounted(() => {
@@ -380,6 +397,7 @@ export default {
             } else {
               swal("Success", response.data.message, "success");
               toggleBlogEditor.value();
+              store.state.isBlogViewOpen = true;
             }
           })
           .catch((error) => {
@@ -512,12 +530,11 @@ export default {
         .run()
     }
 
-    // Get all categories onMount
     async function getAllCategories() {
       await axios
         .get("blog/categories/all")
         .then((response) => {
-          categories.push(response.data);
+          categories.splice(0, categories.length, ...response.data); // for reactive properties
         })
         .catch((error) => {
           console.log(error);
@@ -528,10 +545,11 @@ export default {
     function enterInputCategory() {
       categoryInput.value = document.querySelector('.category-input-box').value;
       newBlogPostData.value.blogCategory = categoryInput.value;
-      console.log('Category is inputed: ' + categoryInput.value);
+      //console.log('Category is inputed: ' + categoryInput.value);
     }
     // Select categories from selection from db response
     function selectInputCategory(category) {
+      console.log("Category Dropdown: " + JSON.stringify(categories));
       newBlogPostData.value.blogCategory = category;
     }
 
@@ -555,6 +573,22 @@ export default {
       //files.value.files = fileArray;
       //console.log('Array: ' + tmpArray)
       return newBlogPostData.value.blogContent = tmpArray;
+    }
+    
+    // Toggle active nav link and remove class from other nav links
+    function toggleNavItem(event) {
+      const navItems = document.querySelectorAll(".nav-link");
+      navItems.forEach((item) => {
+        item.classList.remove("active");
+      });
+      // Add active class to clicked nav link
+      event.target.classList.add("active");
+    }
+
+    // Cancel the editor and go back to the blog views
+    function cancelEditor() {
+      toggleBlogEditor.value();
+      store.state.isBlogViewOpen = true;
     }
 
     return {
@@ -584,9 +618,9 @@ export default {
       toggleBlogEditor,
       isBlogEditorOpen,
       processBlogPost,
-      debouncedFunc,
       updateBlogPost,
       categories,
+      deduplicatedCategories,
       categoryInput,
       getAllCategories,
       getAllBlogPosts,
@@ -596,13 +630,15 @@ export default {
       fData,
       blogPosts,
       turnOffIsBlogEditing,
+      toggleNavItem,
+      cancelEditor,
     };
   },
 };
 </script>
 
 <style lang="scss">
-/* Basic editor styles */
+// Prose Mirror Tip-Tap Editor Styles
 .ProseMirror {
   > * + * {
     margin-top: 0.75em;
@@ -620,7 +656,7 @@ export default {
     display: block;
     outline: 0px solid transparent;
   }
-
+  
   div[data-youtube-video=""] {
     cursor: move;
     padding-right: 24px;
@@ -628,12 +664,13 @@ export default {
     align-items: center;
     justify-content: center;
   }
-
+  
   .ProseMirror-selectednode iframe {
     transition: outline 0.15s;
     outline: 1px solid #cac6ff;
   }
 }
+/* Basic editor styles */
 .bubble-menu {
   display: flex;
   align-items: center;
@@ -642,7 +679,7 @@ export default {
   border-radius: 0.5rem;
   border-color: #fff;
   width: fit-content;
-
+  
   button {
     border: none;
     background: none;

@@ -22,8 +22,7 @@
         href="#" 
         class="nav-link text-white dropdown-toggle" 
         data-bs-toggle="dropdown"
-        @click="getSocialNav(); hideDashboard(); toggleNavItem($event);
-          "
+        @click="getSocialNav(); hideDashboard(); toggleNavItem($event);"
       >
       <ul
         class="dropdown-menu dropdown-menu-dark text-small shadow"
