@@ -39,10 +39,6 @@ ul {
     list-style: none;
 }
 
-p {
-    color:#f8f8f8;
-}
-
 .jumbotron {
     background-color: linen;
 }
@@ -1175,6 +1171,12 @@ and (min-width : 360px) {
     width: 100%;
     height: 20vh;
     object-fit: fit;
+    }
+
+    .blog-post p {
+      font-size: 1vw;
+      color: white;
+      font-family:Dosis;
     }
 
   /* ===================================================================

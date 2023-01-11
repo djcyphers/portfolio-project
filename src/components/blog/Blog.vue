@@ -307,6 +307,10 @@ export default {
     border: 1px solid rgb(199, 208, 253);
   }
 
+  p {
+    font-size: 5.5em;
+  }
+
   img {
     width: 100%;
     height: 15vw;

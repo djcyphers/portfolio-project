@@ -57,7 +57,7 @@
             about-section about-blog
           "
           style="cursor: pointer"
-          onclick="location.href='/blog';"
+          @click="navToBlog()"
         >
           <img
             :src="placeholder"
@@ -170,6 +170,9 @@ export default defineComponent({
     mcUrl: () => {
       const url = "http://mixcloud.com/djcyphers";
       window.open(url);
+    },
+    navToBlog: () => {
+      document.querySelectorAll(".link")[3].click();
     },
     onReady() {
       this.$refs.youtube.mute();
