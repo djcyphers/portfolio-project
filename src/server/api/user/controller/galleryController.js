@@ -324,17 +324,19 @@ exports.updateGallery = async (req, res) => {
           });
         }
         const validUrl = oldFile.galleryCoverArtUrl;
-        try {
-          // Detele the old cover art file
-          fs.unlinkSync(`${validUrl}`);
-        } catch (error) {
-          console.log(error);
+        // Detele the old cover art file
+        if (validUrl.length > 0) {
+          fs.unlinkSync(validUrl, (err) => {
+            if (err) console.log(`fs.unlink Error: ${ err }`);
+            console.log(`${ validUrl } was deleted`);
+          });
+        } else {
           return res.json({
             error: true,
             status: 500,
-            message: "File Delete Error! => " + error,
+            message: "File Delete Error! => " + err,
           });
-        }
+         }
         // Save cover art file to storage
         const file = files.files;
 

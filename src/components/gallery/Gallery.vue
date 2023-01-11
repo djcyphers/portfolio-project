@@ -63,46 +63,41 @@
       <GalleryCloseButton @click.prevent="openGalleryView" />
       <div class="gallery-item-view container">
         <div class="row">
-          <div
-            v-for="(galleryItem, index) in galleryItems"
-            :key="index"
-            class="col-md-6 col-lg-3 gallery-item"
-          >
-            <a
-              ref="galleryItemRef"
-              :href="galleryItemImg(galleryItem)"
-              class="lightbox"
-              :data-footer="galleryItemDescription(galleryItem)"
-              :data-gallery="galleryItemTitle(galleryItem)"
-              data-toggle="lightbox"
-              @click.prevent="attachLightbox($event)"
-            >
-              <img
-                :src="galleryItemImg(galleryItem)"
-                class="img-fluid rounded"
-                :alt="galleryItemTitle(galleryItem)"
-              >
-            </a>
-            <template v-if="isLoggedIn">
+          <div class="col-lg-4 col-sm-2">
+            <div class="card-group">
               <div
-                class="btn-group"
-                role="group"
-                aria-label="Admin Buttons"
+                v-for="(galleryItem, index) in galleryItems"
+                :key="index"
+                class="card text-white bg-dark me-5 gallery-item"
               >
-                <button
-                  class="btn btn-primary edit-button"
-                  @click="editGalleryItem(galleryItem.title)"
+                <a
+                  ref="galleryItemRef"
+                  :href="galleryItemImg(galleryItem)"
+                  class="lightbox"
+                  :data-footer="galleryItemDescription(galleryItem)"
+                  :data-gallery="galleryItemTitle(galleryItem)"
+                  data-toggle="lightbox"
+                  @click.prevent="attachLightbox($event)"
                 >
-                  Edit
-                </button>
-                <button
-                  class="btn btn-primary delete-button"
-                  @click="deleteGalleryItem(galleryItem, index)"
-                >
-                  Delete
-                </button>
+                  <img
+                    :src="galleryItemImg(galleryItem)"
+                    class="card-img-top card-gallery-item"
+                    :alt="galleryItemTitle(galleryItem)"
+                  >
+                </a>
+                <div class="card-body">
+                  <div class="card-text text-center text-white">{{ galleryItem.title }}</div>
+                </div>
+                <template v-if="isLoggedIn">
+                  <button
+                    class="btn btn-primary delete-button"
+                    @click="deleteGalleryItem(galleryItem, index)"
+                  >
+                    Delete
+                  </button>
+                </template>
               </div>
-            </template>
+            </div>
           </div>
         </div>
       </div>
