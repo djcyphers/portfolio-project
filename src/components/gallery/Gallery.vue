@@ -659,7 +659,7 @@ export default {
           }
         // Open gallery to view gallery items
         async function expandGallery(gallery) {
-          console.log("Expand Gallery Just Fired!");
+          // console.log("Expand Gallery Just Fired!");
           if (gallery.galleryName !== "" || undefined) { // Then go to create gallery item screen
             // Make api call to get items
             localStorage.setItem("gallery", JSON.stringify(gallery));

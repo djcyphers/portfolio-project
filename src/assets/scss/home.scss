@@ -440,14 +440,21 @@ ul.socialshare-icons i.fa {
     height: 255px;
 }
 
+.card-typewriter-text {
+  font-size: calc(1vw + 1rem) !important;
+  font-family: Dosis;
+  color: #fff;
+  padding-bottom: 20px;
+}
+
 .line-1{
     position: relative;
     top: 50%;
     width: 24em;
-    height: 2.5rem;
+    height: 4rem;
     margin: 0 auto;
     border-right: 2px solid rgba(255,255,255,.75);
-    font-size: 4rem;
+    font-size: 5rem;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -461,7 +468,7 @@ ul.socialshare-icons i.fa {
 }
 @keyframes typewriter{
   from{width: 0;}
-  to{width: 6em;}
+  to{width: calc(1vw + 4em);}
 }
 @keyframes blinkTextCursor{
   from{border-right-color: rgba(255,255,255,.75);}
@@ -650,7 +657,7 @@ and (min-height : 416px) {
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5rem; }
-  .content1 { top: 50%; }
+  .content1 { top: 26%; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5rem; margin-top:-20%; }
   .links { font-size: 1.5vw; word-spacing:30px; }
 }
@@ -666,6 +673,7 @@ and (min-width : 767px) {
     height: 60%;
     margin-top: -120px;
   }
+  
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; margin-top:-20%; }
@@ -716,6 +724,7 @@ and (-moz-touch-enabled) {
     margin-left: -100px;
     margin-top: -100px;
   }
+
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw;  margin-top: -8%; }
@@ -734,6 +743,7 @@ and (min-height : 375px) {
     margin-left: -100px;
     margin-top: -100px;
   }
+
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw; }
@@ -767,7 +777,7 @@ and (min-width : 375px) {
 /* Iphone 6/7/8 and Android (Landscape)----------- */
 @media only screen
 and (max-width: 800px)
-and (min-width: 667px )
+and (min-width: 469px )
 and (min-height : 360px) {
   #main-bg            {
     width: 70%;
@@ -776,9 +786,18 @@ and (min-height : 360px) {
     margin-top: -100px;
   }
 
+  .content1-wrapper {
+    width: 76%;
+  }
+
+  .subtitle-portfolio-text {
+    font-size: 3vw;
+  }
+
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw; }
+  .mainpage-links { font-size: 2vw; }
   .links { font-size: 2.5vw; word-spacing:30px; }
 }
 
@@ -794,10 +813,18 @@ and (min-width : 360px) {
     margin-top: -100px;
   }
 
+  .content1-wrapper {
+    width: 42%;
+  }
+
+  .subtitle-portfolio-text {
+    font-size: 3vw;
+  }
+
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2em; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2em !important; margin-top: -8%; }
-  .mainpage-links { font-size: 0.8em !important; }
+  .mainpage-links { font-size: 2.8vw; }
   .links { font-size: 3.5vw; word-spacing:30px; }
   /*** Menu/Nav ***/
   #menu { float:right; position:absolute; top:20px; right:10px; z-index:10; font-size: 3.5vw }

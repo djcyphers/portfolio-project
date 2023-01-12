@@ -66,9 +66,9 @@
             style="filter: brightness(0%)"
           />
           <div class="card-img-overlay">
-            <p class="card-text line-1 anim-typewriter">My__Blog()</p>
-            <p class="card-text line-1 anim-typewriter">My__Ideas()</p>
-            <p class="card-text line-1 anim-typewriter">My__Life()</p>
+            <p class="card-typewriter-text line-1 anim-typewriter">My__Blog()</p>
+            <p class="card-typewriter-text line-1 anim-typewriter">My__Ideas()</p>
+            <p class="card-typewriter-text line-1 anim-typewriter">My__Life()</p>
           </div>
         </div>
       </div>
