@@ -60,13 +60,6 @@ blockquote {
   font-size: 4rem;
   font-family: 'AudioWide-Regular';
 }
-.underconstruction-text {
-    display: flex;
-    word-wrap:break-word;
-    white-space:normal;
-    font-size: 2.6rem;
-    font-family: 'Nunito';
-}
 .mainpage-links {
     font-size: 2.1rem;
     word-spacing:10px;
@@ -315,6 +308,15 @@ transition: all .9s;
     line-height: 0rem;
     color: #333;
     font-weight: 300;
+}
+
+.about-title {
+  font-size: calc(1vw + 1rem);
+  line-height: 0rem;
+  color: rgb(23, 23, 23);
+  font-weight: 300;
+  font-family: Dosis;
+  margin-bottom: 30px;
 }
 
 /**** Social Icons *****/
@@ -795,7 +797,6 @@ and (min-width : 360px) {
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2em; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2em !important; margin-top: -8%; }
-  .underconstruction-text { font-size: 0.8em !important; }
   .mainpage-links { font-size: 0.8em !important; }
   .links { font-size: 3.5vw; word-spacing:30px; }
   /*** Menu/Nav ***/

@@ -18,8 +18,8 @@
     </span>
 
     <span>
-      <a href="https://www.facebook.com/iheardancemusic">
-        <font-awesome-icon :icon="['fab', 'facebook-square']" />Facebook
+      <a href="https://www.behance.net/djcyphers">
+        <font-awesome-icon :icon="['fab', 'behance-square']" />Behance
       </a>
     </span>
 

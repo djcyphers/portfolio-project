@@ -19,7 +19,9 @@ import { faSatellite } from "@fortawesome/free-solid-svg-icons";
 import { faArtstation } from "@fortawesome/free-brands-svg-icons";
 import { faSoundcloud } from "@fortawesome/free-brands-svg-icons";
 import { faMixcloud } from "@fortawesome/free-brands-svg-icons";
+import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 
+library.add(faDiscord);
 library.add(faMixcloud);
 library.add(faSoundcloud);
 library.add(faArtstation);

@@ -40,8 +40,9 @@
       </button>
     </template>
     <template v-if="loginState.loginReset === false">
-      <p>Don't have an account?</p>
-      <button class="btn btn-primary btn-block w-75" @click="registerUser">
+      <p>Sorry! Registration Disabled</p>
+      <!-- @click registerUser disabled -->
+      <button class="btn btn-primary btn-block w-75 register-button">
         Register
       </button>
     </template>
@@ -160,3 +161,11 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+
+.register-button {
+  text-decoration: line-through;
+}
+
+</style>

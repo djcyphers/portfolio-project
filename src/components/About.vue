@@ -32,9 +32,9 @@
               </a>
             </li>
             <li>
-              <a href="https://www.behance.net/djcyphers">
-                <font-awesome-icon :icon="['fab', 'behance-square']" />
-                <i class="fa fa-behance"></i>
+              <a href="https://disordapp.com/users/283115651885826048">
+                <font-awesome-icon :icon="['fab', 'discord']" />
+                <i class="fa fa-discord"></i>
               </a>
             </li>
           </ul>
@@ -131,18 +131,19 @@
           </div>
         </div>
       </div>
-
-      <!-- <div class="responsive-box col-md-6 col-lg-3">
+      <!-- Youtube Demo Goes Here -->
+      <div class="responsive-box col-md-6 col-lg-3">
         <div class="card text-white border-0 bg-transparent mt-4 about-section">
           <YouTube
             src="https://www.youtube.com/embed/RoNNJ_nPWY0"
             @ready="onReady"
             ref="youtube"
             height="255"
+            width="100%"
             origin="http://localhost:8080"
           />
         </div>
-      </div> -->
+      </div>
     </div>
   </div>
 </template>
@@ -151,17 +152,18 @@
 import profilePic from "../assets/img/portfolio.jpg";
 import placeholder from "../assets/img/placeholder.png";
 import { defineComponent } from "vue";
-//import YouTube from "vue3-youtube";
+import YouTube from "vue3-youtube";
 
 export default defineComponent({
   name: "About",
-  //components: { YouTube },
+  components: { YouTube },
   data() {
     return {
       profilePic,
       placeholder,
     };
   },
+
   methods: {
     scUrl: () => {
       const url = "http://soundcloud.com/djcyphers";
