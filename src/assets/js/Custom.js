@@ -14,6 +14,20 @@ $(function () {
     }
   });
 
+// Setup handler to detect window resize and then re-correct
+let resizeTimer;
+
+window.addEventListener("resize", function() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function() {
+    // Run code here after resizing has finished
+    var elm = $(".menu");
+    if (elm.has(".selected")) {
+      $('.selected').trigger( "click" );
+    }
+    }, 250);
+});
+
   // Setup for touchswipe on main page
   document.addEventListener("touchstart", handleTouchStart, false);
   document.addEventListener("touchmove", handleTouchMove, false);

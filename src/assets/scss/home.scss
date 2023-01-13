@@ -217,23 +217,6 @@ blockquote {
     background:rgba(255,255,255, 0);
 }
 
-
-/* Album Hoverover */
-img.zoom {
-    -webkit-transition: all .3s ease-in-out;
-    -moz-transition: all .3s ease-in-out;
-    -o-transition: all .3s ease-in-out;
-    -ms-transition: all .3s ease-in-out;
-    transition: all .3s ease-in-out;
-}
-
-.transition {
-    -webkit-transform: scale(1.2);
-    -moz-transform: scale(1.2);
-    -o-transform: scale(1.2);
-    transform: scale(1.2);
-}
-
 /* About Me */
 .about-wrapper {
     position: absolute;
@@ -431,6 +414,28 @@ ul.socialshare-icons i.fa {
     height: 255px;
 }
 
+.blog-title {
+  font-size: calc(1vw + 1rem);
+  font-family: Dosis;
+  font-weight: 400;
+  color: #fff;
+}
+
+.blog-category {
+ font-size: 1vw;
+ font-family: Dosis;
+ color: #fff;
+ padding-bottom: 20px;
+}
+
+.gallery-title {
+  font-size: calc(2vw + 1rem);
+}
+
+.gallery-description {
+  font-size: calc(2vw);
+}
+
 .about-blog:hover {
     outline: rgb(255, 255, 255) solid 2px;
 }
@@ -486,6 +491,12 @@ and (min-width : 1338px) {
   .content1-wrapper {
     background: rgba(0, 0, 12, 0.6);
     }
+
+     // Fit image to blog editor. Should reflect actual plublished content size
+  img.blog-image {
+    width: 60%;
+    object-fit: contain;
+  }
 }
 
 /* Music Links Button Animation Flip-Card */
@@ -627,6 +638,11 @@ and (min-width : 416px) {
     top:20.8% !important;
 }
 
+img.blog-image {
+  width: 50%;
+  object-fit: contain;
+}
+
 .main-name {
     display: flex;
     word-wrap:break-word;
@@ -660,6 +676,22 @@ and (min-height : 416px) {
   .content1 { top: 26%; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5rem; margin-top:-20%; }
   .links { font-size: 1.5vw; word-spacing:30px; }
+
+  .blog-title {
+    font-size: calc(1vw + 1rem);
+  }
+  
+  .blog-category {
+   font-size: calc(1vw);
+  }
+
+  .gallery-title {
+    font-size: calc(2vw + 1rem);
+  }
+
+  .gallery-description {
+    font-size: calc(2vw);
+  }
 }
 
 /* iPads (Portrait) ----------- */
@@ -673,7 +705,7 @@ and (min-width : 767px) {
     height: 60%;
     margin-top: -120px;
   }
-  
+
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
   .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; margin-top:-20%; }
@@ -690,6 +722,11 @@ and (min-height : 767px) {
     width: 80%;
     height: 80%;
     margin-top: -120px;
+  }
+
+  img.blog-image {
+    width: 50%;
+    object-fit: contain;
   }
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
@@ -761,6 +798,11 @@ and (min-width : 375px) {
     height: 80%;
     margin-left: -100px;
     margin-top: -100px;
+  }
+
+  img.blog-image {
+    width: 40%;
+    object-fit: contain;
   }
 
   /* About Me */
@@ -1170,14 +1212,14 @@ and (min-width : 360px) {
  * # Gallery (customized)
  *
  * ------------------------------------------------------------------- */
- .card-title {
-    font-size: calc(2vw - 1rem) !important;
+ .gallery-title {
+    font-size: calc(1vw + 1rem) !important;
     font-family: Dosis;
     font-weight: 400;
     color: #fff;
   }
 
- .card-text {
+ .gallery-description {
    font-size: 1vw !important;
    font-family: Dosis;
    color: #fff;
@@ -1198,13 +1240,17 @@ and (min-width : 360px) {
   .card-gallery-item {
     width: 100%;
     height: 20vh;
-    object-fit: fit;
+    object-fit: cover;
     }
 
     .blog-post p {
-      font-size: 1vw;
+      font-size: calc(1vw + 1rem);
       color: white;
       font-family:Dosis;
+    }
+
+    .blog-post h1 {
+      font-size: calc(2vw + 1rem);
     }
 
   /* ===================================================================
@@ -1280,8 +1326,3 @@ and (min-width : 360px) {
  * # Blog Utilities
  * # 
  * ------------------------------------------------------------------- */
- // Fit image to blog editor. Should reflect actual plublished content size
-  img.blog-image {
-    width: 50% !important;
-    object-fit: contain;
-  }

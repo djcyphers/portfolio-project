@@ -4,28 +4,29 @@
       v-if="isBlogViewOpen"
       class="blog-view container"
     >
-      <div class="row">
+      <div class="row justify-content-center">
           <!-- Blog Posts -->
           <div
             v-for="(blogPost, index) in blogPosts"
             :key="index"
             class="
-              col-md-6 col-lg-3
+              col-lg-3 col-md-4 col-sm-6
               blog-home
               bg-transparent
               card
               me-3
+              mb-3
             "
             @click.prevent="getBlogPost(blogPost, index)"
           >
             <img
-              class="card-img bg-black img-fluid img-center img-thumbnail"
+              class="card-img bg-black img-center img-thumbnail"
               :src="blogImgUrl(blogPost)"
               :alt="blogPostTitle(blogPost)"
             >
             <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
               <div class="card-img-overlay d-flex flex-column justify-content-end card-img-textarea">
-                <div class="blog-title card-title bg-black mb-0 opacity-75">
+                <div class="blog-title bg-black mb-0 opacity-75">
                   {{ blogPostTitle(blogPost) }}
                 </div>
                 <div class="blog-category card-text bg-black opacity-75">
@@ -80,7 +81,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, inject, onUpdated, reactive, nextTick, onBeforeUpdate, onUnmounted } from "vue";
+import { ref, onMounted, computed, inject, onUpdated, reactive, nextTick, onUnmounted } from "vue";
 import BlogEditor from './BlogEditor'
 import BlogPostCloseButton from "./BlogPostCloseButton";
 import swal from "sweetalert";

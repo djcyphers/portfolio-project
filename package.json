@@ -5,7 +5,7 @@
   "scripts": {
     "start": "concurrently \"npm run serve\" \"cd src/server && nodemon --ignore client\"",
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --dest dist",
     "lint": "vue-cli-service lint",
     "sitemap": "vue-cli-service sitemap"
   },

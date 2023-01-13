@@ -20,7 +20,9 @@ import { faArtstation } from "@fortawesome/free-brands-svg-icons";
 import { faSoundcloud } from "@fortawesome/free-brands-svg-icons";
 import { faMixcloud } from "@fortawesome/free-brands-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
+library.add(faTimes);
 library.add(faDiscord);
 library.add(faMixcloud);
 library.add(faSoundcloud);

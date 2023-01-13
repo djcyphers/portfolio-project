@@ -5,7 +5,7 @@
       v-if="isGalleryViewOpen"
       class="gallery-view container"
     >
-      <div class="row">
+      <div class="row justify-content-center">
         <!-- Main Galleries -->
         <div
           v-for="(gallery, index) in galleries"
@@ -17,6 +17,7 @@
               bg-transparent
               card
               me-3
+              mb-3
             "
           @click="expandGallery(gallery)"
         >
@@ -62,8 +63,8 @@
       <!-- Close Button -->
       <GalleryCloseButton @click.prevent="openGalleryView" />
       <div class="gallery-item-view container">
-        <div class="row">
-          <div class="col-lg-4 col-sm-2">
+        <div class="row justify-content-center">
+          <div class="col-lg-6 col-sm-4">
             <div class="card-group">
               <div
                 v-for="(galleryItem, index) in galleryItems"
@@ -86,7 +87,7 @@
                   >
                 </a>
                 <div class="card-body">
-                  <div class="card-text text-center text-white">{{ galleryItem.title }}</div>
+                  <div class="gallery-item-text text-center text-white">{{ galleryItem.title }}</div>
                 </div>
                 <template v-if="isLoggedIn">
                   <button
