@@ -5,7 +5,8 @@ const { validateToken } = require("../../middleware/validateToken");
 const userController = require("../controller/userController");
 
 router.get("/profile", validateToken, userController.getUserDetails);
-router.post("/register", cleanBody, userController.register);
+// Disable registration for now
+// router.post("/register", cleanBody, userController.register);
 router.post("/activate", cleanBody, userController.activate);
 router.post("/login", cleanBody, userController.login);
 router.patch("/forgot", cleanBody, userController.forgotPassword); // patch?

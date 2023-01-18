@@ -3,6 +3,8 @@ const webpack = require("webpack");
 require("dotenv").config(); // Pass address data
 
 module.exports = {
+  outputDir: './dist',
+  publicPath: './',
   configureWebpack: {
     devtool: 'source-map',
     plugins: [
