@@ -12,7 +12,7 @@
 </template>
 <script>
 export default {
-    name: "BlogPostCloseButton",
+    name: "CloseButton",
     setup() {
       function clearLocalStorage() {
         localStorage.clear();

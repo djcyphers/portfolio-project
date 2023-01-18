@@ -61,7 +61,7 @@
     <!-- Gallery Item View (for item in gallery) -->
     <template v-if="isGalleryItemViewOpen && !isGalleryUpdating">
       <!-- Close Button -->
-      <GalleryCloseButton @click.prevent="openGalleryView" />
+      <CloseButton @click.prevent="openGalleryView" />
       <div class="gallery-item-view container">
         <div class="row justify-content-center">
           <div class="col-lg-6 col-sm-4">
@@ -265,11 +265,11 @@ import { ref, onMounted, computed, inject } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
 import Lightbox from 'bs5-lightbox';
-import GalleryCloseButton from "./GalleryCloseButton";
+import CloseButton from "../CloseButton.vue"
 
 export default {
     name: "Gallery",
-    components: { GalleryCloseButton },
+    components: { CloseButton },
     setup() {
         // Store StateS
         const store = inject("store");

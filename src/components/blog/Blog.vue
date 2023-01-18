@@ -69,7 +69,7 @@
     <!-- Blog Post View -->
     <template v-if="isBlogPostViewOpen">
       <!-- Close Button -->
-      <BlogPostCloseButton @click.prevent="viewBlogPosts();toggleBlogPostViewOff();clearSavedPostArray();" />
+      <CloseButton @click.prevent="viewBlogPosts();toggleBlogPostViewOff();clearSavedPostArray();" />
       <div class="blog-post-view container">
         <div class="row">
           <!-- DB content is string, convert to HTML object I hope-->
@@ -83,14 +83,14 @@
 <script>
 import { ref, onMounted, computed, inject, onUpdated, reactive, nextTick, onUnmounted } from "vue";
 import BlogEditor from './BlogEditor'
-import BlogPostCloseButton from "./BlogPostCloseButton";
+import CloseButton from "../CloseButton";
 import swal from "sweetalert";
 import axios from "axios";
 
 export default {
   name: "Blog",
   components: {
-    BlogPostCloseButton,
+    CloseButton,
     BlogEditor,
   },
   setup() {
