@@ -21,6 +21,7 @@ import { faSoundcloud } from "@fortawesome/free-brands-svg-icons";
 import { faMixcloud } from "@fortawesome/free-brands-svg-icons";
 import { faDiscord } from "@fortawesome/free-brands-svg-icons";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faTimes);
 library.add(faDiscord);
@@ -41,5 +42,6 @@ library.add(faMusic);
 library.add(faImages);
 library.add(faClipboardList);
 library.add(faSatellite);
+library.add(faTimesCircle);
 
 export default FontAwesomeIcon;

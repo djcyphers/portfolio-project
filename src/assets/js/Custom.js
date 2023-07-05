@@ -14,19 +14,19 @@ $(function () {
     }
   });
 
-// Setup handler to detect window resize and then re-correct
-let resizeTimer;
+  // Setup handler to detect window resize and then re-correct
+  let resizeTimer;
 
-window.addEventListener("resize", function() {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(function() {
-    // Run code here after resizing has finished
-    var elm = $(".menu");
-    if (elm.has(".selected")) {
-      $('.selected').trigger( "click" );
-    }
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      // Run code here after resizing has finished
+      var elm = $(".menu");
+      if (elm.has(".selected")) {
+        $(".selected").trigger("click");
+      }
     }, 250);
-});
+  });
 
   // Setup for touchswipe on main page
   document.addEventListener("touchstart", handleTouchStart, false);
@@ -53,36 +53,37 @@ window.addEventListener("resize", function() {
       if (xDiff > 0) {
         /* left swipe */
         /* check where we are */
+        console.log("left swipe");
         if (
           !$("a.link").hasClass("selected") ||
-          $("a.link[href*='#box1']").hasClass("selected")
+          $("a.link[href*='#home']").hasClass("selected")
         ) {
-          setPosition("#box2");
-          $("a.link[href*='#box2']").addClass("selected");
-          $("a.link[href*='#box1']").removeClass("selected");
-        } else if ($("a.link[href*='#box2']").hasClass("selected")) {
-          setPosition("#box3");
-          $("a.link[href*='#box3']").addClass("selected");
-          $("a.link[href*='#box2']").removeClass("selected");
-        } else if ($("a.link[href*='#box3']").hasClass("selected")) {
-          setPosition("#box4");
-          $("a.link[href*='#box4']").addClass("selected");
-          $("a.link[href*='#box3']").removeClass("selected");
+          setPosition("#about");
+          $("a.link[href*='#about']").addClass("selected");
+          $("a.link[href*='#home']").removeClass("selected");
+        } else if ($("a.link[href*='#about']").hasClass("selected")) {
+          setPosition("#portfolio");
+          $("a.link[href*='#portfolio']").addClass("selected");
+          $("a.link[href*='#about']").removeClass("selected");
+        } else if ($("a.link[href*='#portfolio']").hasClass("selected")) {
+          setPosition("#social");
+          $("a.link[href*='#social']").addClass("selected");
+          $("a.link[href*='#portfolio']").removeClass("selected");
         }
       } else {
         /* right swipe */
-        if ($("a.link[href*='#box4']").hasClass("selected")) {
-          setPosition("#box3");
-          $("a.link[href*='#box3']").addClass("selected");
-          $("a.link[href*='#box4']").removeClass("selected");
-        } else if ($("a.link[href*='#box3']").hasClass("selected")) {
-          setPosition("#box2");
-          $("a.link[href*='#box2']").addClass("selected");
-          $("a.link[href*='#box3']").removeClass("selected");
-        } else if ($("a.link[href*='#box2']").hasClass("selected")) {
-          setPosition("#box1");
-          $("a.link[href*='#box1']").addClass("selected");
-          $("a.link[href*='#box2']").removeClass("selected");
+        if ($("a.link[href*='#social']").hasClass("selected")) {
+          setPosition("#portfolio");
+          $("a.link[href*='#portfolio']").addClass("selected");
+          $("a.link[href*='#social']").removeClass("selected");
+        } else if ($("a.link[href*='#portfolio']").hasClass("selected")) {
+          setPosition("#about");
+          $("a.link[href*='#about']").addClass("selected");
+          $("a.link[href*='#portfolio']").removeClass("selected");
+        } else if ($("a.link[href*='#about']").hasClass("selected")) {
+          setPosition("#home");
+          $("a.link[href*='#home']").addClass("selected");
+          $("a.link[href*='#about']").removeClass("selected");
         }
       }
     } else {
@@ -97,81 +98,6 @@ window.addEventListener("resize", function() {
     yDown = null;
   }
 });
-
-// // Gallery from Laravel
-// $(document).on("load", function () {
-//   //Setup hover event
-//   $(".zoom").on("mouseenter", function () {
-//     $(this).addClass("transition");
-//   });
-//   $(".zoom").on("mouseleave", function () {
-//     $(this).removeClass("transition");
-//   });
-
-//   //Begin album setup
-//   $(".album-container").on("click", function () {
-//     var albumId = $(this).data("container");
-//     if (albumId > 0) {
-//       // Hide all albums
-//       $(".album-container").each(function () {
-//         $(this).addClass("collapse");
-//       });
-//     } else {
-//       return false;
-//     }
-//     // Replace with lightbox class element to contain images -> gallery id
-//     $("<div/>", {
-//       class: "container fb-container container-fluid row col-lg-12",
-//     }).appendTo("#gallery");
-
-//     // Create close button for album images section
-//     var bsButton =
-//       '<div class="outerclose" aria-label="Close"><div class="innerclose"><label>Back</label></div></div>';
-//     $(".container-wrapper").prepend(bsButton);
-
-//     // Hide all images -> fancyb-container
-//     $(".outerclose").on("click", function (event) {
-//       event.preventDefault();
-//       $(".fb-container").addClass("collapse animated zoomOut");
-//       $(this).addClass("collapse animated zoomOut");
-//       $(".album-container").removeClass("collapse").addClass("animated zoomIn");
-//     });
-
-//     // Get path to images from divs and append to lightbox container as img
-//     $(".album-image").each(function () {
-//       var currentElement = $(this);
-//       var imgName = currentElement.data("image");
-//       var albumList = currentElement.data("album");
-//       var description = currentElement.data("description");
-//       var path = "/storage/albums/" + albumList + "/" + imgName;
-
-//       //Create bootstrap wrapper for images and start them hidden and effec to fadein
-//       if (albumList === albumId) {
-//         $("<a/>", {
-//           href: path,
-//           class:
-//             "fancybox image-wrapper card text-white border-0 bg-transparent mb-3 col-md-6 col-lg-4 collapse",
-//           "data-fancybox": "images",
-//           "data-caption": description,
-//         }).appendTo(".fb-container");
-//       }
-//     });
-//     // get all href divs and foreach one add img from href
-//     $(".fancybox").each(function () {
-//       var $this = $(this);
-//       var imageUrl = $this.attr("href");
-//       $(this).append(
-//         "<img class='image img-fluid rounded mx-auto d-block' src='" +
-//           imageUrl +
-//           "' width='100%'/>"
-//       );
-//     });
-//     $(".image").on("load", function () {
-//       $(this).parent().addClass("animated zoomIn");
-//       $(this).parent().removeClass("collapse");
-//     });
-//   });
-// });
 
 // Parallax code
 $(function () {

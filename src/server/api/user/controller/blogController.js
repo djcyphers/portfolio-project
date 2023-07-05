@@ -15,9 +15,7 @@ const path = require("path");
 // const util = require('util')
 // Multiform Upload
 const formidable = require("formidable");
-const { errorMonitor } = require("events");
-const { response } = require("express");
-const vueAssets = "../../../../assets/blog";
+const vueAssets = "../../../uploads/blogs";
 const uploadUrl = path.join(__dirname, vueAssets);
 
 // Validate Scheme with Joi
@@ -26,11 +24,6 @@ const blogSchema = Joi.object().keys({
     blogContent: Joi.string().required(),
     blogCategory: Joi.string().required(),
 });
-
-// This should work in node.js and other ES5 compliant implementations.
-function isEmptyObject(obj) {
-    return !Object.keys(obj).length;
-}
 
 // Get blog post by id
 exports.getBlogPostById = async (req, res) => {
@@ -225,7 +218,10 @@ exports.updateBlogPost = async (req, res) => {
                     if (err) console.log(`fs.unlink Error: ${ err }`);
                     console.log(`${ fileUrl } was deleted`);
                 });
-                await Blog.findOneAndUpdate({ _id: req.params._id }, { $pull: { blogImagesUrls: fileUrl } }, { new: true });
+                // Trim filepath for future api call
+                const trimFilepath = fileUrl.split("\\");
+                const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
+                await Blog.findOneAndUpdate({ _id: req.params._id }, { $pull: { blogImagesUrls: filePathToSave } }, { new: true });
                 }
             }
         }
@@ -245,7 +241,10 @@ exports.updateBlogPost = async (req, res) => {
                         });
                     }
                 });
-                await Blog.findOneAndUpdate({ _id: req.params._id }, { $addToSet: { blogImagesUrls: filepath } }, { new: true });
+                // Trim filepath for future api call
+                const trimFilepath = filepath.split("\\");
+                const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
+                await Blog.findOneAndUpdate({ _id: req.params._id }, { $addToSet: { blogImagesUrls: filePathToSave } }, { new: true });
             }
         }
         // An extra check to make sure a response isn't sent twice. form.once solves this tho.
@@ -376,10 +375,13 @@ exports.createBlogPost = async (req, res) => {
                                 });
                             }
                         });
+                        // Trim filepath for future api call
+                        const trimFilepath = filepath.split("\\");
+                        const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
                         // Push image to new blog post
                         Blog.updateOne(
                             { blogTitle: fieldValues.blogTitle },
-                            { $addToSet: { blogImagesUrls: filepath } },
+                            { $addToSet: { blogImagesUrls: filePathToSave } },
                             function (err, result) {
                                 if (err) {
                                     console.log(err);
@@ -414,3 +416,92 @@ exports.createBlogPost = async (req, res) => {
         })
     }
 }
+
+// Get blog image by via URL
+exports.getBlogImage = async (req, res) => {
+    try {
+      const { blogTitle, fileName } = req.params;
+      // Check if file exists
+      const file = `${uploadUrl}/${blogTitle}/${fileName}`;
+      if (!fs.existsSync(file)) {
+        return res.json({
+          error: true,
+          status: 400,
+          message: `File does not exist! Reason: ${file}`,
+        });
+      } else {
+        let sendFile = fs.createReadStream(file);
+        if (sendFile) {
+          sendFile.pipe(res);
+        } else {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "File does not exist!",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      return res.json({
+        error: true,
+        status: 500,
+        message: "Internal server error",
+      });
+    }
+  };
+
+// Get all the years that blog posts have been publishes
+exports.getBlogYears = async (req, res) => {
+    try {
+        const years = await Blog.find().distinct("createdAt");
+        if (!years) {
+            return res.json({
+                error: true,
+                status: 404,
+                message: "Uh, oh! Could not find any years.",
+            });
+        }
+        let dates = [];
+
+        for (let i = 0; i < years.length; i++) {
+            let date = new Date(years[i]).getFullYear();
+            dates.push(date);
+        } 
+        res.send(dates);
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            error: true,
+            status: 500,
+            message: "Internal server error.",
+        });
+    }
+};
+
+// Get previous or selected blog posts by year
+exports.getPreviousBlogYears = async (req, res) => {
+    try {
+      const date = req.params.year;
+      // Month starts at 0
+      const startDate = new Date(date, 0, 1);
+      // Month 12 would flip over to January lol
+      const endDate = new Date(date, 11, 31);
+      const blogPosts = await Blog.find({ "createdAt": { $gte: startDate, $lte: endDate } });
+        if (!blogPosts) {
+            return res.json({
+                error: true,
+                status: 404,
+                message: "Uh, oh! Could not find any blog posts for that year.",
+            });
+        }
+        res.send(blogPosts);
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            error: true,
+            status: 500,
+            message: "Internal server error.",
+        });
+    }
+  };

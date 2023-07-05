@@ -322,8 +322,8 @@ export default {
           // Split the URL to get the file name
           const fileName = imageUrls[i].split('/').pop();
           const filePathParts = fileName.split('\\');
-          // Import the image file using the `require` function
-          const requiredImage = require(`@/assets/blog/${blogTitle}/${filePathParts[filePathParts.length - 1]}`);
+          // Import the image file
+          const requiredImage = `http://localhost:4000/uploads/blogs/${blogTitle}/${filePathParts[filePathParts.length - 1]}`;
           // Construct the required image URL
           const requiredImageUrl = requiredImage;
           htmlString = htmlString.replace(regex, `<img src="${requiredImageUrl}" class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`);
@@ -458,10 +458,12 @@ export default {
         return editor.value.chain().focus().setImage({ src: url }).run();
       } else { return swal("Error", "Please enter a valid URL.", "error")}
     });
+
     // Upload image file handler
     function uploadImageFileEvent() {
       document.querySelector(".file-upload-handler").click();
     }
+
     // Upload image file to ref store
     async function uploadImageFile(event) {
       if (!event.target.files.length) {
@@ -476,6 +478,7 @@ export default {
         swal("Error", `Upload Error! => ${error}`, "error");
       }
     }
+
     // Convert image to base64
     // https://stackoverflow.com/questions/62343417/how-to-properly-upload-files-as-base64-in-javascript
     const toBase64 = (files) =>
@@ -541,12 +544,14 @@ export default {
           swal("Error", `Error: ${error}`, "error");
         });
     }
+
     // Input category in editor menu bar
     function enterInputCategory() {
       categoryInput.value = document.querySelector('.category-input-box').value;
       newBlogPostData.value.blogCategory = categoryInput.value;
       //console.log('Category is inputed: ' + categoryInput.value);
     }
+    
     // Select categories from selection from db response
     function selectInputCategory(category) {
       console.log("Category Dropdown: " + JSON.stringify(categories));

@@ -1,14 +1,6 @@
 <template>
   <div
-    class="
-      d-flex
-      flex-column flex-shrink-0
-      p-3
-      text-white
-      admin-panel
-      d-none
-      animate__animated
-    "
+    class="d-flex flex-column flex-shrink-0 p-3 text-white admin-panel d-none animate__animated"
     id="admin-panel"
     style="width: 180px; z-index: 5"
   >
@@ -18,13 +10,7 @@
         closePanel();
         resetLogin();
       "
-      class="
-        d-flex
-        align-items-center
-        mb-3 mb-md-0
-        me-md-auto
-        text-white text-decoration-none
-      "
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
     >
       <img class="bi me-2" width="32" height="32" :src="avatar" />
       <span class="fs-4 text-center">Admin Panel</span>

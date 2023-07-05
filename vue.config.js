@@ -3,10 +3,10 @@ const webpack = require("webpack");
 require("dotenv").config(); // Pass address data
 
 module.exports = {
-  outputDir: './dist',
-  publicPath: './',
+  outputDir: "./dist",
+  publicPath: "./",
   configureWebpack: {
-    devtool: 'source-map',
+    devtool: "source-map",
     plugins: [
       new webpack.ProvidePlugin({
         $: "jquery",
@@ -24,6 +24,10 @@ module.exports = {
   },
   chainWebpack: (config) => {
     config.module.rules.delete("eslint");
+    config.plugin("copy").tap(([options]) => {
+      options[0].ignore.push("**/uploads/**");
+      return [options];
+    });
   },
   devServer: {
     port: 8080,
@@ -37,6 +41,10 @@ module.exports = {
         changeOrigin: true,
       },
       "/blog": {
+        target: "http://127.0.0.1:4000/",
+        changeOrigin: true,
+      },
+      "/openai": {
         target: "http://127.0.0.1:4000/",
         changeOrigin: true,
       },

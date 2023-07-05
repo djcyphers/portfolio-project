@@ -4,7 +4,7 @@ const { v4: uuid } = require("uuid");
 const { customAlphabet: generate } = require("nanoid");
 
 const { generateJwt } = require("../../helpers/generateJwt");
-const { sendEmail } = require("../../helpers/mailer");
+const { sendEmail, sendContact } = require("../../helpers/mailer");
 const User = require("../model/User");
 
 const CHARACTER_SET =
@@ -420,3 +420,32 @@ exports.getUserDetails = async (req, res) => {
     });
   }
 };
+
+// Contact form submission
+exports.contactForm = async (req, res) => {
+  try {
+    const { email, msg, name, subject,  } = req.body;
+    // Letting VueJS validate. So let's just check for emptys just in case
+    if (!email || !msg || !name || !subject) {
+      return res.status(500).json({
+        error: true,
+        message: "Uh, oh! Missing data in form.",
+      });
+    } else {
+      sendContact(email, msg, name, subject);
+      return res.json({
+        error: false,
+        status: 200,
+        message: 'Message Successful.',
+    });
+    }
+  }
+  catch (error) {
+    console.error("Contact form error!", error);
+    return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
+  }
+
+}

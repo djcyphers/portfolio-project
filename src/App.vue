@@ -13,6 +13,7 @@ import store from "./store";
 export default {
   name: "App",
   setup() {
+    // Provide store from ancestory to deeply nested components
     provide("store", store);
   },
   mounted() {

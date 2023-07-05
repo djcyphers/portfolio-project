@@ -18,26 +18,33 @@
       </a>
     </li>
     <li>
-      <a 
-        href="#" 
-        class="nav-link text-white dropdown-toggle" 
-        data-bs-toggle="dropdown"
-        @click="getSocialNav(); hideDashboard(); toggleNavItem($event);"
-      >
-      <ul
-        class="dropdown-menu dropdown-menu-dark text-small shadow"
-        aria-labelledby="dropdownGallery"
-      >
-      <li v-if="isBlogViewOpen">
-        <a
-        class="dropdown-item create-gallery-button"
+      <a
         href="#"
-        @click="toggleBlogEditor(); exitBlogPosts();"
+        class="nav-link text-white dropdown-toggle"
+        data-bs-toggle="dropdown"
+        @click="
+          getSocialNav();
+          hideDashboard();
+          toggleNavItem($event);
+        "
+      >
+        <ul
+          class="dropdown-menu dropdown-menu-dark text-small shadow"
+          aria-labelledby="dropdownGallery"
         >
-          New Post
-        </a>
-      </li>
-      </ul>
+          <li v-if="isBlogViewOpen">
+            <a
+              class="dropdown-item create-gallery-button"
+              href="#"
+              @click="
+                toggleBlogEditor();
+                exitBlogPosts();
+              "
+            >
+              New Post
+            </a>
+          </li>
+        </ul>
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fa', 'atlas']" />
         </svg>
@@ -49,33 +56,31 @@
         href="#"
         class="nav-link text-white dropdown-toggle"
         data-bs-toggle="dropdown"
-        @click="
-          toggleNavItem($event);
-          "
+        @click="toggleNavItem($event)"
       >
-      <ul
-        class="dropdown-menu dropdown-menu-dark text-small shadow"
-        aria-labelledby="dropdownGallery"
-      >
-      <li v-if="isGalleryViewOpen">
-        <a
-          class="dropdown-item create-gallery-button"
-          href="#"
-          @click="toggleNewGalleryForm()"
+        <ul
+          class="dropdown-menu dropdown-menu-dark text-small shadow"
+          aria-labelledby="dropdownGallery"
         >
-          New Gallery
-        </a>
-      </li>
-      <li v-if="isGalleryItemViewOpen">
-        <a
-        class="dropdown-item create-galleryitem-button"
-        href="#"
-        @click="toggleNewGalleryItemForm()"
-        >
-          New Item
-        </a>
-      </li>
-      </ul>
+          <li v-if="isGalleryViewOpen">
+            <a
+              class="dropdown-item create-gallery-button"
+              href="#"
+              @click="toggleNewGalleryForm()"
+            >
+              New Gallery
+            </a>
+          </li>
+          <li v-if="isGalleryItemViewOpen">
+            <a
+              class="dropdown-item create-galleryitem-button"
+              href="#"
+              @click="toggleNewGalleryItemForm()"
+            >
+              New Item
+            </a>
+          </li>
+        </ul>
         <svg class="bi me-2" width="16" height="16">
           <font-awesome-icon :icon="['fas', 'images']" />
         </svg>
@@ -95,18 +100,13 @@
   <div class="dropdown">
     <a
       href="#"
-      class="
-        d-flex
-        align-items-center
-        text-white text-decoration-none
-        dropdown-toggle
-      "
+      class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
       id="dropdownUser1"
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
       <img
-        src="https://github.com/mdo.png"
+        :src="avatar"
         alt=""
         width="32"
         height="32"
@@ -151,6 +151,7 @@
 import { inject, computed } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
+import avatar from "../../assets/img/portfoliomini.png";
 export default {
   name: "LoggedIn",
   setup() {
@@ -167,10 +168,12 @@ export default {
     const viewGallery = computed(() => store.methods.viewGallery);
     // Go to gallery item create view
     const isGalleryViewOpen = computed(() => store.state.isGalleryViewOpen);
-    const isGalleryItemViewOpen = computed(() => store.state.isGalleryItemViewOpen);
+    const isGalleryItemViewOpen = computed(
+      () => store.state.isGalleryItemViewOpen
+    );
     // Blog Views
     const isBlogViewOpen = computed(() => store.state.isBlogViewOpen);
- 
+
     // Clear access token from MongoDB via Axios call
     async function removeAuth() {
       axios
@@ -232,6 +235,7 @@ export default {
       isGalleryItemViewOpen,
       isBlogViewOpen,
       exitBlogPosts,
+      avatar,
     };
   },
 };

@@ -50,25 +50,37 @@ blockquote {
   display: table; /* keep the background color wrapped tight */
 }
 
-/*  Front Page Under Construction
-*/
-
-.main-name {
-  display: flex;
-  word-wrap:break-word;
-  white-space:normal;
-  font-size: 4rem;
-  font-family: 'AudioWide-Regular';
-}
-.mainpage-links {
-    font-size: 2.1rem;
-    word-spacing:10px;
-    a {
-      text-decoration: none;
-    }
-}
-
 /*** Background Images ***/
+.clouds-middle {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  height: 90%;
+  width: 90%;
+  left: 10%;
+  top: 10%;
+}
+
+.clouds-near {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  height: 80%;
+  width: 80%;
+  left: 10%;
+  top: 5%;
+}
+
+.clouds-far {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  height: 90%;
+  width: 90%;
+  left: 30%;
+  top: 25%;
+}
+
 #main-bg {
     height: 80%;
     width: 90%;
@@ -87,6 +99,11 @@ blockquote {
     z-index:2;
 }
 
+/* Prevent Bootstrap Col from shrinking */
+.responsive-box {
+  width: 315px !important;
+}
+
 /* Menu Nav v0.9 -- Last update will be to fold the menu into a burger button
 */
 #menu {
@@ -99,7 +116,7 @@ blockquote {
     a {
         background:#222;
         color:#CCCCCC;
-        border:#AAA 3px solid;
+        border:#AAA 1px solid;
         text-decoration:none;
         padding:10px;
         margin-right:10px;
@@ -108,7 +125,7 @@ blockquote {
         &:hover {
             background: #333;
             color:#FFF;
-            border:#FFF 3px solid;
+            border:#FFF 1px solid;
             text-decoration:none;
             padding:10px;
             margin-right:10px;
@@ -118,7 +135,7 @@ blockquote {
         &.selected {
             background:#444;
             color:#FFF;
-            border:#67b2ff 3px solid;
+            border:#67b2ff 2px solid;
             text-decoration:none;
             padding:10px;
             margin-right:10px;
@@ -172,18 +189,14 @@ blockquote {
     width: 30%;
 }
 
-.content1-wrapper {
-    background: rgba(0, 0, 12, 0.6);
-    width: 80%;
-}
-
 .content1 {
     width:960px;
-    height:400px;
+    height:100%;
     top:26%;
     margin: 0 auto;
     position:relative;
     background:rgba(255,255,255, 0);
+    z-index: 7;
 }
 
 .content2 {
@@ -195,6 +208,7 @@ blockquote {
     background:rgba(255,255,255, 0);
     overflow: auto;
     left: -29px;
+    z-index: 7;
 }
 
 .content3 {
@@ -205,244 +219,18 @@ blockquote {
     position: relative;
     background:rgba(255,255,255, 0);
     overflow: auto; left: -18px;
+    z-index: 7;
 }
 
 .content4 {
     width:620px;
-    height:380px;
-    top:18%;
+    height:600px;
+    top:21.5%;
     bottom:10%;
     margin: 0 auto;
     position:relative;
     background:rgba(255,255,255, 0);
-}
-
-/* About Me */
-.about-wrapper {
-    position: absolute;
-    top: 54%;
-    left: 50%;
-    width: 100%;
-    height: 255px;
-    -webkit-transform: translate(-50%, -50%);
-    -moz-transform: translate(-50%, -50%);
-    -o-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-
-    border-radius: 16px;
-    border:rgb(0, 0, 0) !important;
-    overflow: hidden;
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.6);
-    cursor: pointer;
-    -webkit-transition: 0.5s;
-    -moz-transition: 0.5s;
-    -o-transition: 0.5s;
-    transition: 0.5s;
-  }
-
-.about-image {
-    position: absolute;
-    object-fit: scale-down;
-    top: 0px;
-    left: 0px;
-    height: 255px;
-    z-index: 2;
-    background-color: #000;
-    -webkit-transition: .5s;
-    -moz-transition: .5s;
-    -o-transition: .5s;
-    transition: .5s;
-}
-
-.about-wrapper:hover img {
-    opacity: 0.4;
-    -webkit-transition: .5s;
-    -moz-transition: .5s;
-    -o-transition: .5s;
-    transition: .5s;
-}
-
-.about-wrapper:hover .about-image {
--webkit-transform: translateY(-80px);
--moz-transform: translateY(-80px);
--o-transform: translateY(-80px);
-transform: translateY(-80px);
--webkit-transition: all .9s;
--moz-transition: all .9s;
--o-transition: all .9s;
-transition: all .9s;
-}
-
-/**** Personal Details ****/
-
-.about-card {
-    position: absolute;
-    bottom: -54px;
-    left: 0;
-    background: #fff;
-    width: 100%;
-    height: 120px;
-    z-index: 1;
-    padding: 10px;
-}
-
-.job-title {
-    font-size: 1rem;
-    line-height: 0rem;
-    color: #333;
-    font-weight: 300;
-}
-
-.about-title {
-  font-size: calc(1vw + 1rem);
-  line-height: 0rem;
-  color: rgb(23, 23, 23);
-  font-weight: 300;
-  font-family: Dosis;
-  margin-bottom: 30px;
-}
-
-/**** Social Icons *****/
-
-.socialshare-icons {
-    scale: 0.9;
-    position: relative;
-    top: 50%;
-    z-index: 3;
-    display: flex;
-    padding-left: 0em;
-}
-
-ul.socialshare-icons li {
-    list-style: none;
-}
-
-ul.socialshare-icons a {
-    position: relative;
-    display: block;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    text-align: center;
-    background: #fff;
-    font-size: 23px;
-    color: #333;
-    font-weight: bold;
-    margin: 0 6px;
-    -webkit-transition: 0.4s;
-    -moz-transition: 0.4s;
-    -o-transition: 0.4s;
-    transition: 0.4s;
-    -webkit-transform: translateY(200px);
-    -moz-transform: translateY(200px);
-    -o-transform: translateY(200px);
-    transform: translateY(200px);
-    opacity: 0;
-}
-
-.about-wrapper:hover .socialshare-icons li a {
-    -webkit-transform: translateY(0px);
-    -moz-transform: translateY(0px);
-    -o-transform: translateY(0px);
-    transform: translateY(0px);
-    opacity: 1;
-}
-
-.socialshare-icons li a:hover {
-    background: #000;
-    -webkit-transition: 0.2s;
-    -moz-transition: 0.2s;
-    -o-transition: 0.2s;
-    transition: 0.2s;
-}
-
-ul.socialshare-icons i.fa {
-    color: #000;
-}
-
-.socialshare-icons li a .fa {
-    -webkit-transition: 0.8s;
-    -moz-transition: 0.8s;
-    -o-transition: 0.8s;
-    transition: 0.8s;
-}
-
-.socialshare-icons li a:hover {
-    color: #fff;
-}
-
-.socialshare-icons li a svg:hover {
-    animation: rotate-icon 1s linear infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-    color: #fff;
-}
-
-@keyframes rotate-icon {
-    from { transform: rotateY(0deg); }
-    to { transform: rotateY(360deg); }
-}
-
-.about-wrapper:hover li:nth-child(1) a {
-    -webkit-transition-delay: 0.1s;
-    -moz-transition-delay: 0.1s;
-    -o-transition-delay: 0.1s;
-    transition-delay: 0.1s;
-}
-.about-wrapper:hover li:nth-child(2) a {
-    -webkit-transition-delay: 0.2s;
-    -moz-transition-delay: 0.2s;
-    -o-transition-delay: 0.2s;
-    transition-delay: 0.2s;
-}
-.about-wrapper:hover li:nth-child(3) a {
-    -webkit-transition-delay: 0.3s;
-    -moz-transition-delay: 0.3s;
-    -o-transition-delay: 0.3s;
-    transition-delay: 0.3s;
-}
-.about-wrapper:hover li:nth-child(4) a {
-    -webkit-transition-delay: 0.4s;
-    -moz-transition-delay: 0.4s;
-    -o-transition-delay: 0.4s;
-    transition-delay: 0.4s;
-}
-
-.about-blog {
-    outline: rgb(0, 0, 0) solid 0px;
-    transition: outline 0.6s linear;
-    height: 255px;
-}
-
-.blog-title {
-  font-size: calc(1vw + 1rem);
-  font-family: Dosis;
-  font-weight: 400;
-  color: #fff;
-}
-
-.blog-category {
- font-size: 1vw;
- font-family: Dosis;
- color: #fff;
- padding-bottom: 20px;
-}
-
-.gallery-title {
-  font-size: calc(2vw + 1rem);
-}
-
-.gallery-description {
-  font-size: calc(2vw);
-}
-
-.about-blog:hover {
-    outline: rgb(255, 255, 255) solid 2px;
-}
-
-/* Blog Button */
-.card-img-top {
-    height: 255px;
+    z-index: 7;
 }
 
 .card-typewriter-text {
@@ -452,7 +240,7 @@ ul.socialshare-icons i.fa {
   padding-bottom: 20px;
 }
 
-.line-1{
+.line-1 {
     position: relative;
     top: 50%;
     width: 24em;
@@ -488,11 +276,8 @@ and (min-width : 1338px) {
     height: 80%;
     margin-top: -80px;
   }
-  .content1-wrapper {
-    background: rgba(0, 0, 12, 0.6);
-    }
-
-     // Fit image to blog editor. Should reflect actual plublished content size
+  
+  // Fit image to blog editor. Should reflect actual plublished content size
   img.blog-image {
     width: 60%;
     object-fit: contain;
@@ -626,36 +411,25 @@ and (min-width : 416px) {
     margin-top: -120px;
   }
   /* About Me */
-.content1 {
-    top:30% !important;
-}
-
-.content3 {
-    top:18.5% !important;
-}
-
-.content4 {
-    top:20.8% !important;
-}
-
-img.blog-image {
-  width: 50%;
-  object-fit: contain;
-}
-
-.main-name {
-    display: flex;
-    word-wrap:break-word;
-    white-space:normal; font-size: 2em !important;
-    margin-top: -8%;
-}
-
-  .subtitle-portfolio-text {
-        font-size: 0.8em !important;
+  .content1 {
+      top:30% !important;
   }
 
-  .mainpage-links {
-        font-size: 0.8em !important;
+  .content3 {
+      top:18.5% !important;
+  }
+
+  .content2 {
+    top:19.3% !important;
+}
+
+  .content4 {
+      top:20% !important;
+  }
+
+  img.blog-image {
+    width: 100%;
+    object-fit: contain;
   }
 }
 
@@ -674,24 +448,7 @@ and (min-height : 416px) {
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5rem; }
   .content1 { top: 26%; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5rem; margin-top:-20%; }
   .links { font-size: 1.5vw; word-spacing:30px; }
-
-  .blog-title {
-    font-size: calc(1vw + 1rem);
-  }
-  
-  .blog-category {
-   font-size: calc(1vw);
-  }
-
-  .gallery-title {
-    font-size: calc(2vw + 1rem);
-  }
-
-  .gallery-description {
-    font-size: calc(2vw);
-  }
 }
 
 /* iPads (Portrait) ----------- */
@@ -708,7 +465,6 @@ and (min-width : 767px) {
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; margin-top:-20%; }
   .links { font-size: 1.5vw; word-spacing:30px; }
 }
 
@@ -730,7 +486,6 @@ and (min-height : 767px) {
   }
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; margin-top:-10%; }
   .links { font-size: 1.5vw; word-spacing:30px; }
 }
 
@@ -747,7 +502,6 @@ and (-moz-touch-enabled) {
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
   .links { font-size: 1.5vw; word-spacing:30px; }
 }
 
@@ -761,11 +515,6 @@ and (-moz-touch-enabled) {
     margin-left: -100px;
     margin-top: -100px;
   }
-
-  /* About Me */
-  #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw;  margin-top: -8%; }
-  .links { font-size: 2.5vw; word-spacing:30px; }
 }
 
 /* iPhone X/XS/Plus and S9+ (Landscape) ----------- */
@@ -783,7 +532,6 @@ and (min-height : 375px) {
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw; }
   .links { font-size: 2.5vw; word-spacing:30px; }
 }
 
@@ -807,13 +555,9 @@ and (min-width : 375px) {
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 5vw; }
   .links { font-size: 2.6vw; word-spacing:30px; }
   /*** Menu/Nav ***/
   #menu { float:right; position:absolute; top:20px; right:10px; z-index:10; font-size: 3.5vw }
-  #menu a { background:#222; color:#CCCCCC; border:#AAA 3px solid;  text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
-  #menu a:hover { background: #333; color:#FFF; border:#FFF 3px solid; text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
-  #menu a.selected { background:#444; color:#FFF; border:#67b2ff 3px solid; text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
 }
 
 /* Iphone 6/7/8 and Android (Landscape)----------- */
@@ -827,20 +571,6 @@ and (min-height : 360px) {
     margin-left: -100px;
     margin-top: -100px;
   }
-
-  .content1-wrapper {
-    width: 76%;
-  }
-
-  .subtitle-portfolio-text {
-    font-size: 3vw;
-  }
-
-  /* About Me */
-  #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 3.5vw; }
-  .mainpage-links { font-size: 2vw; }
-  .links { font-size: 2.5vw; word-spacing:30px; }
 }
 
 /* Iphone 6/7/8 and Android (Portrait)----------- */
@@ -855,24 +585,15 @@ and (min-width : 360px) {
     margin-top: -100px;
   }
 
-  .content1-wrapper {
-    width: 42%;
-  }
-
   .subtitle-portfolio-text {
     font-size: 3vw;
   }
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2em; }
-  .main-name { display: flex; word-wrap:break-word; white-space:normal; font-size: 2em !important; margin-top: -8%; }
-  .mainpage-links { font-size: 2.8vw; }
   .links { font-size: 3.5vw; word-spacing:30px; }
   /*** Menu/Nav ***/
   #menu { float:right; position:absolute; top:20px; right:10px; z-index:10; font-size: 3.5vw }
-  #menu a { background:#222; color:#CCCCCC; border:#AAA 3px solid;  text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
-  #menu a:hover { background: #333; color:#FFF; border:#FFF 3px solid; text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
-  #menu a.selected { background:#444; color:#FFF; border:#67b2ff 3px solid; text-decoration:none; padding:8px; margin-right:8px; border-radius:8px; -webkit-border-radius:8px;}
 
 }
 
@@ -1213,14 +934,14 @@ and (min-width : 360px) {
  *
  * ------------------------------------------------------------------- */
  .gallery-title {
-    font-size: calc(1vw + 1rem) !important;
+    font-size: 2.5rem;
     font-family: Dosis;
     font-weight: 400;
     color: #fff;
   }
 
  .gallery-description {
-   font-size: 1vw !important;
+   font-size: 1.5rem !important;
    font-family: Dosis;
    color: #fff;
    padding-bottom: 20px;
@@ -1236,22 +957,6 @@ and (min-width : 360px) {
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
   }
-
-  .card-gallery-item {
-    width: 100%;
-    height: 20vh;
-    object-fit: cover;
-    }
-
-    .blog-post p {
-      font-size: calc(1vw + 1rem);
-      color: white;
-      font-family:Dosis;
-    }
-
-    .blog-post h1 {
-      font-size: calc(2vw + 1rem);
-    }
 
   /* ===================================================================
  * # Code highlighting styles
@@ -1326,3 +1031,13 @@ and (min-width : 360px) {
  * # Blog Utilities
  * # 
  * ------------------------------------------------------------------- */
+
+ .blog-post p {
+  font-size: calc(1vw + 0.5rem);
+  color: white;
+  font-family:Dosis;
+}
+
+.blog-post h1 {
+  font-size: calc(2vw + 0.5rem);
+}

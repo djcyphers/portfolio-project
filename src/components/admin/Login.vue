@@ -41,7 +41,7 @@
     </template>
     <template v-if="loginState.loginReset === false">
       <p>Sorry! Registration Disabled</p>
-      <!-- @click registerUser disabled -->
+      <!-- @click="registerUser" -->
       <button class="btn btn-primary btn-block w-75 register-button">
         Register
       </button>

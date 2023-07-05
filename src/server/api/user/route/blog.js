@@ -21,4 +21,8 @@ router.get("/categories/all", blogController.getBlogCategories);
 router.delete("/delete/:_id", blogController.deleteBlogPost);
 // Update blog post
 router.put("/update/:_id", cleanBody, blogController.updateBlogPost);
+// Get blog years
+router.get("/posts/years/all", blogController.getBlogYears);
+// Get previous blog post years
+router.get("/posts/years/:year", blogController.getPreviousBlogYears);
 module.exports = router;

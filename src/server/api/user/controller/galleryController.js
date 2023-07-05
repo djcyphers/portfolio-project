@@ -14,7 +14,7 @@ const path = require("path");
 // const util = require('util')
 // Multiform Upload
 const formidable = require("formidable");
-const vueAssets = "../../../../assets/galleries";
+const vueAssets = "../../../uploads/galleries";
 const uploadUrl = path.join(__dirname, vueAssets);
 // Validate Scheme with Joi
 const gallerySchema = Joi.object().keys({
@@ -97,8 +97,8 @@ exports.createGallery = async (req, res) => {
 
         // Need to write image to folder after validation and saving to database
 
-
         */
+       
         // Create a gallery folder if not exists (it should)
         const formatName = fields.galleryName
           .replace(/\s+/g, "-")
@@ -137,8 +137,11 @@ exports.createGallery = async (req, res) => {
               });
             }
           });
+          // Trim filepath for future api call
+          const trimFilepath = filepath.split("\\");
+          const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
           // Add filepath to result value
-          fields.galleryCoverArtUrl = filepath;
+          fields.galleryCoverArtUrl = filePathToSave;
           fields.galleryCoverArtFileName = fileName;
           // Create new gallery and save data to database
           const newGallery = new Gallery(fields);
@@ -383,8 +386,11 @@ exports.updateGallery = async (req, res) => {
               });
             }
           });
+          // Trim filepath for future api call
+          const trimFilepath = filepath.split("\\");
+          const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
           // Add filepath to result value
-          fields.galleryCoverArtUrl = filepath;
+          fields.galleryCoverArtUrl = filePathToSave;
           fields.galleryCoverArtFileName = fileName;
         }
         // Update all gallery items with the new gallery name
@@ -432,6 +438,7 @@ exports.addItemToGallery = async (req, res) => {
             message: "Failed to add item to gallery!",
           });
         }
+
         const { galleryName, title, description } = fields;
         if (!galleryName || !title || !description) {
           return res.json({
@@ -440,6 +447,7 @@ exports.addItemToGallery = async (req, res) => {
             message: "Please fill all the fields!",
           });
         }
+
         // Check if only one file was uploaded from Formidable
         if (!files) {
           return res.json({
@@ -459,16 +467,26 @@ exports.addItemToGallery = async (req, res) => {
             message: result.error.message,
           });
         }
+
+        // Check if gallery item exists, if not create it
+        const galleryItemCheckDuplicate = await GalleryItem.findOne({ title: fields.title });
+
+        if (galleryItemCheckDuplicate) {
+          return res.json({
+            error: true,
+            status: 400,
+            message: "Gallery item already exists!",
+          });
+        }
+
         // Get galleryName to prepare for file upload
         const gallery = await Gallery.findById(fields.galleryId);
-
         if (!gallery) {
           return res.json({
             error: true,
             status: 404,
             message: "Gallery Not Found",
           });
-
         } else {
           // Create a gallery folder if not exists (it should exist)
           const formatName = fields.galleryName
@@ -516,8 +534,11 @@ exports.addItemToGallery = async (req, res) => {
               });
             }
           });
+          // Trim filepath for future api call
+          const trimFilepath = filepath.split("\\");
+          const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
           // Add filepath to result value
-          fields.galleryItemUrl = filepath;
+          fields.galleryItemUrl = filePathToSave;
           // Add fileName to result value
           fields.galleryItemFileName = fileName;
           // Validate schema after all fields are updated
@@ -530,29 +551,17 @@ exports.addItemToGallery = async (req, res) => {
             });
           }
         }
-        // Check if gallery item exists, if not create it
-        const galleryItemCheckDuplicate = await GalleryItem.findOne({
-          title: fields.title,
+        // Add item to galleryItem db if no duplicate item exists
+        const newItem = new GalleryItem(fields);
+        await newItem.save();
+        // Add item to galleryItems array in gallery db
+        gallery.galleryItems.push(newItem);
+        await gallery.save();
+        return res.json({
+          error: false,
+          status: 200,
+          message: "Gallery item added!",
         });
-        if (galleryItemCheckDuplicate) {
-          return res.json({
-            error: true,
-            status: 400,
-            message: "Gallery item already exists!",
-          });
-        } else {
-          // Add item to galleryItem db if no duplicate item exists
-          const newItem = new GalleryItem(fields);
-          await newItem.save();
-          // Add item to galleryItems array in gallery db
-          gallery.galleryItems.push(newItem);
-          await gallery.save();
-          return res.json({
-            error: false,
-            status: 200,
-            message: "Gallery item added!",
-          });
-        }
       } catch (error) {
         return res.json({
           error: true,
@@ -696,6 +705,40 @@ exports.getGalleryCoverImage = async (req, res) => {
 
     // Check if file exists
     const file = gallery.galleryCoverArtUrl;
+    if (!fs.existsSync(file)) {
+      return res.json({
+        error: true,
+        status: 400,
+        message: `File does not exist! Reason: ${file}`,
+      });
+    } else {
+      let sendFile = fs.createReadStream(file);
+      if (sendFile) {
+        sendFile.pipe(res);
+      } else {
+        return res.json({
+          error: true,
+          status: 400,
+          message: "File does not exist!",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      error: true,
+      status: 500,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Get gallery image by via URL
+exports.getGalleryImage = async (req, res) => {
+  try {
+    const { galleryTitle, fileName } = req.params;
+    // Check if file exists
+    const file = `${uploadUrl}/${galleryTitle}/${fileName}`;
     if (!fs.existsSync(file)) {
       return res.json({
         error: true,

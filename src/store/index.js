@@ -22,6 +22,11 @@ const state = reactive({
   isBlogPostViewOpen: false,
   isBlogEditorOpen: false,
   isBlogEditingPost: false,
+  // Modal Blur
+  isModalOpen: false,
+  isBlogOpen: false,
+  // Blog Pagination By Year
+  isBlogYearFilterOpen: false,
 });
 
 const methods = {

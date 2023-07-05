@@ -30,6 +30,7 @@
     "bs5-lightbox": "^1.8.0",
     "concurrently": "^7.3.0",
     "core-js": "^3.6.5",
+    "file-loader": "^6.2.0",
     "highlight.js": "^11.6.0",
     "jshint": "^2.13.4",
     "jsonwebtoken": "^8.5.1",
@@ -42,10 +43,12 @@
     "tippy.js": "^6.3.7",
     "vue": "^3.0.0",
     "vue-axios": "^3.3.7",
+    "vue-recaptcha": "^2.0.3",
     "vue-router": "^4.0.0-0",
     "vue3-youtube": "^0.1.8"
   },
   "devDependencies": {
+    "@volar-plugins/vetur": "latest",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
@@ -54,33 +57,15 @@
     "@vue/eslint-config-prettier": "^6.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",
-    "eslint-plugin-prettier": "^3.4.1",
-    "eslint-plugin-vue": "^7.20.0",
+    "eslint-plugin-prettier-vue": "^4.2.0",
+    "eslint-plugin-vue": "^9.9.0",
     "jquery": "^3.6.0",
-    "prettier": "2.7.1",
+    "prettier": "^2.8.4",
     "sass": "^1.42.0",
     "sass-loader": "^10.2.0",
     "style-resources-loader": "^1.4.1",
     "vue-cli-plugin-sitemap": "^2.3.0",
     "vue-cli-plugin-style-resources-loader": "^0.1.5"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended",
-      "@vue/prettier"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {
-      "strict": "off",
-      "no-console": "off"
-    }
   },
   "browserslist": [
     "> 1%",

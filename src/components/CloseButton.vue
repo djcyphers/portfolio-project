@@ -1,27 +1,26 @@
 <!-- Animated Close Button -->
 <!-- Credit https://codepen.io/maneeshc -->
 <template>
-<div class="button-wrapper">
-  <a href="#" id="close-button" @click="clearLocalStorage()">
-    <i class="fa fa-times">
-      <font-awesome-icon :icon="['fas', 'times']" />
-    </i>
-  </a>
-</div>
-
+  <div class="button-wrapper">
+    <a href="#" id="close-button" @click="clearLocalStorage()">
+      <i class="fa fa-times">
+        <font-awesome-icon :icon="['fas', 'times']" />
+      </i>
+    </a>
+  </div>
 </template>
 <script>
 export default {
-    name: "CloseButton",
-    setup() {
-      function clearLocalStorage() {
-        localStorage.clear();
-      }
-      return {
-        clearLocalStorage,
-      }
+  name: "CloseButton",
+  setup() {
+    function clearLocalStorage() {
+      localStorage.clear();
     }
-}
+    return {
+      clearLocalStorage,
+    };
+  },
+};
 </script>
 <style lang="scss" scoped>
 #close-button {
@@ -32,7 +31,7 @@ export default {
   height: 50px;
   border-radius: 50%;
   background-color: black;
-  color:white;
+  color: white;
   font-size: 20px;
   padding: 0;
   animation: move-up 0.5s ease-out;
@@ -43,17 +42,29 @@ export default {
   border: 2px solid white;
 }
 
-/* Add the move-up animation keyframe */
-@keyframes move-up {
+.fa-times {
+  animation: pulse 1s ease-out infinite;
+}
+
+@keyframes pulse {
   0% {
-    transform: translateY(-60px) scale(1);
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-60px) scale(1.1);
+    transform: scale(1.1);
   }
   100% {
-    transform: translateY(-60px) scale(1);
+    transform: scale(1);
   }
 }
 
+/* Add the move-up animation keyframe */
+@keyframes move-up {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-70px);
+  }
+}
 </style>

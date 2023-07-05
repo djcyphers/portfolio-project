@@ -18,12 +18,13 @@
               card
               me-3
               mb-3
+              mt-4
             "
           @click="expandGallery(gallery)"
         >
           <img
             class="card-img img-thumbnail bg-black"
-            :src="coverArtImg(gallery)"
+            :src="`http://localhost:4000/${gallery.galleryCoverArtUrl}`"
             :alt="coverArtName(gallery)"
           >
           <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
@@ -64,41 +65,36 @@
       <CloseButton @click.prevent="openGalleryView" />
       <div class="gallery-item-view container">
         <div class="row justify-content-center">
-          <div class="col-lg-6 col-sm-4">
-            <div class="card-group">
-              <div
-                v-for="(galleryItem, index) in galleryItems"
-                :key="index"
-                class="card text-white bg-dark me-5 gallery-item"
+          <div
+            v-for="(galleryItem, index) in galleryItems"
+            :key="index"
+            class="col-lg-3 col-sm-4 text-white me-2"
+          >
+            <div class="image-card-item">
+              <a
+                :href="`http://localhost:4000/${galleryItem.galleryItemUrl}`"
+                class="lightbox"
+                :data-footer="galleryItemDescription(galleryItem)"
+                :data-gallery="galleryItemTitle(galleryItem)"
+                data-toggle="lightbox"
+                @click.prevent="attachLightbox($event)"
               >
-                <a
-                  ref="galleryItemRef"
-                  :href="galleryItemImg(galleryItem)"
-                  class="lightbox"
-                  :data-footer="galleryItemDescription(galleryItem)"
-                  :data-gallery="galleryItemTitle(galleryItem)"
-                  data-toggle="lightbox"
-                  @click.prevent="attachLightbox($event)"
+                <img
+                  :src="`http://localhost:4000/${galleryItem.galleryItemUrl}`"
+                  class="img-responsive gallery-card-image"
+                  :alt="galleryItemTitle(galleryItem)"
                 >
-                  <img
-                    :src="galleryItemImg(galleryItem)"
-                    class="card-img-top card-gallery-item"
-                    :alt="galleryItemTitle(galleryItem)"
-                  >
-                </a>
-                <div class="card-body">
-                  <div class="gallery-item-text text-center text-white">{{ galleryItem.title }}</div>
-                </div>
-                <template v-if="isLoggedIn">
-                  <button
-                    class="btn btn-primary delete-button"
-                    @click="deleteGalleryItem(galleryItem, index)"
-                  >
-                    Delete
-                  </button>
-                </template>
-              </div>
+              </a>
+                <div class="image-title text-white">{{ galleryItem.title }}</div>
             </div>
+            <template v-if="isLoggedIn">
+              <button
+                class="btn btn-primary delete-button"
+                @click="deleteGalleryItem(galleryItem, index)"
+              >
+                Delete
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -261,7 +257,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, inject } from "vue";
+import { ref, onMounted, computed, inject, nextTick } from "vue";
 import swal from "sweetalert";
 import axios from "axios";
 import Lightbox from 'bs5-lightbox';
@@ -314,18 +310,20 @@ export default {
         // Lightbox
         const lightbox = ref();
         
-        /*
-    
-        Lifecycle Hooks
-        
-        */
-       // Get all galleries from db
-       onMounted(async () => {
-         // Get all galleries from db
-            await getGalleriesOnMount().value;
-            gallery.value = localStorage.getItem("gallery") || [];
-            await getGalleryItemsOnMount().value
+      /*
+  
+      Lifecycle Hooks
+      
+      */
+
+        // Get all galleries from db
+        onMounted(() => {
+          // Get all galleries from db
+          getGalleriesOnMount().value;
+          gallery.value = localStorage.getItem("gallery") || [];
+          getGalleryItems().value
         });
+
         // Get all galleries from db function
         async function getGalleriesOnMount() {
           await axios
@@ -335,15 +333,13 @@ export default {
             })
             .catch((error) => {
               console.log(error);
-              swal("Error", "Get all galleries onMount error!", "error");
+              swal("Error", "Get all galleries error!", "error");
             });
         }
+
         // Get all gallery items depending on which gallery is open
-        async function getGalleryItemsOnMount() {
-          if (!gallery.value.length > 0) {
-            return;
-          }
-          const getGalleryByName = JSON.parse(localStorage.getItem("gallery")); 
+        async function getGalleryItems() {
+          const getGalleryByName = localStorage.getItem("gallery") ? JSON.parse(localStorage.getItem("gallery")) : []; 
           // Get current open gallery from local storage
           await axios
             .get("gallery/items/" + getGalleryByName.galleryName)
@@ -352,54 +348,31 @@ export default {
             })
             .catch((error) => {
               console.log(error);
-              swal("Error", "Get gallery items onMount error!", "error");
+              swal("Error", "Get gallery items error!", "error");
             });
         }
+
         // Garbage collection
         // onUnmounted(async () => {
         //     localStorage.clear();
         // });
+        
         /*
     
           Gallery and Gallery Item Views
     
         */
+
         const lightboxOptions = {
             keyboard: true,
         };
+
         //Start lightbox init
         const attachLightbox = (event) => {
             lightbox.value = new Lightbox(event.currentTarget, lightboxOptions);
             lightbox.value.show();
         };
-        // Try and get the cover art image from the assets folder
-        function coverArtImg(gallery) {
-            const name = gallery.galleryName;
-            if (name === undefined) return; // Vue state trying to add img buggy
-            const formatName = name.replace(/ /g, "-").toLowerCase();
-            let img = computed(() => {
-                const str = gallery.galleryCoverArtUrl;
-                return str.split("\\").pop().split("/").pop();
-            });
-            if (img.value) {
-            return require(`@/assets/galleries/` + `${formatName}/${img.value}`);
-            }
-            else {
-              return []; // Vue state trying to add img buggy webpack issue
-            }
-        }
-        function galleryItemImg(galleryItem) {
-            const name = galleryItem.galleryName;
-            if (name === undefined || name === "undefined") { // Strange behavoir of name returning undefined after creating a gallery item 
-                return;
-            }
-            const formatName = name.replace(/ /g, "-").toLowerCase();
-            let img = computed(() => {
-                const str = galleryItem.galleryItemUrl;
-                return str.split("\\").pop().split("/").pop();
-            });
-            return require(`@/assets/galleries/` + `${formatName}/${img.value}`) || [];
-        }
+
         // Get the gallery item title or fallback to this...
         function galleryItemTitle(galleryItem) {
             if (!galleryItem) {
@@ -410,6 +383,7 @@ export default {
             }
             return galleryItem.title;
         }
+
         // Get the gallery item description from the db
         function galleryItemDescription(galleryItem) {
             if (!galleryItem) {
@@ -420,6 +394,7 @@ export default {
             }
             return galleryItem.description;
         }
+
         // Cover art info fallback
         function coverArtName(gallery) {
             if (!gallery) {
@@ -430,6 +405,7 @@ export default {
             }
             return gallery.galleryName;
         }
+
         // Cover art description fallback why vue why
         function coverArtDescription(gallery) {
             if (!gallery) {
@@ -440,6 +416,7 @@ export default {
             }
             return gallery.galleryDescription;
         }
+        
         // Create new gallery
         async function createNewGallery() {
             let fData = new FormData();
@@ -469,6 +446,7 @@ export default {
                 swal("Error", "Create Gallery Error: " + error, "error");
             });
         }
+
         // Get newly created gallery and add it to the galleries array
         async function getAllGalleries() {
             await axios
@@ -488,6 +466,7 @@ export default {
                 swal("Error", error + " Couldn't get any galleries!", "error");
             });
         }
+
         // Create new gallery item
         async function createNewGalleryItem() {
             let fData = new FormData();
@@ -512,8 +491,10 @@ export default {
                     swal("Success", "Gallery item created!", "success");
                     // Return to view gallery items
                     openGalleryItemView();
-                    // Add new gallery to galleries
-                    galleryItems.value = response.data;
+                    // Add new gallery items to galleries
+                    nextTick(() => {
+                      getGalleryItems();
+                    })
                 }
             })
                 .catch((error) => {
@@ -521,10 +502,12 @@ export default {
                 swal("Error", error.response.data, "error");
             });
         }
+        
         // Upload file
         async function uploadFile(event) {
             files.value.files = event.target.files;
         }
+
         // Cancel Gallery Update
         function cancelGalleryUpdate() {
             editGalleryView.value = false;
@@ -532,17 +515,20 @@ export default {
             isGalleryUpdating.value = false;
             closeGalleryItemsView.value();
         }
+
         // Cancel Gallery Create New
         function cancelGalleryCreateForm() {
             closeGalleryForm.value();
             viewGalleries.value();
         }
+
         // Cancel Gallery Item Create New
         function cancelGalleryItemCreateForm() {
             closeGalleryItemForm.value();
             viewGalleryItems.value();
             exitGalleries.value();
         }
+
         // Open gallery view from gallery item view
         function openGalleryView() {
             closeGalleryItemsView.value();
@@ -556,6 +542,7 @@ export default {
             galleryItem.value.length = 0;
             galleryItems.value.length = 0;
         }
+
         // Open gallery item view from clicking on a gallery
         function openGalleryItemView() {
             // Cancel gallery item create form
@@ -565,6 +552,7 @@ export default {
             // Open gallery item view
             viewGalleryItems.value();
         }
+
         // Create new gallery item open view
         function createNewGalleryItemView() {
             // Close gallery view
@@ -572,10 +560,12 @@ export default {
             // Open gallery item view
             viewGalleryItemForm.value();
         }
+
         // Return to view galleries
         function returnToViewGalleriesAfterDelete() {
             cancelGalleryCreateForm();
         }
+
         // Delete entire gallery
         async function deleteGallery(gallery, index) {
           // Remove from galleries array first
@@ -595,6 +585,7 @@ export default {
               swal("Error", "Delete Gallery Error => " + error, "error");
           });
         }
+
         // Delete gallery item
         async function deleteGalleryItem(galleryItem, index) {
           // Remove from gallery items array first
@@ -613,6 +604,7 @@ export default {
               swal("Error", "Delete Error => " + error, "error");
           });
         }
+
         // Edit gallery view
         function editGallery(gallery) {
             closeGalleryForm.value();
@@ -624,6 +616,7 @@ export default {
             }
             gallery.value = localStorage.getItem("gallery") || [];
         }
+
         // Update gallery
         async function updateGallery() {
           let ls = JSON.parse(localStorage.getItem("gallery"));
@@ -657,7 +650,8 @@ export default {
             }
             })
             .catch((error) => { swal("Error", error, "error"); });
-          }
+        }
+
         // Open gallery to view gallery items
         async function expandGallery(gallery) {
           // console.log("Expand Gallery Just Fired!");
@@ -717,13 +711,14 @@ export default {
             deleteGalleryItem,
             updateGallery,
             returnToViewGalleriesAfterDelete,
-            coverArtImg,
+            //coverArtImg,
             coverArtName,
             coverArtDescription,
-            galleryItemImg,
+            //galleryItemImg,
             galleryItemTitle,
             galleryItemDescription,
             getGalleriesOnMount,
+            getGalleryItems,
             getStorage,
             store,
             isLoggedIn,
@@ -748,3 +743,86 @@ export default {
     }
 };
 </script>
+
+<style lang="scss" scoped>
+// Gallery Cover Image
+.card-img {
+  object-fit: contain;
+  height: 255px;
+}
+
+.image-card-item {
+    max-width: 300px;
+    background-color: #FFF;
+    box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.1);
+    background-position: center;
+    overflow: hidden;
+    position: relative;
+    margin: 10px auto;
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: calc(1vw + 0.5rem);
+}
+
+.gallery-card-image {
+  object-fit: contain;
+  height: 255px;
+  width: 255px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.image-card-item img {
+    transition: all linear 0.25s;
+}
+
+.image-card-item .image-title {
+    position: absolute;
+    bottom: 30px;
+    font-size: 30px;
+    color: #FFF;
+    text-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    transition: all linear 0.25s;
+    background-color: rgba(0, 0, 0, 0.7);
+    font-size: calc(0.5vw + 1rem);
+}
+
+.image-card-item .image-icons {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    color: #FFF;
+    transition: all linear 0.25s;
+}
+
+.image-card-item .image-icons .fa {
+    margin: 5px;
+}
+
+.image-card-item:hover img {
+    filter: grayscale(100%);
+}
+
+.image-card-item:hover .image-title {
+    bottom: 80px;
+}
+
+.image-card-item:hover .image-username {
+    bottom: 60px;
+}
+
+.image-card-item:hover .image-icons {
+    right: 40px;
+}
+
+.gallery-base img {
+  transition: 0.5s all ease-in-out;
+}
+
+.gallery-base:hover img {
+  transform: scale(1.05);
+}
+
+</style>

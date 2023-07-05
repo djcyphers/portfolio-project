@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const config = require("./config/db");
 const path = require("path");
 const app = express();
-process.env.NODE_ENV = 'production';
+//process.env.NODE_ENV = 'production';
 
 // Suppress warning
 mongoose.set('strictQuery', true);
@@ -35,7 +35,7 @@ app.use(cors());
 //configure body parser
 app.use(express.json()); // To parse the incoming requests with JSON payloads
 app.use(express.urlencoded({ extended: false }));
-app.use(morgan("dev")); // configure morgan
+app.use(morgan("tiny")); // configure morgan
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
@@ -47,7 +47,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use(express.static(path.join(__dirname, "/../../dist")));
+app.use(express.static(path.join(__dirname, "./uploads")));
 
 const userRoutes = require("./api/user/route/user"); // bring in our user routes
 app.use("/user", userRoutes);
@@ -56,9 +56,21 @@ app.use("/user", userRoutes);
 const galleryRoutes = require("./api/user/route/gallery");
 app.use("/gallery", galleryRoutes);
 
+// Gallery Upload Get Image Routes
+const galleryUploadRoutes = require("./api/user/route/galleryImg");
+app.use("/uploads/galleries", galleryUploadRoutes);
+
+// Blog Upload Get Image Routes
+const blogUploadRoutes = require("./api/user/route/blogImg");
+app.use("/uploads/blogs", blogUploadRoutes);
+
 // Blog routes
 const blogRoutes = require("./api/user/route/blog");
 app.use("/blog", blogRoutes);
+
+// OpenAI routes
+const openAIRoutes = require("./api/user/route/openAI");
+app.use("/openai", openAIRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
