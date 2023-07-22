@@ -45,7 +45,7 @@
   width: 60vw;
   height: 100%;
   min-height: 100vh;
-  z-index: 0;
+  z-index: 8;
   bottom: 10vh;
   right: 16vw;
 }
@@ -59,7 +59,7 @@
   height: 80%;
   mix-blend-mode: overlay;
   backdrop-filter: blur(14px) saturate(70%);
-  z-index: 0;
+  z-index: 8;
 }
 
 .card-container {
@@ -72,7 +72,7 @@
   background-size: 100%;
   background-position: center;
   border-radius: 20px;
-  z-index: 1;
+  z-index: 9;
   width: 100%;
   height: auto;
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
@@ -208,7 +208,7 @@
   background-size: 50%;
   background-repeat: repeat;
   padding: 30px 40px;
-  z-index: 2;
+  z-index: 9;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -356,7 +356,7 @@ h1 span {
   height: 100%;
   background: Beige;
   color: Beige;
-  z-index: -1;
+  z-index: 9;
   transition: all 0.5s ease-in-out;
 }
 

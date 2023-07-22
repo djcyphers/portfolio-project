@@ -295,6 +295,7 @@ export default {
 .chat-bot-wrapper {
   position: relative;
   height: 255px;
+  z-index: 8;
 }
 
 .chatbot-modal {
@@ -302,7 +303,7 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 3;
+  z-index: 9;
 }
 
 .glow-antenna {

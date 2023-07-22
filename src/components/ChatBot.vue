@@ -214,7 +214,7 @@ export default {
   height: 3px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
-  z-index: 2;
+  z-index: 9;
   margin-top: 4px;
   animation: ball 0.45s cubic-bezier(0, 0, 0.15, 1) alternate infinite;
 }
@@ -223,7 +223,7 @@ export default {
   width: calc(300px + 20vw);
   height: 80vh;
   max-height: 500px;
-  z-index: 2;
+  z-index: 9;
   overflow: hidden;
   box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
   background: rgba(0, 0, 0, 0.9);
