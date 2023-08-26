@@ -2,8 +2,11 @@
   <div class="card text-white bg-black mb-3 border-0 mt-4 about-section">
     <h2 class="mt-3 text-white text-center">Discord</h2>
     <div class="discord-card">
-      <div class="discord-avatar" :class="{ online: userOnline, offline: !userOnline }">
-        <img :src="myProfile.avatarUrl" alt="Avatar">
+      <div
+        class="discord-avatar"
+        :class="{ online: userOnline, offline: !userOnline }"
+      >
+        <img :src="myProfile.avatarUrl" alt="Avatar" />
       </div>
       <div class="discord-userinfo">
         <h4>{{ myProfile.username }}</h4>
@@ -22,60 +25,60 @@
   </div>
 </template>
 
-
 <script>
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import swal from "sweetalert";
 
 export default {
-    name: "DiscordProfile",
-    setup() {
+  name: "DiscordProfile",
+  setup() {
+    onMounted(() => {
+      getProfile();
+    });
 
-        onMounted(() => {
-            getProfile();
-        });
+    const myProfile = ref({
+      username: "",
+      status: "",
+      game: "",
+      avatarUrl: "",
+    });
 
-        const myProfile = ref({
-            username: "",
-            status: "",
-            game: "",
-            avatarUrl: "",
-        });
+    const userOnline = ref(false);
 
-        const userOnline = ref(false);
-
-        async function getProfile() {
-            try {
-                let response = await axios.get("https://discord.com/api/guilds/1074230583607164958/widget.json");
-                if (response.status === 200) {
-                    const data = response.data;
-                    myProfile.value.username = data.members[0].username;
-                    myProfile.value.status = data.members[0].status.charAt(0).toUpperCase() + data.members[0].status.slice(1);
-                    myProfile.value.game = data.members[0].game.name;
-                    myProfile.value.avatarUrl = data.members[0].avatar_url;
-                    if (myProfile.value.status = "Online") {
-                      userOnline.value = true;
-                    } else {
-                      userOnline.value = false;
-                    }
-                }
-            }
-            catch(error) {
-                if (error.response.status === 500) {
-                    swal("Error", error.response.data.message, "error");
-                }
-                console.log(error);
-            }
+    async function getProfile() {
+      try {
+        let response = await axios.get(
+          "https://discord.com/api/guilds/1074230583607164958/widget.json"
+        );
+        if (response.status === 200) {
+          const data = response.data;
+          myProfile.value.username = "djcyphers";
+          myProfile.value.status =
+            data.members[0].status.charAt(0).toUpperCase() +
+            data.members[0].status.slice(1);
+          myProfile.value.game = data.members[0].game.name;
+          myProfile.value.avatarUrl = data.members[0].avatar_url;
+          if ((myProfile.value.status = "Online")) {
+            userOnline.value = true;
+          } else {
+            userOnline.value = false;
+          }
         }
-        return {
-            myProfile,
-            getProfile,
-            userOnline,
+      } catch (error) {
+        if (error.response.status === 500) {
+          swal("Error", error.response.data.message, "error");
         }
+        console.log(error);
+      }
     }
-}
-
+    return {
+      myProfile,
+      getProfile,
+      userOnline,
+    };
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -100,7 +103,7 @@ h2 {
   width: 80px;
   border-radius: 50%;
   margin-left: 38px;
-  margin-right:10px;
+  margin-right: 10px;
   margin-top: 25px;
 }
 
@@ -109,13 +112,13 @@ h2 {
 }
 
 @keyframes anim-glow-online {
-	0% {
-		box-shadow: 0 0 0 2px rgba(#61EF61, 1);
-	}
-	100% {
-		box-shadow: 0 0 8px 8px transparent;
-		border-width: 2px;
-	}
+  0% {
+    box-shadow: 0 0 0 2px rgba(#61ef61, 1);
+  }
+  100% {
+    box-shadow: 0 0 8px 8px transparent;
+    border-width: 2px;
+  }
 }
 
 .offline img {
@@ -123,15 +126,14 @@ h2 {
 }
 
 @keyframes anim-glow-offline {
-	0% {
-		box-shadow: 0 0 0 2px rgba(#c91a37, 1);
-	}
-	100% {
-		box-shadow: 0 0 8px 8px transparent;
-		border-width: 2px;
-	}
+  0% {
+    box-shadow: 0 0 0 2px rgba(#c91a37, 1);
+  }
+  100% {
+    box-shadow: 0 0 8px 8px transparent;
+    border-width: 2px;
+  }
 }
-
 
 .discord-userinfo {
   display: flex;
@@ -185,12 +187,12 @@ h2 {
 
 /* Button */
 .server-button {
-  position:absolute;
-  background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
+  position: absolute;
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
   border-radius: 8px;
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
   box-sizing: border-box;
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 14px;
   max-width: 150px;
   height: 20px;

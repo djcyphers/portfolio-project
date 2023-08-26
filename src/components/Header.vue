@@ -4,7 +4,10 @@
     <ul id="menu">
       <li>
         <a
-          @click="closeBlogYearFilter()"
+          @click="
+            closeBlogYearFilter();
+            saveMenuStateSessionStorage($event);
+          "
           href="#home"
           class="link"
           data-menu="box1"
@@ -13,7 +16,10 @@
       </li>
       <li>
         <a
-          @click="closeBlogYearFilter()"
+          @click="
+            closeBlogYearFilter();
+            saveMenuStateSessionStorage($event);
+          "
           href="#about"
           class="link"
           data-menu="box2"
@@ -22,7 +28,10 @@
       </li>
       <li>
         <a
-          @click="closeBlogYearFilter()"
+          @click="
+            closeBlogYearFilter();
+            saveMenuStateSessionStorage($event);
+          "
           href="#portfolio"
           class="link portfolio-close"
           data-menu="box3"
@@ -31,7 +40,10 @@
       </li>
       <li>
         <a
-          @click="openBlogYearFilter()"
+          @click="
+            openBlogYearFilter();
+            saveMenuStateSessionStorage($event);
+          "
           href="#social"
           class="link"
           data-menu="box4"
@@ -53,7 +65,7 @@
 </template>
 
 <script setup>
-import { inject, computed } from "vue";
+import { inject, computed, onMounted } from "vue";
 
 const store = inject("store");
 
@@ -65,6 +77,11 @@ function openBlogYearFilter() {
 
 function closeBlogYearFilter() {
   store.state.isBlogYearFilterOpen = false;
+}
+
+function saveMenuStateSessionStorage(event) {
+  // const sessionStorage = window.sessionStorage;
+  console.log(event.target);
 }
 </script>
 

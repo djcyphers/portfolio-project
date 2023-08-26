@@ -116,18 +116,19 @@ function setPosition(check) {
     $("#clouds-near-svg").css({ transform: "translate(200px)" });
     $("#clouds-middle-svg").css({ transform: "translate(200px)" });
     $("#clouds-far-svg").css({ transform: "translate(-50px)" });
+    $("#clouds-far-svg-2").css({ transform: "translate(-50px)" });
     $("#mt-rainier-svg").css({ transform: "translate(-25px)" });
     $("#mt-range-svg").css({ transform: "translate(-20px)" });
     $("#moon-city-svg").css({ transform: "translate(-50px)" });
     $("#large-buildings-svg").css({ transform: "translate(100px)" });
     $("#seattle-city-svg").css({ transform: "translate(50px)" });
     $("#far-buildings-svg").css({ transform: "translate(50px)" });
-    //$('#main-bg').addClass("main-slide");
   } else if (check === "#about") {
     $("#wrapper").animate({ scrollLeft: dWidth * 3 });
     $("#clouds-near-svg").css({ transform: "translate(50px)" });
     $("#clouds-middle-svg").css({ transform: "translate(100px)" });
     $("#clouds-far-svg").css({ transform: "translate(-75px)" });
+    $("#clouds-far-svg-2").css({ transform: "translate(-75px)" });
     $("#mt-rainier-svg").css({ transform: "translate(-30px)" });
     $("#mt-range-svg").css({ transform: "translate(-40px)" });
     $("#moon-city-svg").css({ transform: "translate(-60px)" });
@@ -139,6 +140,7 @@ function setPosition(check) {
     $("#clouds-near-svg").css({ transform: "translate(-100px)" });
     $("#clouds-middle-svg").css({ transform: "translate(0px)" });
     $("#clouds-far-svg").css({ transform: "translate(-100px)" });
+    $("#clouds-far-svg-2").css({ transform: "translate(-100px)" });
     $("#mt-rainier-svg").css({ transform: "translate(-45px)" });
     $("#mt-range-svg").css({ transform: "translate(-60px)" });
     $("#moon-city-svg").css({ transform: "translate(-70px)" });
@@ -150,6 +152,7 @@ function setPosition(check) {
     $("#clouds-near-svg").css({ transform: "translate(-250px)" });
     $("#clouds-middle-svg").css({ transform: "translate(-100px)" });
     $("#clouds-far-svg").css({ transform: "translate(-125px)" });
+    $("#clouds-far-svg-2").css({ transform: "translate(-125px)" });
     $("#mt-rainier-svg").css({ transform: "translate(-55px)" });
     $("#mt-range-svg").css({ transform: "translate(-80px)" });
     $("#moon-city-svg").css({ transform: "translate(-80px)" });

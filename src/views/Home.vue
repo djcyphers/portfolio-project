@@ -110,5 +110,6 @@ export default {
   margin: 0 auto;
   position: relative;
   background: rgba(255, 255, 255, 0);
+  z-index: 11;
 }
 </style>

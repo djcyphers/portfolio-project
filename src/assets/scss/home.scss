@@ -50,7 +50,11 @@ blockquote {
   display: table; /* keep the background color wrapped tight */
 }
 
-/*** Background Images ***/
+/* Background Images 
+
+Animated Seattle Cityscape Design
+
+*/
 
 .sky-wrapper {
   position: relative;
@@ -144,10 +148,9 @@ blockquote {
 #star-city-svg {
   position: fixed;
   z-index: 1;
-  height: 100%;
-  width: 100%;
-  right: 0%;
-  top: -20%;
+  max-height: 200vh;
+  max-width: 200vw;
+  top: 3%;
 }
 
 #clouds-middle-svg {
@@ -182,11 +185,226 @@ blockquote {
 .background-base {
   position: absolute;
   z-index: 0;
-  height: 120%;
-  width: 120%;
+  height: calc(100vh + 50rem);
+  width: calc(100vw + 50rem);
   top:-1%;
   left: -1%;
 }
+
+/* Fix Cityscape Responsiveness
+  Small adjustments until 700px then drop clouds
+*/
+
+@media only screen
+and (max-width : 1615px) {
+  #mt-rainier-svg {
+    position: fixed;
+    z-index: 4;
+    max-height: 140%;
+    max-width: 140%;
+    width: 140vw;
+    bottom: 7%;
+    right: -30%;
+    transform: translate(-25px);
+  }
+
+  #mt-range-svg {
+    position: fixed;
+    z-index: 5;
+    max-height: 140%;
+    max-width: 140%;
+    width: 140vw;
+    bottom: 2%;
+    right: -20%;
+    transform: translate(-20px);
+  }
+
+  #star-city-svg {
+    position: fixed;
+    z-index: 1;
+    max-height: 200%;
+    max-width: 200%;
+    height: 200vh;
+    width: 200vw;
+    top: -55%;
+  }
+  // Duplicated layers from Background.vue when entering mobile mode
+  #star-city-svg-2 {
+    position: fixed;
+    z-index: 1;
+    max-height: 200%;
+    max-width: 200%;
+    height: 200vh;
+    width: 200vw;
+    top: -85%;
+  }
+
+  #star-city-svg-3 {
+    position: fixed;
+    z-index: 1;
+    max-height: 200%;
+    max-width: 200%;
+    height: 200vh;
+    width: 200vw;
+    top: -25%;
+  }
+
+  #clouds-far-svg {
+    position: fixed;
+    z-index: 3;
+    height: 90%;
+    width: 90%;
+    right: 0%;
+    top: 0;
+    transform: translate(-50px);
+  }
+
+  #clouds-far-svg-2 {
+    position: fixed;
+    z-index: 3;
+    height: 90%;
+    width: 90%;
+    right: 0%;
+    top: 5%;
+    transform: translate(-50px);
+  }
+
+  #clouds-middle-svg {
+    position: fixed;
+    z-index: 7;
+    height: 80%;
+    width: 80%;
+    right: 10%;
+    top: 0%;
+    transform: translate(200px);
+  }
+  
+  #clouds-near-svg {
+    position: fixed;
+    z-index: 9;
+    height: 80%;
+    width: 80%;
+    top: 5%;
+    transform: translate(200px);
+  }
+
+  #large-buildings-svg {
+    position: fixed;
+    z-index: 8;
+    max-height: 140%;
+    max-width: 140%;
+    width: 140vw;
+    bottom: 0;
+    transform: translate(100px);
+  }
+  
+  #seattle-city-svg {
+    position: fixed;
+    z-index: 6;
+    max-height: 140%;
+    max-width: 140%;
+    width: 140vw;
+    bottom: 0;
+    transform: translate(50px);
+  }
+
+  #far-buildings-svg {
+    position: fixed;
+    z-index: 6;
+    max-height: 140%;
+    max-width: 140%;
+    width: 140vw;
+    bottom: 0;
+    transform: translate(50px);
+  }
+
+  .background-base {
+    position: absolute;
+    z-index: 0;
+    height: 500vh;
+    width: 500vw;
+    top: -10%;
+    left: -5%;
+  }
+
+}
+
+@media only screen
+and (max-width : 1100px) {
+  #clouds-middle-svg {
+    position: fixed;
+    z-index: 7;
+    height: 80%;
+    width: 80%;
+    right: 10%;
+    top: 10%;
+    transform: translate(200px);
+  }
+  
+  #clouds-near-svg {
+    position: fixed;
+    z-index: 9;
+    height: 80%;
+    width: 80%;
+    top: 15%;
+    transform: translate(200px);
+  }
+  
+  #clouds-far-svg {
+    position: fixed;
+    z-index: 3;
+    height: 90%;
+    width: 90%;
+    right: 0%;
+    top: 10%;
+    transform: translate(-50px);
+  }
+
+}
+
+@media only screen
+and (max-width : 800px) {
+  #clouds-far-svg {
+    position: fixed;
+    z-index: 3;
+    height: 90%;
+    width: 90%;
+    right: 0%;
+    top: 30%;
+    transform: translate(-50px);
+  }
+
+  #clouds-far-svg-2 {
+    position: fixed;
+    z-index: 3;
+    height: 90%;
+    width: 90%;
+    right: 0%;
+    top: 35%;
+    transform: translate(-50px);
+  }
+
+  #clouds-middle-svg {
+    position: fixed;
+    z-index: 7;
+    height: 80%;
+    width: 80%;
+    right: 10%;
+    top: 30%;
+    transform: translate(200px);
+  }
+  
+  #clouds-near-svg {
+    position: fixed;
+    z-index: 9;
+    height: 80%;
+    width: 80%;
+    top: 25%;
+    transform: translate(200px);
+  }
+}
+
+// END Background
 
 /* Visual fix */
 .about-section {
@@ -324,7 +542,7 @@ blockquote {
     margin: 0 auto;
     position:relative;
     background:rgba(255,255,255, 0);
-    z-index: 9;
+    z-index: 11;
 }
 
 .card-typewriter-text {
@@ -365,11 +583,6 @@ blockquote {
 /* Desktops and laptops ----------- */
 @media only screen
 and (min-width : 1338px) {
-  #main-bg            {
-    width: 60%;
-    height: 80%;
-    margin-top: -80px;
-  }
   
   // Fit image to blog editor. Should reflect actual plublished content size
   img.blog-image {
@@ -499,11 +712,6 @@ and (max-height : 1022px)
 and (min-height : 848px)
 and (max-width : 766px)
 and (min-width : 416px) {
-  #main-bg            {
-    width: 60%;
-    height: 60%;
-    margin-top: -120px;
-  }
   /* About Me */
   .content1 {
       top:30% !important;
@@ -533,11 +741,6 @@ and (max-width : 1280px)
 and (min-width : 848px)
 and (max-height : 766px)
 and (min-height : 416px) {
-  #main-bg            {
-    width: 60%;
-    height: 60%;
-    margin-top: -120px;
-  }
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5rem; }
@@ -551,11 +754,6 @@ and (max-height : 1337px)
 and (min-height : 1023px)
 and (max-width : 1025px)
 and (min-width : 767px) {
-  #main-bg            {
-    width: 60%;
-    height: 60%;
-    margin-top: -120px;
-  }
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
@@ -568,11 +766,6 @@ and (max-width : 1337px)
 and (min-width : 1023px)
 and (max-height : 1025px)
 and (min-height : 767px) {
-  #main-bg            {
-    width: 80%;
-    height: 80%;
-    margin-top: -120px;
-  }
 
   img.blog-image {
     width: 50%;
@@ -587,29 +780,17 @@ and (min-height : 767px) {
 @media only screen
 and (max-width : 1024px)
 and (-moz-touch-enabled) {
-  #main-bg            {
-    width: 60%;
-    height: 60%;
-    margin-left: -100px;
-    margin-top: -80px;
-  }
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 1.5vw; }
   .links { font-size: 1.5vw; word-spacing:30px; }
 }
 
-/* iPhone X/XS/Plus and S9+ Firefox Mobile (Portrait) Soon to be depreciated ----------- */
-@media only screen
-and (max-width : 600px)
-and (-moz-touch-enabled) {
-  #main-bg            {
-    width: 100%;
-    height: 90%;
-    margin-left: -100px;
-    margin-top: -100px;
-  }
-}
+// /* iPhone X/XS/Plus and S9+ Firefox Mobile (Portrait) Soon to be depreciated ----------- */
+// @media only screen
+// and (max-width : 600px)
+// and (-moz-touch-enabled) {
+// }
 
 /* iPhone X/XS/Plus and S9+ (Landscape) ----------- */
 @media only screen
@@ -617,12 +798,6 @@ and (max-width : 847px)
 and (min-width : 736px)
 and (max-height : 415px)
 and (min-height : 375px) {
-  #main-bg            {
-    width: 70%;
-    height: 50%;
-    margin-left: -100px;
-    margin-top: -100px;
-  }
 
   /* About Me */
   #content { display: flex; word-wrap:break-word; white-space:normal; font-size: 2.5vw; }
@@ -635,12 +810,6 @@ and (max-height : 847px)
 and (min-height : 736px)
 and (max-width : 415px)
 and (min-width : 375px) {
-  #main-bg            {
-    width: 100%;
-    height: 80%;
-    margin-left: -100px;
-    margin-top: -100px;
-  }
 
   img.blog-image {
     width: 40%;
@@ -654,30 +823,18 @@ and (min-width : 375px) {
   #menu { float:right; position:absolute; top:20px; right:10px; z-index:10; font-size: 3.5vw }
 }
 
-/* Iphone 6/7/8 and Android (Landscape)----------- */
-@media only screen
-and (max-width: 800px)
-and (min-width: 469px )
-and (min-height : 360px) {
-  #main-bg            {
-    width: 70%;
-    height: 50%;
-    margin-left: -100px;
-    margin-top: -100px;
-  }
-}
+// /* Iphone 6/7/8 and Android (Landscape)----------- */
+// @media only screen
+// and (max-width: 800px)
+// and (min-width: 469px )
+// and (min-height : 360px) {
+// }
 
 /* Iphone 6/7/8 and Android (Portrait)----------- */
 @media only screen
 and (min-height: 666px)
 and (max-width: 469px)
 and (min-width : 360px) {
-  #main-bg            {
-    width: 100%;
-    height: 60%;
-    margin-left: -100px;
-    margin-top: -100px;
-  }
 
   .subtitle-portfolio-text {
     font-size: 3vw;
@@ -974,6 +1131,7 @@ and (min-width : 360px) {
   right: -1px;
   top: 22vh;
   background-color: rgba(0, 0, 0, 0.7) !important;
+  z-index: 13 !important;
 
 }
 
@@ -981,6 +1139,7 @@ and (min-width : 360px) {
   position:fixed;
   right: 5px;
   bottom: 2vh;
+  z-index: 11;
 
     :hover {
       transform: scale(1.1);

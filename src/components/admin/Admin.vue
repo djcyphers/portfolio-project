@@ -9,6 +9,7 @@
       @click="
         closePanel();
         resetLogin();
+        openBlogYearFilter();
       "
       class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
     >
@@ -27,7 +28,10 @@
   <div
     class="avatar-login animate__animated"
     id="avatar-login"
-    @click="openPanel"
+    @click="
+      openPanel();
+      closeBlogYearFilter();
+    "
   >
     <img class="bi me-2" width="64" height="64" :src="avatar" />
   </div>
@@ -81,12 +85,22 @@ export default {
       adminPanel.classList.add("animate__backOutRight");
       avatarLogin.classList.add("animate__backInRight");
     }
+
+    function closeBlogYearFilter() {
+      store.state.isBlogYearFilterOpen = false;
+    }
+
+    function openBlogYearFilter() {
+      store.state.isBlogYearFilterOpen = true;
+    }
     return {
       store,
       resetLogin,
       avatar,
       openPanel,
+      openBlogYearFilter,
       closePanel,
+      closeBlogYearFilter,
     };
   },
 };
