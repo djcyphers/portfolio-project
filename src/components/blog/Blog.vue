@@ -14,7 +14,7 @@
         >
           <img
             class="card-img bg-black img-thumbnail"
-            :src="`http://localhost:4000/${blogPost.blogImagesUrls[0]}`"
+            :src="`${webURL()}${blogPost.blogImagesUrls[0]}`"
             :alt="blogPostTitle(blogPost)"
           />
           <!-- Keeps the text on the bottom of the image card (bootstrap5)-->
@@ -359,7 +359,7 @@ export default {
         });
         if (img.value) {
           getBlogImage.push(
-            `http://localhost:4000/uploads/blogs/${formatName}/${img.value}`
+            `${webURL()}uploads/blogs/${formatName}/${img.value}`
           );
         } else {
           return []; // Vue state trying to add img buggy webpack issue
@@ -391,6 +391,19 @@ export default {
       blogFilter.classList.add("animate__backInRight");
     }
 
+    // Check if in production or development mode to render website URL
+    function webURL() {
+      if (
+        window.webpackHotUpdate ||
+        (process.env.NODE_ENV !== "production" &&
+          process.env.NODE_ENV !== "test" &&
+          typeof console !== "undefined")
+      ) {
+        return "http://localhost:4000/";
+      } else {
+        return window.location.href;
+      }
+    }
     return {
       store,
       getBlogPost,
@@ -426,6 +439,7 @@ export default {
       clearSavedPostArray,
       closeBlogYearFilter,
       openBlogYearFilter,
+      webURL,
     };
   },
 };

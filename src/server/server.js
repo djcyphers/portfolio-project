@@ -10,7 +10,8 @@ const mongoose = require("mongoose");
 const config = require("./config/db");
 const path = require("path");
 const app = express();
-//process.env.NODE_ENV = 'production';
+// Production Configuration
+process.env.NODE_ENV = 'production';
 
 // Suppress warning
 mongoose.set('strictQuery', true);
@@ -48,6 +49,8 @@ app.use(function (req, res, next) {
 });
 
 app.use(express.static(path.join(__dirname, "./uploads")));
+// For Production
+app.use(express.static('/var/www/public'));
 
 const userRoutes = require("./api/user/route/user"); // bring in our user routes
 app.use("/user", userRoutes);

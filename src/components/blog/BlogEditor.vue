@@ -61,8 +61,12 @@
         Highlight
       </button>
       <button
-        :class="{ 'is-active': editor.isActive('highlight', { color: '#74c0fc' }) }"
-        @click="editor.chain().focus().toggleHighlight({ color: '#74c0fc' }).run()"
+        :class="{
+          'is-active': editor.isActive('highlight', { color: '#74c0fc' }),
+        }"
+        @click="
+          editor.chain().focus().toggleHighlight({ color: '#74c0fc' }).run()
+        "
       >
         Blue
       </button>
@@ -99,72 +103,86 @@
       >
         H2
       </button>
-      <button @click="addImageLink">
-        ImgLink
-      </button>
+      <button @click="addImageLink">ImgLink</button>
       <input
         id="file"
         class="file-upload-handler"
         type="file"
         hidden
         @change="uploadImageFile($event)"
-      >
+      />
       <button
         class="upload-image-button"
         @click.prevent="uploadImageFileEvent()"
       >
         ImgFile
       </button>
-      <button @click="addYoutubeLink">
-        YouTube
-      </button>
-      <button v-if="!store.state.isBlogEditingPost" @click.stop="processBlogPost();">
+      <button @click="addYoutubeLink">YouTube</button>
+      <button
+        v-if="!store.state.isBlogEditingPost"
+        @click.stop="processBlogPost()"
+      >
         Publish
       </button>
-      <button v-if="store.state.isBlogEditingPost" @click.stop="processBlogPost();turnOffIsBlogEditing();">
+      <button
+        v-if="store.state.isBlogEditingPost"
+        @click.stop="
+          processBlogPost();
+          turnOffIsBlogEditing();
+        "
+      >
         Update
       </button>
       <button class="category-dropdown">
-        <a 
-          href="#" 
-          class="nav-link text-white dropdown-toggle" 
-          data-bs-toggle="dropdown" 
+        <a
+          href="#"
+          class="nav-link text-white dropdown-toggle"
+          data-bs-toggle="dropdown"
           @click="toggleNavItem($event)"
         >
-        <!-- Select categories from db -->
-        <ul 
-          class="btn btn-sm btn-outline-secondary dropdown-menu" 
-          aria-labelledby="dropdown-categories"
-        >
-          <li v-for="category in deduplicatedCategories" :key="category._id" >
-            <a 
-              href="#" 
-              class="dropdown-item add-category-button"
-              @click="selectInputCategory(category.blogCategory);"
-            >
-            {{ category.blogCategory }}
-            </a>
-          </li>
-        </ul>
-        Categories
+          <!-- Select categories from db -->
+          <ul
+            class="btn btn-sm btn-outline-secondary dropdown-menu"
+            aria-labelledby="dropdown-categories"
+          >
+            <li v-for="category in deduplicatedCategories" :key="category._id">
+              <a
+                href="#"
+                class="dropdown-item add-category-button"
+                @click="selectInputCategory(category.blogCategory)"
+              >
+                {{ category.blogCategory }}
+              </a>
+            </li>
+          </ul>
+          Categories
         </a>
       </button>
       <!-- Add category manually -->
-      <input @keyup.enter="enterInputCategory" type="text" class="form-control category-input-box" tabindex="0" aria-label="Enter category input box">
+      <input
+        @keyup.enter="enterInputCategory"
+        type="text"
+        class="form-control category-input-box"
+        tabindex="0"
+        aria-label="Enter category input box"
+      />
       <!-- Cancel button -->
-      <button @click="cancelEditor();">
-        Cancel
-      </button>
+      <button @click="cancelEditor()">Cancel</button>
     </FloatingMenu>
   </div>
-  <EditorContent
-    class="blog-editor"
-    :editor="editor"
-  />
+  <EditorContent class="blog-editor" :editor="editor" />
 </template>
 
 <script>
-import { computed, ref, inject, onMounted, reactive, watch, nextTick } from "vue";
+import {
+  computed,
+  ref,
+  inject,
+  onMounted,
+  reactive,
+  watch,
+  nextTick,
+} from "vue";
 import {
   useEditor,
   EditorContent,
@@ -174,8 +192,8 @@ import {
 import axios from "axios";
 import swal from "sweetalert";
 // Tiptap Extensions
-import Link from '@tiptap/extension-link'
-import Highlight from '@tiptap/extension-highlight'
+import Link from "@tiptap/extension-link";
+import Highlight from "@tiptap/extension-highlight";
 import Youtube from "@tiptap/extension-youtube";
 import TextAlign from "@tiptap/extension-text-align";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
@@ -202,23 +220,26 @@ export default {
   },
   props: {
     blogPostData: {
-     type: Object,
-     required: false,
+      type: Object,
+      required: false,
     },
   },
   setup(props) {
-
     // Setup reactive store
     const store = inject("store");
 
     // onMounted
-    onMounted(async() => {
-        await getAllCategories();
+    onMounted(async () => {
+      await getAllCategories();
     });
 
     const blogPostDataArray = ref(props.blogPostData);
     // Create a new blog post
-    const newBlogPostData = ref({ blogTitle: "", blogContent: "", blogCategory: "" });
+    const newBlogPostData = ref({
+      blogTitle: "",
+      blogContent: "",
+      blogCategory: "",
+    });
     // Toggle Blog Editor
     const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
     // Blog Posts Store
@@ -226,9 +247,15 @@ export default {
     // Categories
     const categories = reactive([]);
     // Filter duplicates from categories
-    const deduplicatedCategories = computed(() => categories.filter((item, index) => categories.findIndex(i => i.blogCategory === item.blogCategory) === index));
+    const deduplicatedCategories = computed(() =>
+      categories.filter(
+        (item, index) =>
+          categories.findIndex((i) => i.blogCategory === item.blogCategory) ===
+          index
+      )
+    );
     // Category input ref
-    const categoryInput = ref('');
+    const categoryInput = ref("");
     // Blog Editor
     const editor = useEditor({
       content: getEditorContent(),
@@ -263,42 +290,42 @@ export default {
             class: "youtube-video-container",
           },
         }),
-        Highlight.configure({ 
+        Highlight.configure({
           multicolor: true,
           HTMLAttributes: {
-          class: 'highlighter',
+            class: "highlighter",
           },
         }),
         Link.configure({
-          protocols: ['ftp', 'mailto', 'https', 'http', 'tel'],
+          protocols: ["ftp", "mailto", "https", "http", "tel"],
         }),
       ],
     });
 
     /* Blog API
-    *
-    * Manage blog data
-    *
-    */
-   
+     *
+     * Manage blog data
+     *
+     */
+
     // Responsive refs
     const files = reactive({ files: [] });
     const isLoggedIn = computed(() => store.state.logged);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     // Form data reactive
-    const fData = reactive( new FormData() );
-   
+    const fData = reactive(new FormData());
+
     // onMounted
     onMounted(() => {
       getAllBlogPosts();
     });
 
     watch(blogPostDataArray, (newValue, oldValue) => {
-        if (newValue === '') {
-         blogPostDataArray.value = oldValue;
-          console.log("WATCHING BLOG DATA => " + newValue);
-        }
-    })
+      if (newValue === "") {
+        blogPostDataArray.value = oldValue;
+        console.log("WATCHING BLOG DATA => " + newValue);
+      }
+    });
 
     // ChatGPT helped. It was painful, but we did it!
     function getEditorContent() {
@@ -309,56 +336,63 @@ export default {
         // Parse the blogContent string into a JavaScript object
         blogContent = JSON.parse(blogContent);
         // Combine the elements of the object into a single string
-        let htmlString = blogContent.join('');
+        let htmlString = blogContent.join("");
         // Replace the escaped HTML strings with actual HTML tags
         htmlString = htmlString.replace(/\\"/g, '"');
         // Get the list of image URLs
         const imageUrls = pJSON.blogImagesUrls;
         // Get the blog title
-        const blogTitle = pJSON.blogTitle.toLowerCase().replace(/ /g, '-');
+        const blogTitle = pJSON.blogTitle.toLowerCase().replace(/ /g, "-");
         // Replace the <img> tags with the actual image data
         for (let i = 0; i < imageUrls.length; i++) {
-          const regex = new RegExp(`<img class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`, '');
+          const regex = new RegExp(
+            `<img class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`,
+            ""
+          );
           // Split the URL to get the file name
-          const fileName = imageUrls[i].split('/').pop();
-          const filePathParts = fileName.split('\\');
+          const fileName = imageUrls[i].split("/").pop();
+          const filePathParts = fileName.split("\\");
           // Import the image file
-          const requiredImage = `http://localhost:4000/uploads/blogs/${blogTitle}/${filePathParts[filePathParts.length - 1]}`;
+          const requiredImage = `${webURL()}uploads/blogs/${blogTitle}/${
+            filePathParts[filePathParts.length - 1]
+          }`;
           // Construct the required image URL
           const requiredImageUrl = requiredImage;
-          htmlString = htmlString.replace(regex, `<img src="${requiredImageUrl}" class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`);
+          htmlString = htmlString.replace(
+            regex,
+            `<img src="${requiredImageUrl}" class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`
+          );
         }
         console.log("EDITOR DATA => " + htmlString);
         return htmlString;
       } else {
         return `<p> Add your new blog post here! ✌🏻😎</p>
-          <p>Make sure to add a H1 tag for Title to register!</p>`
+          <p>Make sure to add a H1 tag for Title to register!</p>`;
       }
     }
-    
+
     function turnOffIsBlogEditing() {
       nextTick(() => {
         store.state.isBlogEditingPost = false;
-      }) 
+      });
     }
 
     // Process blog post data
     function processBlogPost() {
       // Get blog title from first h1
-      const blogTitleElement = document.querySelector('h1').innerHTML;
+      const blogTitleElement = document.querySelector("h1").innerHTML;
       if (blogTitleElement == undefined) {
         return swal("Error", "Add a blog title with a H1 tag!", "error");
       }
       newBlogPostData.value.blogTitle = blogTitleElement;
       // Get all elements inside Prose Mirror div
-      const nl = document.querySelector('.ProseMirror').childNodes;
+      const nl = document.querySelector(".ProseMirror").childNodes;
       if (nl) {
         // Get image src's from nodeList and convert to div class img element
         toArray(nl);
         if (!store.state.isBlogEditingPost) {
           createBlogPost(); // Use converted data and send to backend
-        }
-        else {
+        } else {
           updateBlogPost();
         }
         //console.log("ARRAY: " + arr);
@@ -370,68 +404,78 @@ export default {
     async function updateBlogPost() {
       const htmlContent = editor.value.getHTML();
       const imageFileUrls = htmlContent.match(/src="\/img\/[^"]+/g);
-      const imageFileUrlsExtracted = imageFileUrls.map(imageFileUrl => imageFileUrl.substring(imageFileUrl.lastIndexOf("/") + 1));
-      const cleanedImageFileUrls = imageFileUrlsExtracted.map(imageFileUrl => {
-        const parts = imageFileUrl.split('.');
-        parts.splice(parts.length - 2, 1);
-        return parts.join('.');
-      });
+      const imageFileUrlsExtracted = imageFileUrls.map((imageFileUrl) =>
+        imageFileUrl.substring(imageFileUrl.lastIndexOf("/") + 1)
+      );
+      const cleanedImageFileUrls = imageFileUrlsExtracted.map(
+        (imageFileUrl) => {
+          const parts = imageFileUrl.split(".");
+          parts.splice(parts.length - 2, 1);
+          return parts.join(".");
+        }
+      );
       //console.log("IMAGE NAMES TO BACKEND: " + cleanedImageFileUrls);
       fData.append("blogTitle", newBlogPostData.value.blogTitle);
       fData.append("blogCategory", newBlogPostData.value.blogCategory);
-      fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
+      fData.append(
+        "blogContent",
+        JSON.stringify(newBlogPostData.value.blogContent)
+      );
       fData.append("images", cleanedImageFileUrls);
       // This honesly was difficult to figure out. I hate you FormData!
       for (let i = 0; i < files.files.length; i++) {
-        fData.append('files', files.files[i])
+        fData.append("files", files.files[i]);
       }
       await axios
-          .put("blog/update/" + props.blogPostData._id, fData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-          })
-          .then((response) => {
-            if (response.data.error) {
-              swal("Error", response.data.message, "error");
-            } else {
-              swal("Success", response.data.message, "success");
-              toggleBlogEditor.value();
-              store.state.isBlogViewOpen = true;
-            }
-          })
-          .catch((error) => {
-            swal("Error", "Update Post Error: " + error, "error");
-          })
+        .put("blog/update/" + props.blogPostData._id, fData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            swal("Success", response.data.message, "success");
+            toggleBlogEditor.value();
+            store.state.isBlogViewOpen = true;
+          }
+        })
+        .catch((error) => {
+          swal("Error", "Update Post Error: " + error, "error");
+        });
     }
 
     // Create blog post
     async function createBlogPost() {
-        fData.append("blogTitle", newBlogPostData.value.blogTitle);
-        fData.append("blogCategory", newBlogPostData.value.blogCategory);
-        fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
-        //console.log("Create Blog Post: " + JSON.stringify(newBlogPostData.value.blogContent));
-        // This honesly was difficult to figure out. I hate you FormData!
-        for (let i = 0; i < files.files.length; i++) {
-          fData.append('files', files.files[i])
-        }
-        await axios
-            .post("blog/create", fData, {
-              headers: {
-                  "Content-Type": "multipart/form-data",
-              },
-            })
-            .then((response) => {
-              if (response.data.error) {
-                swal("Error", response.data.message, "error");
-              } else {
-                swal("Success", response.data.message, "success");
-                toggleBlogEditor.value();
-              }
-            })
-            .catch((error) => {
-              swal("Error", "Create Post Error: " + error, "error");
-            })
+      fData.append("blogTitle", newBlogPostData.value.blogTitle);
+      fData.append("blogCategory", newBlogPostData.value.blogCategory);
+      fData.append(
+        "blogContent",
+        JSON.stringify(newBlogPostData.value.blogContent)
+      );
+      //console.log("Create Blog Post: " + JSON.stringify(newBlogPostData.value.blogContent));
+      // This honesly was difficult to figure out. I hate you FormData!
+      for (let i = 0; i < files.files.length; i++) {
+        fData.append("files", files.files[i]);
+      }
+      await axios
+        .post("blog/create", fData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            swal("Error", response.data.message, "error");
+          } else {
+            swal("Success", response.data.message, "success");
+            toggleBlogEditor.value();
+          }
+        })
+        .catch((error) => {
+          swal("Error", "Create Post Error: " + error, "error");
+        });
     }
 
     // Get all blog posts on mount (after loading a new image or refresh)
@@ -456,7 +500,9 @@ export default {
       const url = window.prompt("URL");
       if (url) {
         return editor.value.chain().focus().setImage({ src: url }).run();
-      } else { return swal("Error", "Please enter a valid URL.", "error")}
+      } else {
+        return swal("Error", "Please enter a valid URL.", "error");
+      }
     });
 
     // Upload image file handler
@@ -492,45 +538,38 @@ export default {
     const addYoutubeLink = computed(() => {
       const url = prompt("Enter YouTube URL");
       if (editor) {
-        const editorCommands = 
-        editor.value.commands.setYoutubeVideo({
+        const editorCommands = editor.value.commands.setYoutubeVideo({
           src: url,
           width: 960,
           height: 540,
-        })
+        });
         return editorCommands;
+      } else {
+        return swal("Error", "Please enter a valid YouTube URL.", "error");
       }
-      else { return swal("Error", "Please enter a valid YouTube URL.", "error") }
     });
 
     function setLink() {
       // Set web link onclick
-      const previousUrl = editor.value.getAttributes('link').href
-      const url = window.prompt('URL', previousUrl)
+      const previousUrl = editor.value.getAttributes("link").href;
+      const url = window.prompt("URL", previousUrl);
       // cancelled
       if (url === null) {
         console.log("URL is null!");
-        return
+        return;
       }
       // empty
-      if (url === '') {
-        editor
-          .value
-          .chain()
-          .focus()
-          .extendMarkRange('link')
-          .unsetLink()
-          .run()
-        return
+      if (url === "") {
+        editor.value.chain().focus().extendMarkRange("link").unsetLink().run();
+        return;
       }
       // update link
-      editor
-      .value
+      editor.value
         .chain()
         .focus()
-        .extendMarkRange('link')
+        .extendMarkRange("link")
         .setLink({ href: url })
-        .run()
+        .run();
     }
 
     async function getAllCategories() {
@@ -547,11 +586,11 @@ export default {
 
     // Input category in editor menu bar
     function enterInputCategory() {
-      categoryInput.value = document.querySelector('.category-input-box').value;
+      categoryInput.value = document.querySelector(".category-input-box").value;
       newBlogPostData.value.blogCategory = categoryInput.value;
       //console.log('Category is inputed: ' + categoryInput.value);
     }
-    
+
     // Select categories from selection from db response
     function selectInputCategory(category) {
       console.log("Category Dropdown: " + JSON.stringify(categories));
@@ -559,27 +598,28 @@ export default {
     }
 
     // Convert nodeList to Array
-    function toArray(obj) { // nodeList object
+    function toArray(obj) {
+      // nodeList object
       const array = [];
       // iterate backwards ensuring that length is an UInt32
-      for (var i = obj.length >>> 0; i--;) { 
+      for (var i = obj.length >>> 0; i--; ) {
         array[i] = obj[i];
       }
       // Push the src image to be saved later in db via axios / formidable
-      const tmpArray = []; 
-      array.forEach(function(chunk) {
+      const tmpArray = [];
+      array.forEach(function (chunk) {
         if (chunk.firstChild.src != undefined) {
           //console.log('ImgSrc: ' + chunk.firstChild.src);
           //fileArray.push(chunk.firstChild.src);
           chunk.firstChild.removeAttribute("src");
         }
         tmpArray.push(chunk.outerHTML);
-      })
+      });
       //files.value.files = fileArray;
       //console.log('Array: ' + tmpArray)
-      return newBlogPostData.value.blogContent = tmpArray;
+      return (newBlogPostData.value.blogContent = tmpArray);
     }
-    
+
     // Toggle active nav link and remove class from other nav links
     function toggleNavItem(event) {
       const navItems = document.querySelectorAll(".nav-link");
@@ -594,6 +634,20 @@ export default {
     function cancelEditor() {
       toggleBlogEditor.value();
       store.state.isBlogViewOpen = true;
+    }
+
+    // Check if in production or development mode to render website URL
+    function webURL() {
+      if (
+        window.webpackHotUpdate ||
+        (process.env.NODE_ENV !== "production" &&
+          process.env.NODE_ENV !== "test" &&
+          typeof console !== "undefined")
+      ) {
+        return "http://localhost:4000/";
+      } else {
+        return window.location.href;
+      }
     }
 
     return {
@@ -637,6 +691,7 @@ export default {
       turnOffIsBlogEditing,
       toggleNavItem,
       cancelEditor,
+      webURL,
     };
   },
 };
@@ -661,7 +716,7 @@ export default {
     display: block;
     outline: 0px solid transparent;
   }
-  
+
   div[data-youtube-video=""] {
     cursor: move;
     padding-right: 24px;
@@ -669,7 +724,7 @@ export default {
     align-items: center;
     justify-content: center;
   }
-  
+
   .ProseMirror-selectednode iframe {
     transition: outline 0.15s;
     outline: 1px solid #cac6ff;
@@ -684,7 +739,7 @@ export default {
   border-radius: 0.5rem;
   border-color: #fff;
   width: fit-content;
-  
+
   button {
     border: none;
     background: none;
