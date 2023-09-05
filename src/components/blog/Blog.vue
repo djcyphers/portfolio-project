@@ -393,17 +393,17 @@ export default {
 
     // Check if in production or development mode to render website URL
     function webURL() {
-      if (
+      const isDevelopment =
         window.webpackHotUpdate ||
         (process.env.NODE_ENV !== "production" &&
           process.env.NODE_ENV !== "test" &&
-          typeof console !== "undefined")
-      ) {
-        return "http://localhost:4000/";
-      } else {
-        return window.location.href;
-      }
+          typeof console !== "undefined");
+
+      return isDevelopment
+        ? "http://localhost:4000/"
+        : window.location.origin + "/";
     }
+
     return {
       store,
       getBlogPost,

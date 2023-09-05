@@ -6,7 +6,7 @@
         class="discord-avatar"
         :class="{ online: userOnline, offline: !userOnline }"
       >
-        <img :src="myProfile.avatarUrl" alt="Avatar" />
+        <img :src="myProfile.avatarUrl" />
       </div>
       <div class="discord-userinfo">
         <h4>{{ myProfile.username }}</h4>
@@ -57,18 +57,22 @@ export default {
           myProfile.value.status =
             data.members[0].status.charAt(0).toUpperCase() +
             data.members[0].status.slice(1);
-          myProfile.value.game = data.members[0].game.name;
+          if (Object.keys(data.members[0]).length > 6) {
+            myProfile.value.game = data.members[0].game.name;
+          } else {
+            myProfile.value.game = "AFK";
+          }
           myProfile.value.avatarUrl = data.members[0].avatar_url;
-          if ((myProfile.value.status = "Online")) {
+          if (myProfile.value.status === "Online") {
             userOnline.value = true;
           } else {
             userOnline.value = false;
           }
         }
       } catch (error) {
-        if (error.response.status === 500) {
-          swal("Error", error.response.data.message, "error");
-        }
+        // if (error.response.status === 500) {
+        //   swal("Error", error.response.data.message, "error");
+        // }
         console.log(error);
       }
     }
