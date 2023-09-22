@@ -65,9 +65,54 @@
 </template>
 
 <script setup>
-import { inject, computed, onMounted } from "vue";
+import { inject, computed, ref, onMounted, nextTick } from "vue";
 
 const store = inject("store");
+
+const elementData = ref();
+
+// In case of accidental browser refresh, load the last menu item that was selected
+onMounted(() => {
+  const sessionStorage = window.sessionStorage;
+  // Can't stack click().classList, too bad.
+  nextTick(() => {
+    switch (sessionStorage.getItem("menuState")) {
+      case "#home":
+        document.querySelectorAll("[data-menu='box1']")[0].click();
+        document
+          .querySelectorAll("[data-menu='box1']")[0]
+          .classList.add("selected");
+        break;
+
+      case "#about":
+        document.querySelectorAll("[data-menu='box2']")[0].click();
+        document
+          .querySelectorAll("[data-menu='box2']")[0]
+          .classList.add("selected");
+        break;
+
+      case "#portfolio":
+        document.querySelectorAll("[data-menu='box3']")[0].click();
+        document
+          .querySelectorAll("[data-menu='box3']")[0]
+          .classList.add("selected");
+        break;
+
+      case "#social":
+        document.querySelectorAll("[data-menu='box4']")[0].click();
+        document
+          .querySelectorAll("[data-menu='box4']")[0]
+          .classList.add("selected");
+        break;
+
+      default:
+        document.querySelectorAll("[data-menu='box1']")[0].click();
+        document
+          .querySelectorAll("[data-menu='box1']")[0]
+          .classList.add("selected");
+    }
+  });
+});
 
 let isMenuDropping = computed(() => store.state.isBlogOpen);
 
@@ -79,9 +124,14 @@ function closeBlogYearFilter() {
   store.state.isBlogYearFilterOpen = false;
 }
 
+// Save last menu state to retrieve onMounted / onLoaded
 function saveMenuStateSessionStorage(event) {
-  // const sessionStorage = window.sessionStorage;
-  console.log(event.target);
+  const sessionStorage = window.sessionStorage;
+  elementData.value = event.target;
+  sessionStorage.setItem(
+    "menuState",
+    elementData.value.attributes[1].nodeValue
+  );
 }
 </script>
 
