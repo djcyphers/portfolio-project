@@ -514,7 +514,7 @@ and (max-width : 800px) {
 .content2 {
     width:960px;
     height:400px;
-    top:20%;
+    top:10%;
     margin: 0 auto;
     position: relative;
     background:rgba(255,255,255, 0);
@@ -526,7 +526,7 @@ and (max-width : 800px) {
 .content3 {
     width:960px;
     height:600px;
-    top:20%;
+    top:9.2%;
     margin: 0 auto;
     position: relative;
     background:rgba(255,255,255, 0);
@@ -537,7 +537,7 @@ and (max-width : 800px) {
 .content4 {
     width:620px;
     height:600px;
-    top:21.5%;
+    top:11%;
     bottom:10%;
     margin: 0 auto;
     position:relative;
@@ -705,6 +705,38 @@ transform: rotateY(180deg);
 
 }
 
+@media screen and (max-width: 1180px) {
+  .content1 {
+    top: 28.3%;
+  }
+
+  .content2 {
+    top:10% !important;
+  }
+
+  .content3 {
+      top:9.3% !important;
+  }
+
+  .content4 {
+      top:11% !important;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .content2 {
+    top:19.3% !important;
+  }
+
+  .content3 {
+      top:18.5% !important;
+  }
+
+  .content4 {
+      top:20% !important;
+  }
+}
+
 
 /* CatchMost (Portrait) ----------- */
 @media only screen
@@ -717,16 +749,16 @@ and (min-width : 416px) {
       top:30% !important;
   }
 
-  .content3 {
-      top:18.5% !important;
+  .content2 {
+    top:12.3% !important;
   }
 
-  .content2 {
-    top:19.3% !important;
-}
+  .content3 {
+      top:11% !important;
+  }
 
   .content4 {
-      top:20% !important;
+      top:13% !important;
   }
 
   img.blog-image {
@@ -786,11 +818,17 @@ and (-moz-touch-enabled) {
   .links { font-size: 1.5vw; word-spacing:30px; }
 }
 
-// /* iPhone X/XS/Plus and S9+ Firefox Mobile (Portrait) Soon to be depreciated ----------- */
-// @media only screen
-// and (max-width : 600px)
-// and (-moz-touch-enabled) {
-// }
+/* iPhone X/XS/Plus and S9+ Firefox Mobile (Portrait) Soon to be depreciated ----------- */
+@media only screen
+and (max-width : 600px) {
+  .content2 {
+    left: -12px;
+  }
+
+  .content3 {
+    left: -6px;
+  }
+}
 
 /* iPhone X/XS/Plus and S9+ (Landscape) ----------- */
 @media only screen
@@ -1103,7 +1141,7 @@ and (min-width : 360px) {
   ::-webkit-scrollbar {
     display: none;
     width: 80%;
-    height: 80%;
+    height: 90%;
 }
 /* ===================================================================
  * # moz scrollbar (customized)
@@ -1111,7 +1149,7 @@ and (min-width : 360px) {
  * ------------------------------------------------------------------- */
 .scroller {
     width: 80%;
-    height: 80%;
+    height: 90%;
     overflow-y: scroll;
     scrollbar-width: none;
   }

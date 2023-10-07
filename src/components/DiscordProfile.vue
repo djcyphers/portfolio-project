@@ -1,5 +1,7 @@
 <template>
-  <div class="card text-white bg-black mb-3 border-0 mt-4 about-section">
+  <div
+    class="card text-white bg-black mb-3 border-0 mt-4 about-section discord-wrapper"
+  >
     <h2 class="mt-3 text-white text-center">Discord</h2>
     <div class="discord-card">
       <div
@@ -88,6 +90,12 @@ export default {
 <style lang="scss" scoped>
 h2 {
   z-index: 1;
+}
+
+.discord-wrapper {
+  position: relative;
+  height: 255px;
+  z-index: 8;
 }
 
 .discord-card {

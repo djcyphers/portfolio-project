@@ -1,6 +1,5 @@
 <template>
   <div id="header">
-    <!-- <div id="firefly"></div> -->
     <ul id="menu">
       <li>
         <a

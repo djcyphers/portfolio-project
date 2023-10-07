@@ -2,7 +2,7 @@
   <div class="body-container">
     <div class="card-container">
       <div class="card">
-        <h1>Dennis <br />Cyphers</h1>
+        <h1>Dennis Cyphers</h1>
 
         <div class="info-container">
           <p>
@@ -121,11 +121,12 @@
 
 @media screen and (max-width: 1200px) {
   .card-container {
-    width: calc(40vw + 25rem);
+    width: calc(60vw + 25rem);
     background-size: cover;
   }
   .body-container {
-    left: 10vw;
+    left: 0vw;
+    bottom: 12vh;
   }
 }
 
@@ -143,14 +144,26 @@
     width: calc(40vw + 20rem);
   }
   .body-container {
-    left: 6vw;
+    left: 3vw;
+    bottom: 20vh;
   }
 }
 
 @media screen and (max-width: 500px) {
   .body-container {
     left: -2vw;
-    bottom: 20vh;
+    bottom: 22vh;
+    width: 101vw;
+    height: 80vh !important;
+  }
+}
+
+@media screen and (max-width: 500px) and (max-height: 1200px) {
+  .body-container {
+    left: 0vw !important;
+    bottom: 22vh;
+    width: 101vw;
+    height: 80vh !important;
   }
 }
 
@@ -290,7 +303,15 @@ h1 span {
   .info-container {
     align-items: center;
     justify-content: center;
-    width: calc(30vw + 10rem);
+    width: calc(70vw + 10rem);
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .info-container {
+    align-items: center;
+    justify-content: center;
+    width: calc(50vw + 10rem);
   }
 }
 
@@ -298,7 +319,10 @@ h1 span {
   .info-container {
     align-items: center;
     justify-content: center;
-    width: 90%;
+    width: 100%;
+  }
+  .card p {
+    line-height: 2em !important;
   }
 }
 
@@ -317,10 +341,45 @@ h1 span {
 
 @media screen and (max-width: 1200px) {
   .card p {
-    font-size: 8pt;
+    font-size: 10pt !important;
+    background-color: #0000000c;
     border-radius: 20px;
     text-shadow: 1px 1px 0px black;
     overflow-x: scroll;
+    line-height: 15px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .card p {
+    font-size: 10pt !important;
+    background-color: #0000000c;
+    border-radius: 20px;
+    text-shadow: 1px 1px 0px black;
+    overflow-x: scroll;
+    line-height: 30px !important;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .card p {
+    font-size: 10pt !important;
+    background-color: #0000000c;
+    border-radius: 20px;
+    text-shadow: 1px 1px 0px black;
+    overflow-x: scroll;
+    line-height: 14px !important;
+  }
+}
+
+@media screen and (max-width: 500px) and (max-height: 1200px) {
+  .card p {
+    font-size: 10pt !important;
+    background-color: #0000000c;
+    border-radius: 20px;
+    text-shadow: 1px 1px 0px black;
+    overflow-x: scroll;
+    line-height: 39px !important;
   }
 }
 
@@ -330,8 +389,8 @@ h1 span {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 80px;
+  height: 60px;
   border: 2px solid Beige;
   color: beige;
   font-weight: 500;
@@ -343,7 +402,7 @@ h1 span {
 
 @media screen and (max-width: 500px) {
   .social-btn {
-    width: 80px;
+    width: 50px;
   }
 }
 
