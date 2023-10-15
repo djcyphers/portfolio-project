@@ -350,9 +350,9 @@ export default {
         const name = savedPost[0].blogTitle;
         if (name === undefined) return; // Vue state trying to add img buggy
         const formatName = name.replace(/ /g, "-").toLowerCase();
-        console.log(
-          "Blog Image: " + savedPost[0].blogImagesUrls[blogPostImageCount.value]
-        );
+        // console.log(
+        //   "Blog Image: " + savedPost[0].blogImagesUrls[blogPostImageCount.value]
+        // );
         let img = computed(() => {
           const str = savedPost[0].blogImagesUrls[blogPostImageCount.value];
           return str.split("\\").pop().split("/").pop();
@@ -374,6 +374,7 @@ export default {
     }
 
     function closeBlogYearFilter() {
+      // Not the Vue way should be :class='animate__backInRight' method
       const blogFilter = document.getElementById("blog-year-filter");
       if (!blogFilter) {
         return;

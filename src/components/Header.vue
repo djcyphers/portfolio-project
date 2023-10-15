@@ -164,7 +164,7 @@ function saveMenuStateSessionStorage(event) {
   top: 0;
   height: 60px;
   width: 100%;
-  z-index: 9;
+  z-index: 12;
 }
 
 .fade-enter-active,

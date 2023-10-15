@@ -423,7 +423,7 @@ and (max-width : 800px) {
     position:absolute;
     top:20px;
     right:10px;
-    z-index:10;
+    z-index:13;
 
     a {
         background:#222;
@@ -1320,7 +1320,7 @@ and (min-width : 360px) {
 
   /* ===================================================================
  * # Blog Utilities
- * # 
+ * # Global Settings (Blog.vue is scoped SCSS)
  * ------------------------------------------------------------------- */
 
  .blog-post p {
@@ -1329,6 +1329,29 @@ and (min-width : 360px) {
   font-family:Dosis;
 }
 
+@media screen and (max-width: 700px) {
+  .blog-post h1 {
+    font-size: calc(2vw + 2rem) !important;
+    color: white;
+  }
+
+  .blog-post p {
+    font-size: calc(1vw + 1rem) !important;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .blog-post h1 {
+    font-size: calc(2vw + 3rem) !important;
+    color: white;
+  }
+
+  .blog-post p {
+    font-size: calc(1vw + 2rem) !important;
+  }
+}
+
 .blog-post h1 {
-  font-size: calc(2vw + 0.5rem);
+  font-size: calc(2vw + 1rem);
+  color: white;
 }

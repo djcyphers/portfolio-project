@@ -328,8 +328,9 @@ async function submitForm() {
 .vue-recaptcha {
   z-index: 12;
   position: fixed;
+  width: 100%;
   bottom: 0;
-  right: 0;
+  left: 0;
 }
 
 .fade-enter-active,
