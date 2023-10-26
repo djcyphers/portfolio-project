@@ -123,7 +123,7 @@ const handleError = () => {
 };
 
 async function submitForm() {
-  if (isRobot) {
+  if (isRobot.value == true) {
     return swal("Error", "Please complete captcha!", "error");
   }
   try {
@@ -329,6 +329,7 @@ async function submitForm() {
   z-index: 12;
   position: fixed;
   width: 100%;
+  height: auto;
   bottom: 0;
   left: 0;
 }
