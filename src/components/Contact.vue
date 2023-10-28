@@ -124,10 +124,12 @@ const handleError = () => {
 
 async function submitForm() {
   if (isRobot.value == true) {
+    console.log("Is Robot: " + isRobot.value);
     return swal("Error", "Please complete captcha!", "error");
   }
   try {
     let response = await axios.post("user/contact", contactForm.value);
+    console.log(JSON.stringify(response));
     if (response.status === 200) {
       swal("Success", "Message Sent!", "success");
     }
