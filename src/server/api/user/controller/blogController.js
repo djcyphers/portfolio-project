@@ -15,8 +15,39 @@ const path = require("path");
 // const util = require('util')
 // Multiform Upload
 const formidable = require("formidable");
-const vueAssets = "../../../uploads/blogs";
-const uploadUrl = path.join(__dirname, vueAssets);
+var vueAssets, uploadUrl;
+// Function to find a directory by recursively traversing up the file system
+const findDirectory = (currentPath, targetDirectoryName) => {
+    const targetPath = path.join(currentPath, targetDirectoryName);
+  
+    if (fs.existsSync(targetPath)) {
+      return targetPath;
+    }
+  
+    const parentPath = path.dirname(currentPath);
+  
+    // If we've reached the root directory, return null (not found)
+    if (currentPath === parentPath) {
+      return null;
+    }
+  
+    // Recursively search in the parent directory
+    return findDirectory(parentPath, targetDirectoryName);
+  };
+  
+  // Usage
+  const targetDirectoryName = 'www';
+  var wwwPath; // Declaration without initialization
+  
+  wwwPath = findDirectory(__dirname, targetDirectoryName); // Assignment
+  
+  if (!wwwPath) {
+    console.error(`${targetDirectoryName} folder not found!`);
+  } else {
+    vueAssets = "server/uploads/blogs";
+    uploadUrl = path.join(wwwPath, vueAssets);
+    console.log('uploadUrl:', uploadUrl);
+  }
 
 // Validate Scheme with Joi
 const blogSchema = Joi.object().keys({
@@ -110,7 +141,7 @@ exports.deleteBlogPost = async (req, res) => {
         }
         // Delete folder recursively
         const blogFolderName = blogPost.blogTitle.replace(/\s+/g, "-").toLowerCase().trim();
-        const blogFolder = `${uploadUrl}\\${blogFolderName}`;
+        const blogFolder = path.join(uploadUrl,blogFolderName);
         if (fs.existsSync(blogFolder)) {
             fs.rmSync(blogFolder, { recursive: true, force: true });
             console.log('Blog Post Deleted!'); 
@@ -201,7 +232,7 @@ exports.updateBlogPost = async (req, res) => {
         const oldFolderName = oldBlogTitle.replace(/\s+/g, '-').toLowerCase();
         const newFolderName = newBlogTitle.replace(/\s+/g, '-').toLowerCase();
         if (oldFolderName !== newFolderName) {
-            fs.renameSync(`${uploadUrl}\\${oldFolderName}`, `${uploadUrl}\\${newFolderName}`);
+            fs.renameSync(path.join(uploadUrl, oldFolderName), path.join(uploadUrl, newFolderName));
         }
 
         // Get the list of filenames from the database and file system
@@ -212,14 +243,14 @@ exports.updateBlogPost = async (req, res) => {
         // Delete the deleted filenames from the folder and DB
         if (deletedFilenames.length > 0) {
             for (const filename of deletedFilenames) {
-                const fileUrl = `${uploadUrl}\\${newFolderName}\\${filename}`;
+                const fileUrl = path.join(uploadUrl, newFolderName, filename);
                 if (fs.existsSync(fileUrl)) {
                 fs.unlinkSync(fileUrl, (err) => {
                     if (err) console.log(`fs.unlink Error: ${ err }`);
                     console.log(`${ fileUrl } was deleted`);
                 });
-                // Trim filepath for future api call
-                const trimFilepath = fileUrl.split("\\");
+                // Trim filepath for future API call
+                const trimFilepath = fileUrl.split(path.sep); // Use path.sep to split based on the system's path separator
                 const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
                 await Blog.findOneAndUpdate({ _id: req.params._id }, { $pull: { blogImagesUrls: filePathToSave } }, { new: true });
                 }
@@ -230,7 +261,7 @@ exports.updateBlogPost = async (req, res) => {
             for (const file of files) {
                 const date = new Date();
                 const fileName = `${date.getTime()}-${file.value.originalFilename}`;
-                const filepath = `${uploadUrl}\\${newFolderName}\\${fileName}`;
+                const filepath = path.join(uploadUrl, newFolderName, fileName);
                 const rawData = fs.readFileSync(file.value.filepath);
                 fs.writeFileSync(filepath, rawData, (err) => {
                     if (err) {
@@ -242,7 +273,7 @@ exports.updateBlogPost = async (req, res) => {
                     }
                 });
                 // Trim filepath for future api call
-                const trimFilepath = filepath.split("\\");
+                const trimFilepath = filepath.split(path.sep);
                 const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
                 await Blog.findOneAndUpdate({ _id: req.params._id }, { $addToSet: { blogImagesUrls: filePathToSave } }, { new: true });
             }
@@ -338,7 +369,7 @@ exports.createBlogPost = async (req, res) => {
             await newBlogPost.save();
             // Create a blog folder if not exists (it should)
             const formatName = fieldValues.blogTitle.replace(/\s+/g, "-").toLowerCase();
-            const blogFolder = `${uploadUrl}\\${formatName}`;
+            const blogFolder = path.join(uploadUrl, formatName);
             if (!fs.existsSync(blogFolder)) {
                 fs.mkdirSync(blogFolder, { recursive: true });
             }  
@@ -359,11 +390,11 @@ exports.createBlogPost = async (req, res) => {
                 if (file != undefined) {
                     if (allowedMimeTypes.includes(file.mimetype)) {
                         const formatName = fieldValues.blogTitle.replace(/\s+/g, "-").toLowerCase();
-                        const blogFolder = `${uploadUrl}\\${formatName}`;
+                        const blogFolder = path.join(uploadUrl, formatName);
                         // Save image to storage
                         const date = new Date();
                         const fileName = `${date.getTime()}-${file.originalFilename}`;
-                        const filepath = `${blogFolder}\\${fileName}`;
+                        const filepath = path.join(blogFolder, fileName);
                         const rawData = fs.readFileSync(file.filepath);
                         // Save file to storage
                         fs.writeFileSync(filepath, rawData, (err) => {
@@ -376,7 +407,7 @@ exports.createBlogPost = async (req, res) => {
                             }
                         });
                         // Trim filepath for future api call
-                        const trimFilepath = filepath.split("\\");
+                        const trimFilepath = filepath.split(path.sep);
                         const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
                         // Push image to new blog post
                         Blog.updateOne(
@@ -422,7 +453,7 @@ exports.getBlogImage = async (req, res) => {
     try {
       const { blogTitle, fileName } = req.params;
       // Check if file exists
-      const file = `${uploadUrl}/${blogTitle}/${fileName}`;
+      const file = path.join(uploadUrl, blogTitle, fileName);
       if (!fs.existsSync(file)) {
         return res.json({
           error: true,

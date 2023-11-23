@@ -379,13 +379,20 @@ export default {
 
     // Process blog post data
     function processBlogPost() {
-      // Get blog title from first h1
-      const blogTitleElement = document.querySelector("h1").innerHTML;
-      if (blogTitleElement == undefined) {
+      // Get text content from the ProseMirror div
+      const proseMirrorContent =
+        document.querySelector(".ProseMirror").innerHTML;
+
+      // Extract title from the content by searching for the first H1 tag
+      const match = /<h1.*?>(.*?)<\/h1>/i.exec(proseMirrorContent);
+      if (!match || !match[1]) {
         return swal("Error", "Add a blog title with a H1 tag!", "error");
       }
+
+      const blogTitleElement = match[1].trim();
       newBlogPostData.value.blogTitle = blogTitleElement;
-      // Get all elements inside Prose Mirror div
+
+      // Get all elements inside ProseMirror div
       const nl = document.querySelector(".ProseMirror").childNodes;
       if (nl) {
         // Get image src's from nodeList and convert to div class img element
@@ -395,8 +402,8 @@ export default {
         } else {
           updateBlogPost();
         }
-        //console.log("ARRAY: " + arr);
-        //console.table(imgArray);
+        // console.log("ARRAY: " + arr);
+        // console.table(imgArray);
       }
     }
 
@@ -753,6 +760,10 @@ export default {
       opacity: 1;
     }
   }
+}
+
+p {
+  color: white;
 }
 
 .floating-menu {

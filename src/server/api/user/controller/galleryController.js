@@ -14,8 +14,40 @@ const path = require("path");
 // const util = require('util')
 // Multiform Upload
 const formidable = require("formidable");
-const vueAssets = "../../../uploads/galleries";
-const uploadUrl = path.join(__dirname, vueAssets);
+// Function to find a directory by recursively traversing up the file system
+var vueAssets, uploadUrl;
+const findDirectory = (currentPath, targetDirectoryName) => {
+  const targetPath = path.join(currentPath, targetDirectoryName);
+
+  if (fs.existsSync(targetPath)) {
+    return targetPath;
+  }
+
+  const parentPath = path.dirname(currentPath);
+
+  // If we've reached the root directory, return null (not found)
+  if (currentPath === parentPath) {
+    return null;
+  }
+
+  // Recursively search in the parent directory
+  return findDirectory(parentPath, targetDirectoryName);
+};
+
+// Usage
+const targetDirectoryName = 'www';
+var wwwPath; // Declaration without initialization
+
+wwwPath = findDirectory(__dirname, targetDirectoryName); // Assignment
+
+if (!wwwPath) {
+  console.error(`${targetDirectoryName} folder not found!`);
+} else {
+  vueAssets = "server/uploads/galleries";
+  uploadUrl = path.join(wwwPath, vueAssets);
+  console.log('uploadUrl:', uploadUrl);
+}
+
 // Validate Scheme with Joi
 const gallerySchema = Joi.object().keys({
   galleryName: Joi.string().required().min(2),
@@ -103,7 +135,7 @@ exports.createGallery = async (req, res) => {
         const formatName = fields.galleryName
           .replace(/\s+/g, "-")
           .toLowerCase();
-        const galleryFolder = `${uploadUrl}\\${formatName}`;
+        const galleryFolder = path.join(uploadUrl, formatName);
         if (!fs.existsSync(galleryFolder)) {
           fs.mkdirSync(galleryFolder);
         }
@@ -125,7 +157,7 @@ exports.createGallery = async (req, res) => {
           const date = new Date();
           const originalFileName = file.originalFilename;
           const fileName = `${date.getTime()}-${originalFileName}`;
-          const filepath = `${galleryFolder}\\${fileName}`;
+          const filepath = path.join(galleryFolder, fileName);
           const rawData = fs.readFileSync(file.filepath);
           // Save file to storage
           fs.writeFileSync(filepath, rawData, (err) => {
@@ -138,7 +170,7 @@ exports.createGallery = async (req, res) => {
             }
           });
           // Trim filepath for future api call
-          const trimFilepath = filepath.split("\\");
+          const trimFilepath = filepath.split(path.sep);
           const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
           // Add filepath to result value
           fields.galleryCoverArtUrl = filePathToSave;
@@ -188,7 +220,7 @@ exports.deleteGallery = async (req, res) => {
       });
     }
     // Delete gallery folder from drive
-    const deletePath = `${uploadUrl}/${gallery.galleryName.toLowerCase()}`;
+    const deletePath = path.join(uploadUrl, gallery.galleryName.toLowerCase());
     if (fs.existsSync(deletePath)) {
       fs.rmdirSync(deletePath, { recursive: true });
     }
@@ -356,11 +388,11 @@ exports.updateGallery = async (req, res) => {
         if (allowedMimeTypes.includes(file.mimetype)) {
           // Change gallery folder name
           const formatName = fields.galleryName.replace(/\s+/g, "-").toLowerCase();
-          const galleryFolder = `${uploadUrl}\\${formatName}`;
+          const galleryFolder = path.join(uploadUrl, formatName);
           const oldFormatName = fields.galleryOldName.replace(/\s+/g, "-").toLowerCase();
           // If we change the gallery name,rename the old folder
           if (formatName !== oldFormatName) {
-            const oldGalleryFolder = `${uploadUrl}\\${oldFormatName}`;
+            const oldGalleryFolder = path.join(uploadUrl, oldFormatName);
             try {
               if (fs.existsSync(oldGalleryFolder)) {
                 // rename folder without deleting contents
@@ -374,7 +406,7 @@ exports.updateGallery = async (req, res) => {
           const date = new Date();
           const originalFileName = file.originalFilename;
           const fileName = `${date.getTime()}-${originalFileName}`;
-          const filepath = `${galleryFolder}\\${fileName}`;
+          const filepath = path.join(galleryFolder, fileName);
           const rawData = fs.readFileSync(file.filepath);
           // Save file to storage
           fs.writeFileSync(filepath, rawData, (err) => {
@@ -387,7 +419,7 @@ exports.updateGallery = async (req, res) => {
             }
           });
           // Trim filepath for future api call
-          const trimFilepath = filepath.split("\\");
+          const trimFilepath = filepath.split(path.sep);
           const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
           // Add filepath to result value
           fields.galleryCoverArtUrl = filePathToSave;
@@ -492,7 +524,7 @@ exports.addItemToGallery = async (req, res) => {
           const formatName = fields.galleryName
             .replace(/\s+/g, "-")
             .toLowerCase();
-          let galleryFolder = `${uploadUrl}\\${formatName}`;
+          let galleryFolder = path.join(uploadUrl, formatName);
           if (fs.existsSync(galleryFolder)) {
             console.log("Gallery Exists: " + galleryFolder);
           }
@@ -518,12 +550,12 @@ exports.addItemToGallery = async (req, res) => {
           const formatName = fields.galleryName
             .replace(/\s+/g, "-")
             .toLowerCase();
-          let galleryFolder = uploadUrl + "\\" + formatName;
+          let galleryFolder = path.join(uploadUrl, formatName);
           // Save image to storage
           const date = new Date();
           const originalFileName = file.originalFilename;
           const fileName = `${date.getTime()}-${originalFileName}`;
-          const filepath = `${galleryFolder}\\${fileName}`;
+          const filepath = path.join(galleryFolder, fileName);
           const rawData = fs.readFileSync(file.filepath);
           fs.writeFileSync(filepath, rawData, (err) => {
             if (err) {
@@ -535,7 +567,7 @@ exports.addItemToGallery = async (req, res) => {
             }
           });
           // Trim filepath for future api call
-          const trimFilepath = filepath.split("\\");
+          const trimFilepath = filepath.split(path.sep);
           const filePathToSave = trimFilepath.slice(trimFilepath.length - 4).join("/");
           // Add filepath to result value
           fields.galleryItemUrl = filePathToSave;
@@ -595,7 +627,7 @@ exports.deleteItemFromGallery = async (req, res) => {
       });
     }
     // Delete file from gallery folder
-    const path = `${uploadUrl}\\${galleryItem.galleryName.replace(/\s+/g, "-").toLowerCase()}\\${galleryItem.galleryItemFileName}`;
+    const path = path.join(uploadUrl, galleryItem.galleryName.replace(/\s+/g, "-").toLowerCase(), galleryItem.galleryItemFileName);
     fs.unlink(path, (err) => {
       if (err) {
         console.log(err);
@@ -738,7 +770,7 @@ exports.getGalleryImage = async (req, res) => {
   try {
     const { galleryTitle, fileName } = req.params;
     // Check if file exists
-    const file = `${uploadUrl}/${galleryTitle}/${fileName}`;
+    const file = path.join(uploadUrl, galleryTitle, fileName);
     if (!fs.existsSync(file)) {
       return res.json({
         error: true,
