@@ -143,11 +143,15 @@ exports.deleteBlogPost = async (req, res) => {
         const blogFolderName = blogPost.blogTitle.replace(/\s+/g, "-").toLowerCase().trim();
         const blogFolder = path.join(uploadUrl,blogFolderName);
         if (fs.existsSync(blogFolder)) {
-            fs.rmSync(blogFolder, { recursive: true, force: true });
+            fs.rmdirSync(blogFolder, { recursive: true });
             console.log('Blog Post Deleted!'); 
         }
         await Blog.findByIdAndDelete(req.params._id);
-
+        return res.json({
+            error: false,
+            status: 200,
+            message: "Blog Post Deleted!",
+        });
     } catch (error) {
         return res.json({ 
             error: true,
@@ -300,6 +304,7 @@ exports.updateBlogPost = async (req, res) => {
 
 // Create blog post
 exports.createBlogPost = async (req, res) => {
+    let responseSent = false;
     try {
         // Have to do this the hard way, no default for multi files :(
         const form = new formidable.IncomingForm();
@@ -318,7 +323,7 @@ exports.createBlogPost = async (req, res) => {
         });
         form.on('error', console.error);
         // All the logic goes here instead of form.parse
-        form.on('end', async () => {
+        form.once('end', async () => {
             // Check if undefined or missing fields
             if (!fields[0].value || !fields[1].value || !fields[2].value) {
                 return res.json({
@@ -430,6 +435,8 @@ exports.createBlogPost = async (req, res) => {
                 }
             }
             console.log( files[0].value );
+            // An extra check to make sure a response isn't sent twice. form.once solves this tho.
+            responseSent = true;
             return res.json({
                 error: false,
                 status: 200,
@@ -440,11 +447,13 @@ exports.createBlogPost = async (req, res) => {
         // Return success
             
     } catch (error) {
-        return res.json({
-            error: true,
-            status: 500,
-            message: "Internal server error => " + error,
-        })
+        if (!responseSent) {
+            return res.json({
+                error: true,
+                status: 500,
+                message: "Internal server error => " + error,
+            })
+        } else { console.log(`Error Caught in Create Blog Post: ${ error }`) };
     }
 }
 
@@ -482,10 +491,28 @@ exports.getBlogImage = async (req, res) => {
     }
   };
 
-// Get all the years that blog posts have been publishes
+// Get all the years that blog posts have been published
 exports.getBlogYears = async (req, res) => {
     try {
-        const years = await Blog.find().distinct("createdAt");
+        const years = await Blog.aggregate([
+            {
+                $group: {
+                    _id: { $year: "$createdAt" }
+                }
+            },
+            {
+                $project: {
+                    year: "$_id",
+                    _id: 0
+                }
+            },
+            {
+                $sort: {
+                    year: -1
+                }
+            }
+        ]);
+
         if (!years) {
             return res.json({
                 error: true,
@@ -493,13 +520,8 @@ exports.getBlogYears = async (req, res) => {
                 message: "Uh, oh! Could not find any years.",
             });
         }
-        let dates = [];
 
-        for (let i = 0; i < years.length; i++) {
-            let date = new Date(years[i]).getFullYear();
-            dates.push(date);
-        } 
-        res.send(dates);
+        res.send(years.map(item => item.year));
     } catch (error) {
         console.log(error);
         return res.json({

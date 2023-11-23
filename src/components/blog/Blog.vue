@@ -192,6 +192,8 @@ export default {
       for (let i = 0; i < Object.keys(blogImages).length; i++) {
         blogImages[i].setAttribute("src", getBlogImage[i]);
       }
+      // Handle Blog Posts being updated...
+      getAllBlogPosts();
     });
 
     // Get all blog posts on mount (after loading a new image or refresh)
