@@ -29,12 +29,7 @@
               width="140.4"
               height="81.9"
               rx="40.95"
-              style="
-                fill: none;
-                stroke: #000;
-                stroke-miterlimit: 10;
-                stroke-width: 11px;
-              "
+              style="fill: none; stroke: #000; stroke-miterlimit: 10; stroke-width: 11px"
             />
             <rect x="89.89" y="17.25" width="9.7" height="9.7" />
             <circle cx="65.15" cy="65.09" r="14.47" />
@@ -129,11 +124,7 @@
         class="message-input"
         placeholder="Type message..."
       ></textarea>
-      <button
-        @click.prevent="sendMessage()"
-        type="submit"
-        class="message-submit"
-      >
+      <button @click.prevent="sendMessage()" type="submit" class="message-submit">
         Send
       </button>
     </div>
@@ -506,6 +497,21 @@ Bounce
   }
   to {
     transform: translateY(-10px);
+  }
+}
+
+/*--------------------
+  Responsive Fixes
+--------------------*/
+
+@media screen and (max-width: 800px) {
+  .messages .message .avatar .robot {
+    bottom: 3px !important;
+    position: relative !important;
+  }
+
+  .messages .message {
+    font-size: 1.2rem !important;
   }
 }
 </style>

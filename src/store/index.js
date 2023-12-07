@@ -22,6 +22,7 @@ const state = reactive({
   isBlogPostViewOpen: false,
   isBlogEditorOpen: false,
   isBlogEditingPost: false,
+  blogsStore: [],
   // Modal Blur
   isModalOpen: false,
   isBlogOpen: false,

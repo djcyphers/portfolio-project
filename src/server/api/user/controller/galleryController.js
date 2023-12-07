@@ -16,11 +16,13 @@ const path = require("path");
 const formidable = require("formidable");
 // Function to find a directory by recursively traversing up the file system
 var vueAssets, uploadUrl;
-const findDirectory = (currentPath, targetDirectoryName) => {
-  const targetPath = path.join(currentPath, targetDirectoryName);
-
-  if (fs.existsSync(targetPath)) {
-    return targetPath;
+// Function to find a directory by recursively traversing up the file system
+const findDirectory = (currentPath, targetDirectoryNames) => {
+  for (const targetDirectoryName of targetDirectoryNames) {
+    const targetPath = path.join(currentPath, targetDirectoryName);
+    if (fs.existsSync(targetPath)) {
+      return targetPath;
+    }
   }
 
   const parentPath = path.dirname(currentPath);
@@ -31,21 +33,24 @@ const findDirectory = (currentPath, targetDirectoryName) => {
   }
 
   // Recursively search in the parent directory
-  return findDirectory(parentPath, targetDirectoryName);
+  return findDirectory(parentPath, targetDirectoryNames);
 };
 
 // Usage
-const targetDirectoryName = 'www';
+const targetDirectoryNames = ['src', 'www'];
 var wwwPath; // Declaration without initialization
 
-wwwPath = findDirectory(__dirname, targetDirectoryName); // Assignment
+// Get the current working directory
+const cwd = process.cwd();
+
+wwwPath = findDirectory(cwd, targetDirectoryNames); // Assignment
 
 if (!wwwPath) {
-  console.error(`${targetDirectoryName} folder not found!`);
+  console.error(`Neither 'src' nor 'www' folder found!`);
 } else {
   vueAssets = "server/uploads/galleries";
   uploadUrl = path.join(wwwPath, vueAssets);
-  console.log('uploadUrl:', uploadUrl);
+  // console.log('uploadUrl:', uploadUrl);
 }
 
 // Validate Scheme with Joi
@@ -130,7 +135,7 @@ exports.createGallery = async (req, res) => {
         // Need to write image to folder after validation and saving to database
 
         */
-       
+
         // Create a gallery folder if not exists (it should)
         const formatName = fields.galleryName
           .replace(/\s+/g, "-")
@@ -362,8 +367,8 @@ exports.updateGallery = async (req, res) => {
         // Detele the old cover art file
         if (validUrl.length > 0) {
           fs.unlinkSync(validUrl, (err) => {
-            if (err) console.log(`fs.unlink Error: ${ err }`);
-            console.log(`${ validUrl } was deleted`);
+            if (err) console.log(`fs.unlink Error: ${err}`);
+            console.log(`${validUrl} was deleted`);
           });
         } else {
           return res.json({
@@ -371,7 +376,7 @@ exports.updateGallery = async (req, res) => {
             status: 500,
             message: "File Delete Error! => " + err,
           });
-         }
+        }
         // Save cover art file to storage
         const file = files.files;
 

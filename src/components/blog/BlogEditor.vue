@@ -64,16 +64,11 @@
         :class="{
           'is-active': editor.isActive('highlight', { color: '#74c0fc' }),
         }"
-        @click="
-          editor.chain().focus().toggleHighlight({ color: '#74c0fc' }).run()
-        "
+        @click="editor.chain().focus().toggleHighlight({ color: '#74c0fc' }).run()"
       >
         Blue
       </button>
-      <button
-        :class="{ 'is-active': editor.isActive('link') }"
-        @click="setLink"
-      >
+      <button :class="{ 'is-active': editor.isActive('link') }" @click="setLink">
         WebLink
       </button>
       <button
@@ -111,17 +106,11 @@
         hidden
         @change="uploadImageFile($event)"
       />
-      <button
-        class="upload-image-button"
-        @click.prevent="uploadImageFileEvent()"
-      >
+      <button class="upload-image-button" @click.prevent="uploadImageFileEvent()">
         ImgFile
       </button>
-      <button @click="addYoutubeLink">YouTube</button>
-      <button
-        v-if="!store.state.isBlogEditingPost"
-        @click.stop="processBlogPost()"
-      >
+      <button @click="addYoutubeLink()">YouTube</button>
+      <button v-if="!store.state.isBlogEditingPost" @click.stop="processBlogPost()">
         Publish
       </button>
       <button
@@ -174,21 +163,8 @@
 </template>
 
 <script>
-import {
-  computed,
-  ref,
-  inject,
-  onMounted,
-  reactive,
-  watch,
-  nextTick,
-} from "vue";
-import {
-  useEditor,
-  EditorContent,
-  BubbleMenu,
-  FloatingMenu,
-} from "@tiptap/vue-3";
+import { computed, ref, inject, onMounted, reactive, watch, nextTick } from "vue";
+import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from "@tiptap/vue-3";
 import axios from "axios";
 import swal from "sweetalert";
 // Tiptap Extensions
@@ -243,15 +219,14 @@ export default {
     // Toggle Blog Editor
     const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
     // Blog Posts Store
-    const blogPosts = reactive([]);
+    const blogPosts = ref([]);
     // Categories
     const categories = reactive([]);
     // Filter duplicates from categories
     const deduplicatedCategories = computed(() =>
       categories.filter(
         (item, index) =>
-          categories.findIndex((i) => i.blogCategory === item.blogCategory) ===
-          index
+          categories.findIndex((i) => i.blogCategory === item.blogCategory) === index
       )
     );
     // Category input ref
@@ -312,12 +287,14 @@ export default {
     const files = reactive({ files: [] });
     const isLoggedIn = computed(() => store.state.logged);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
+    const blogsStore = computed(() => store.state.blogsStore);
+    const updateStore = () => (store.state.blogsStore = [...blogPosts.value]);
     // Form data reactive
     const fData = reactive(new FormData());
 
     // onMounted
-    onMounted(() => {
-      getAllBlogPosts();
+    onMounted(async () => {
+      await getAllBlogPosts();
     });
 
     watch(blogPostDataArray, (newValue, oldValue) => {
@@ -380,8 +357,7 @@ export default {
     // Process blog post data
     function processBlogPost() {
       // Get text content from the ProseMirror div
-      const proseMirrorContent =
-        document.querySelector(".ProseMirror").innerHTML;
+      const proseMirrorContent = document.querySelector(".ProseMirror").innerHTML;
 
       // Extract title from the content by searching for the first H1 tag
       const match = /<h1.*?>(.*?)<\/h1>/i.exec(proseMirrorContent);
@@ -414,20 +390,15 @@ export default {
       const imageFileUrlsExtracted = imageFileUrls.map((imageFileUrl) =>
         imageFileUrl.substring(imageFileUrl.lastIndexOf("/") + 1)
       );
-      const cleanedImageFileUrls = imageFileUrlsExtracted.map(
-        (imageFileUrl) => {
-          const parts = imageFileUrl.split(".");
-          parts.splice(parts.length - 2, 1);
-          return parts.join(".");
-        }
-      );
+      const cleanedImageFileUrls = imageFileUrlsExtracted.map((imageFileUrl) => {
+        const parts = imageFileUrl.split(".");
+        parts.splice(parts.length - 2, 1);
+        return parts.join(".");
+      });
       //console.log("IMAGE NAMES TO BACKEND: " + cleanedImageFileUrls);
       fData.append("blogTitle", newBlogPostData.value.blogTitle);
       fData.append("blogCategory", newBlogPostData.value.blogCategory);
-      fData.append(
-        "blogContent",
-        JSON.stringify(newBlogPostData.value.blogContent)
-      );
+      fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
       fData.append("images", cleanedImageFileUrls);
       // This honesly was difficult to figure out. I hate you FormData!
       for (let i = 0; i < files.files.length; i++) {
@@ -446,6 +417,9 @@ export default {
             swal("Success", response.data.message, "success");
             toggleBlogEditor.value();
             store.state.isBlogViewOpen = true;
+            updateStore();
+            // Hacky fix for blog not updating...
+            store.state.isMainBlogWrapperOpen = true;
           }
         })
         .catch((error) => {
@@ -457,10 +431,7 @@ export default {
     async function createBlogPost() {
       fData.append("blogTitle", newBlogPostData.value.blogTitle);
       fData.append("blogCategory", newBlogPostData.value.blogCategory);
-      fData.append(
-        "blogContent",
-        JSON.stringify(newBlogPostData.value.blogContent)
-      );
+      fData.append("blogContent", JSON.stringify(newBlogPostData.value.blogContent));
       //console.log("Create Blog Post: " + JSON.stringify(newBlogPostData.value.blogContent));
       // This honesly was difficult to figure out. I hate you FormData!
       for (let i = 0; i < files.files.length; i++) {
@@ -478,6 +449,10 @@ export default {
           } else {
             swal("Success", response.data.message, "success");
             toggleBlogEditor.value();
+            store.state.isBlogViewOpen = true;
+            updateStore();
+            // Hacky fix for blog not updating...
+            store.state.isMainBlogWrapperOpen = true;
           }
         })
         .catch((error) => {
@@ -494,7 +469,7 @@ export default {
             swal("Error", response.data.message, "error");
           } else {
             // Put all posts into reactive array
-            blogPosts.push(response.data);
+            blogPosts.value = response.data;
           }
         })
         .catch((error) => {
@@ -542,7 +517,7 @@ export default {
         reader.onerror = (error) => reject(error);
       });
     // Add Youtube video link to editor
-    const addYoutubeLink = computed(() => {
+    function addYoutubeLink() {
       const url = prompt("Enter YouTube URL");
       if (editor) {
         const editorCommands = editor.value.commands.setYoutubeVideo({
@@ -554,7 +529,7 @@ export default {
       } else {
         return swal("Error", "Please enter a valid YouTube URL.", "error");
       }
-    });
+    }
 
     function setLink() {
       // Set web link onclick
@@ -571,12 +546,7 @@ export default {
         return;
       }
       // update link
-      editor.value
-        .chain()
-        .focus()
-        .extendMarkRange("link")
-        .setLink({ href: url })
-        .run();
+      editor.value.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
     }
 
     async function getAllCategories() {
@@ -615,7 +585,10 @@ export default {
       // Push the src image to be saved later in db via axios / formidable
       const tmpArray = [];
       array.forEach(function (chunk) {
-        if (chunk.firstChild.src != undefined) {
+        if (
+          chunk.firstChild.src != undefined &&
+          !chunk.firstChild.classList.contains("youtube-video-container")
+        ) {
           //console.log('ImgSrc: ' + chunk.firstChild.src);
           //fileArray.push(chunk.firstChild.src);
           chunk.firstChild.removeAttribute("src");
@@ -651,9 +624,7 @@ export default {
           process.env.NODE_ENV !== "test" &&
           typeof console !== "undefined");
 
-      return isDevelopment
-        ? "http://localhost:4000/"
-        : window.location.origin + "/";
+      return isDevelopment ? "http://localhost:4000/" : window.location.origin + "/";
     }
 
     return {
@@ -694,6 +665,8 @@ export default {
       toArray,
       fData,
       blogPosts,
+      blogsStore,
+      updateStore,
       turnOffIsBlogEditing,
       toggleNavItem,
       cancelEditor,

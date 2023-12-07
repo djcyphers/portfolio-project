@@ -4,7 +4,7 @@
       <!-- Blog Posts -->
       <div class="row justify-content-center">
         <div
-          v-for="(blogPost, index) in blogPosts"
+          v-for="(blogPost, index) in blogsStore"
           :key="index"
           class="col-lg-3 col-md-4 col-sm-6 blog-home bg-transparent card me-3 mb-3"
           @click.prevent="
@@ -93,10 +93,7 @@
     >
       <h4>Blog Posts by Year</h4>
       <hr />
-      <div
-        class="blog-year-paginated col-lg-1"
-        @click.prevent="getAllBlogPosts()"
-      >
+      <div class="blog-year-paginated col-lg-1" @click.prevent="getAllBlogPosts()">
         <div class="blog-year-text">All</div>
       </div>
       <div
@@ -104,10 +101,7 @@
         :key="index"
         class="blog-year-paginated col-lg-1"
       >
-        <div
-          class="blog-year-text"
-          @click.prevent="getPreviousYearBlogPosts(blogYear)"
-        >
+        <div class="blog-year-text" @click.prevent="getPreviousYearBlogPosts(blogYear)">
           {{ blogYear }}
         </div>
       </div>
@@ -147,14 +141,11 @@ export default {
     const isBlogPostViewOpen = computed(() => store.state.isBlogPostViewOpen);
     const isBlogEditorOpen = computed(() => store.state.isBlogEditorOpen);
     const toggleBlogEditor = computed(() => store.methods.toggleBlogEditor);
-    const toggleBlogPostViewOff = computed(
-      () => store.methods.toggleBlogPostViewOff
-    );
+    const toggleBlogPostViewOff = computed(() => store.methods.toggleBlogPostViewOff);
+    const blogsStore = computed(() => store.state.blogsStore);
 
     // Filter By Year Funcs
-    const isBlogYearFilterOpen = computed(
-      () => store.state.isBlogYearFilterOpen
-    );
+    const isBlogYearFilterOpen = computed(() => store.state.isBlogYearFilterOpen);
 
     // Local ref
     const editBlogPostView = ref(false);
@@ -179,6 +170,7 @@ export default {
       viewBlogPosts.value();
       await getCurrentYearBlogPosts();
       await getBlogYears();
+      store.state.blogsStore = blogPosts.value;
     });
 
     onUnmounted(async () => {
@@ -192,8 +184,6 @@ export default {
       for (let i = 0; i < Object.keys(blogImages).length; i++) {
         blogImages[i].setAttribute("src", getBlogImage[i]);
       }
-      // Handle Blog Posts being updated...
-      getAllBlogPosts();
     });
 
     // Get all blog posts on mount (after loading a new image or refresh)
@@ -206,6 +196,7 @@ export default {
           } else {
             // Put all posts into reactive array
             blogPosts.value = response.data;
+            store.state.blogsStore = blogPosts.value;
           }
         })
         .catch((error) => {
@@ -272,9 +263,7 @@ export default {
       toggleBlogEditor.value();
       // Add data back into the editor lol no
       blogPostData.value = blogPost;
-      console.log(
-        "EDIT BLOG POST (BlogPostData): " + JSON.stringify(blogPostData.value)
-      );
+      console.log("EDIT BLOG POST (BlogPostData): " + JSON.stringify(blogPostData.value));
     }
 
     // Delete blog post
@@ -294,7 +283,7 @@ export default {
         .catch((error) => {
           swal("Error", "Delete Blog Error => " + error, "error");
         });
-      console.log("DELETE BLOG POST: " + JSON.stringify(blogPost));
+      //console.log("DELETE BLOG POST: " + JSON.stringify(blogPost));
       /// Set blog to deleting to avoid triggering getBlogPost() method and states
       // Remove blog post from array
       blogPosts.value.splice(index, 1);
@@ -360,9 +349,7 @@ export default {
           return str.split("\\").pop().split("/").pop();
         });
         if (img.value) {
-          getBlogImage.push(
-            `${webURL()}uploads/blogs/${formatName}/${img.value}`
-          );
+          getBlogImage.push(`${webURL()}uploads/blogs/${formatName}/${img.value}`);
         } else {
           return []; // Vue state trying to add img buggy webpack issue
         }
@@ -402,9 +389,7 @@ export default {
           process.env.NODE_ENV !== "test" &&
           typeof console !== "undefined");
 
-      return isDevelopment
-        ? "http://localhost:4000/"
-        : window.location.origin + "/";
+      return isDevelopment ? "http://localhost:4000/" : window.location.origin + "/";
     }
 
     return {
@@ -429,6 +414,7 @@ export default {
       checkBlogPostViewOpen,
       isLoggedIn,
       blogPosts,
+      blogsStore,
       blogYears,
       savedPost,
       files,
