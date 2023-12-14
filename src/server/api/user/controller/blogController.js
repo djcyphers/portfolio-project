@@ -9,6 +9,7 @@ const Joi = require("joi");
 // Models
 const User = require("../model/User");
 const Blog = require("../model/Blog");
+const BlogURL = require("../model/BlogSlugHandler");
 // Utils
 const fs = require("fs");
 const path = require("path");
@@ -560,3 +561,71 @@ exports.getPreviousBlogYears = async (req, res) => {
         });
     }
 };
+
+// Handle blog url slugs the user accesses via a shared link
+exports.handleBlogPostSlug = async (req, res) => {
+    try {
+        const blogTitleURL = await BlogURL.findOne({ blogTitleURL: req.params.url });
+        if (!blogTitleURL) {
+            const newBlogURL = new BlogURL({
+                blogTitleURL: req.params.url
+            })
+            await newBlogURL.save();
+        }
+        res.redirect('/');
+        // Delete after a split second 
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            error: true,
+            status: 500,
+            message: "Internal server error.",
+        });
+    };
+};
+
+exports.getBlogPostURL = async (req, res) => {
+    try {
+        const blogTitleURL = await BlogURL.find();
+        if (blogTitleURL) {
+            return res.json({
+                error: false,
+                status: 200,
+                message: blogTitleURL,
+            });
+        } else {
+            return res.json({
+                error: true,
+                status: 500,
+                message: "URL Not Found!",
+            });
+        }
+    } catch {
+        console.log(error);
+        return res.json({
+            error: true,
+            status: 500,
+            message: "Internal server error.",
+        });
+    }
+}
+
+// Delete blog post by ID
+exports.deleteBlogPostURL = async (req, res) => {
+    try {
+        const blogPostURL = await BlogURL.findById({
+            // find by name
+            _id: req.params._id,
+        });
+        if (blogPostURL) {
+            await BlogURL.findByIdAndDelete(req.params._id);
+        }
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            error: true,
+            status: 500,
+            message: "Internal server error.",
+        });
+    }
+}

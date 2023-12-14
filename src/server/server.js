@@ -28,7 +28,7 @@ mongoose
   .catch((err) => {
     console.log({ database_error: err });
   });
-  
+
 
 // db configuaration ends here
 //registering cors

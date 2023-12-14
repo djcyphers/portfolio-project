@@ -6,6 +6,7 @@
         <div
           v-for="(blogPost, index) in blogsStore"
           :key="index"
+          :class="blogPostClassTitle(blogPost)"
           class="col-lg-3 col-md-4 col-sm-6 blog-home bg-transparent card me-3 mb-3"
           @click.prevent="
             getBlogPost(blogPost, index);
@@ -171,6 +172,10 @@ export default {
       await getCurrentYearBlogPosts();
       await getBlogYears();
       store.state.blogsStore = blogPosts.value;
+      // Perform actions based on the extracted title
+      nextTick(() => {
+        handleBlogPostURL();
+      });
     });
 
     onUnmounted(async () => {
@@ -392,6 +397,43 @@ export default {
       return isDevelopment ? "http://localhost:4000/" : window.location.origin + "/";
     }
 
+    // Add blog post title to element to auto-click on onMounted
+    function blogPostClassTitle(blogPost) {
+      if (!blogPost) return;
+      return blogPost.blogTitle.toLowerCase().replace(/\s+/g, "-");
+    }
+
+    async function handleBlogPostURL() {
+      await axios
+        .get("blog/getBlogPostURL")
+        .then((response) => {
+          // Put all posts into reactive array
+          let blogPostURL = response.data.message;
+          if (Object.keys(blogPostURL).length > 0) {
+            document.querySelectorAll("[data-menu='box4']")[0].click();
+            document.querySelectorAll("[data-menu='box4']")[0].classList.add("selected");
+            document.querySelector(`.${blogPostURL[0].blogTitleURL}`).click();
+          }
+          cleanUpBlogPostURL(blogPostURL);
+        })
+        .catch((error) => {
+          swal("Error", error, "error");
+        });
+    }
+
+    async function cleanUpBlogPostURL(blogPostURL) {
+      if (Object.keys(blogPostURL).length > 0) {
+        await axios
+          .delete("/blog/url/" + blogPostURL[0]._id)
+          .then(() => {
+            console.logo("Cleaning URL: " + blogPostURL[0]._id);
+          })
+          .catch((error) => {
+            console.log("URL Cleaning Error: " + error);
+          });
+      }
+    }
+
     return {
       store,
       getBlogPost,
@@ -401,7 +443,10 @@ export default {
       getPreviousYearBlogPosts,
       getAllBlogPosts,
       blogPostImageCount,
+      handleBlogPostURL,
+      cleanUpBlogPostURL,
       blogPostData,
+      blogPostClassTitle,
       viewBlogPosts,
       isBlogViewOpen,
       isBlogDeleting,

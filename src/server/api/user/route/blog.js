@@ -9,8 +9,6 @@ All routes are prepended with blog *Reminder lol*
 
 */
 
-// Get blog post by id
-router.get("/id/:id", blogController.getBlogPostById);
 // Get all blog posts
 router.get("/posts/all", blogController.getAllBlogPosts);
 // Create a blog post
@@ -25,4 +23,13 @@ router.put("/update/:_id", cleanBody, blogController.updateBlogPost);
 router.get("/posts/years/all", blogController.getBlogYears);
 // Get previous blog post years
 router.get("/posts/years/:year", blogController.getPreviousBlogYears);
+// Get blog post by id
+router.get("/id/:id", blogController.getBlogPostById);
+// Get blog title from fetched URL
+router.get("/getBlogPostURL", blogController.getBlogPostURL);
+// Dekete blog post URL
+router.delete("/url/:_id", blogController.deleteBlogPostURL);
+// Redirect blog post url to catch for Vue redirect
+router.get("/:url", blogController.handleBlogPostSlug);
+
 module.exports = router;
