@@ -31,10 +31,7 @@
 
       <li id="box3" class="box">
         <a name="box3"></a>
-        <Gallery
-          v-if="store.state.isMainGalleryWrapperOpen"
-          Class="content3 scroller"
-        />
+        <Gallery v-if="store.state.isMainGalleryWrapperOpen" Class="content3 scroller" />
       </li>
       <!-- end box3 -->
 
@@ -78,12 +75,9 @@ export default {
   },
   setup() {
     const store = inject("store");
-    // View Gallery
+    // Gallery Views & Functions
     const viewGalleries = computed(() => store.methods.viewGallery);
-    const isMainBlogWrapperOpen = computed(
-      () => store.state.isMainBlogWrapperOpen
-    );
-
+    const isMainBlogWrapperOpen = computed(() => store.state.isMainBlogWrapperOpen);
     const blogOpen = computed(() => store.state.isBlogOpen);
 
     onMounted(async () => {

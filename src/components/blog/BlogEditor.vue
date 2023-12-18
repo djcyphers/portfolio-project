@@ -340,7 +340,7 @@ export default {
             `<img src="${requiredImageUrl}" class="blog-image img-fluid rounded mx-auto d-block" draggable="true" contenteditable="false">`
           );
         }
-        console.log("EDITOR DATA => " + htmlString);
+        // console.log("EDITOR DATA => " + htmlString);
         return htmlString;
       } else {
         return `<p> Add your new blog post here! ✌🏻😎</p>
@@ -452,7 +452,10 @@ export default {
             store.state.isBlogViewOpen = true;
             updateStore();
             // Hacky fix for blog not updating...
-            store.state.isMainBlogWrapperOpen = true;
+            store.state.isMainBlogWrapperOpen = false;
+            nextTick(() => {
+              store.state.isMainBlogWrapperOpen = true;
+            });
           }
         })
         .catch((error) => {

@@ -413,8 +413,14 @@ export default {
             document.querySelectorAll("[data-menu='box4']")[0].click();
             document.querySelectorAll("[data-menu='box4']")[0].classList.add("selected");
             document.querySelector(`.${blogPostURL[0].blogTitleURL}`).click();
+            // Change browser url to simulate page position
+            let currentUrl = window.location.href;
+            let updatedUrl = `${currentUrl}${blogPostURL[0].blogTitleURL}`;
+            // Use pushState to update the URL without triggering a reload
+            window.history.pushState({ path: updatedUrl }, "", updatedUrl);
+            // Remove database entry to make sure another user doesn't trigger page redirect to blog post
+            cleanUpBlogPostURL(blogPostURL); // Not ideal, but it's the only way
           }
-          cleanUpBlogPostURL(blogPostURL);
         })
         .catch((error) => {
           swal("Error", error, "error");
@@ -425,11 +431,13 @@ export default {
       if (Object.keys(blogPostURL).length > 0) {
         await axios
           .delete("/blog/url/" + blogPostURL[0]._id)
-          .then(() => {
-            console.logo("Cleaning URL: " + blogPostURL[0]._id);
+          .then((response) => {
+            if (response.statusCode == 200) {
+              return;
+            }
           })
           .catch((error) => {
-            console.log("URL Cleaning Error: " + error);
+            console.log(`URL cleaning error: ${error}`);
           });
       }
     }

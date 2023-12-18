@@ -619,6 +619,11 @@ exports.deleteBlogPostURL = async (req, res) => {
         });
         if (blogPostURL) {
             await BlogURL.findByIdAndDelete(req.params._id);
+            return res.json({
+                error: false,
+                status: 200,
+                message: "URL Cleaning Completed.",
+            });
         }
     } catch (error) {
         console.log(error);

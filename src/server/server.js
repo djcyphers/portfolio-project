@@ -34,8 +34,8 @@ mongoose
 //registering cors
 app.use(cors());
 //configure body parser
-app.use(express.json()); // To parse the incoming requests with JSON payloads
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '50mb' })); // To parse the incoming requests with JSON payloads
+app.use(express.urlencoded({ limit: '50mb', extended: false }));
 app.use(morgan("tiny")); // configure morgan
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");

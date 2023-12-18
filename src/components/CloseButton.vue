@@ -9,12 +9,16 @@
     </a>
   </div>
 </template>
+
 <script>
 export default {
   name: "CloseButton",
   setup() {
     function clearLocalStorage() {
       localStorage.clear();
+      // Clean URL from linked blog posts as well
+      const originalPath = window.location.origin;
+      window.history.pushState({ path: originalPath }, "", originalPath);
     }
     return {
       clearLocalStorage,
@@ -22,6 +26,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss" scoped>
 #close-button {
   position: fixed;
